@@ -1,0 +1,62 @@
+ 1460 gH2O      PHOION              gOH*      gH*                                     8.00E-01  1.00E-15  1.00E+00
+ 1460 gH2O      PHOION              gO*       gH2*                                    2.00E-01  1.00E-15  1.00E+00
+ 1461 gH2O      PHOEXC              gH        gOH                                     8.00E-01  1.00E-15  1.00E+00
+ 1461 gH2O      PHOEXC              gO        gH2                                     2.00E-01  1.00E-15  1.00E+00
+ 1462 gH2O      PHOEXC              gH2O*                                             1.00E+00  1.00E-15  1.00E+00
+ 1460 bH2O      PHOION              bOH*      bH*                                     8.00E-01  1.00E-15  1.00E+00
+ 1460 bH2O      PHOION              bO*       bH2*                                    2.00E-01  1.00E-15  1.00E+00
+ 1461 bH2O      PHOEXC              bH        bOH                                     8.00E-01  1.00E-15  1.00E+00
+ 1461 bH2O      PHOEXC              bO        bH2                                     2.00E-01  1.00E-15  1.00E+00
+ 1462 bH2O      PHOEXC              bH2O*                                             1.00E+00  1.00E-15  1.00E+00
+ 1510 gH2O2     PHOION              gOH*      gOH*                                    5.00E-01  1.00E-15  1.00E+00
+ 1510 gH2O2     PHOION              gH*       gHO2*                                   5.00E-01  1.00E-15  1.00E+00
+ 1511 gH2O2     PHOEXC              gOH       gOH                                     5.00E-01  1.00E-15  1.00E+00
+ 1511 gH2O2     PHOEXC              gH        gHO2                                    5.00E-01  1.00E-15  1.00E+00
+ 1511 gH2O2     PHOEXC              gH2O2*                                            1.00E+00  1.00E-15  1.00E+00
+ 1510 bH2O2     PHOION              bOH*      bOH*                                    5.00E-01  1.00E-15  1.00E+00
+ 1510 bH2O2     PHOION              bH*       bHO2*                                   5.00E-01  1.00E-15  1.00E+00
+ 1511 bH2O2     PHOEXC              bOH       bOH                                     5.00E-01  1.00E-15  1.00E+00
+ 1511 bH2O2     PHOEXC              bH        bHO2                                    5.00E-01  1.00E-15  1.00E+00
+ 1511 bH2O2     PHOEXC              bH2O2*                                            1.00E+00  1.00E-15  1.00E+00
+ 1491 gH2       PHOION              gH*       gH*                                     1.00E+00  1.00E-15  1.00E+00
+ 1491 bH2       PHOION              bH*       bH*                                     1.00E+00  1.00E-15  1.00E+00
+ 1491 gH2       PHOEXC              gH        gH                                      1.00E+00  1.00E-15  1.00E+00
+ 1491 bH2       PHOEXC              bH        bH                                      1.00E+00  1.00E-15  1.00E+00
+ 1491 gH2       PHOEXC              gH2*                                              1.00E+00  1.00E-15  1.00E+00
+ 1491 bH2       PHOEXC              bH2*                                              1.00E+00  1.00E-15  1.00E+00
+ 1491 gOH       PHOION              gO*       gH*                                     1.00E+00  1.00E-15  1.00E+00
+ 1491 bOH       PHOION              bO*       bH*                                     1.00E+00  1.00E-15  1.00E+00
+ 1491 gOH       PHOEXC              gO        gH                                      1.00E+00  1.00E-15  1.00E+00
+ 1491 bOH       PHOEXC              bO        bH                                      1.00E+00  1.00E-15  1.00E+00
+ 1491 gOH       PHOEXC              gOH*                                              1.00E+00  1.00E-15  1.00E+00
+ 1491 bOH       PHOEXC              bOH*                                              1.00E+00  1.00E-15  1.00E+00
+ 1503 gHO2      PHOION              gO*       gOH*                                    0.50E+00  1.00E-15  1.00E+00
+ 1503 gHO2      PHOION              gH*       gO2*                                    0.50E+00  1.00E-15  1.00E+00
+ 1504 gHO2      PHOEXC              gO        gOH                                     0.50E+00  1.00E-15  1.00E+00
+ 1504 gHO2      PHOEXC              gH        gO2                                     0.50E+00  1.00E-15  1.00E+00
+ 1505 gHO2      PHOEXC              gHO2*                                             1.00E+00  1.00E-15  1.00E+00
+ 1503 bHO2      PHOION              bO*       bOH*                                    0.50E+00  1.00E-15  1.00E+00
+ 1503 bHO2      PHOION              bH*       bO2*                                    0.50E+00  1.00E-15  1.00E+00
+ 1504 bHO2      PHOEXC              bH        bO2                                     0.50E+00  1.00E-15  1.00E+00
+ 1504 bHO2      PHOEXC              bO        bOH                                     0.50E+00  1.00E-15  1.00E+00
+ 1505 bHO2      PHOEXC              bHO2*                                             1.00E+00  1.00E-15  1.00E+00
+ 1491 gHO3      PHOION              gO2*      gOH*                                    1.00E+00  1.00E-15  1.00E+00
+ 1491 bHO3      PHOION              bO2*      bOH*                                    1.00E+00  1.00E-15  1.00E+00
+ 1491 gHO3      PHOEXC              gO2       gOH                                     1.00E+00  1.00E-15  1.00E+00
+ 1491 bHO3      PHOEXC              bO2       bOH                                     1.00E+00  1.00E-15  1.00E+00
+ 1491 gHO3      PHOEXC              gHO3*                                             1.00E+00  1.00E-15  1.00E+00
+ 1491 gO        PHOION              gO*                                               1.00E+00  1.00E-15  1.00E+00
+ 1491 gO        PHOEXC              gO*                                               1.00E+00  1.00E-15  1.00E+00
+ 1467 gO2       PHOION              gO*       gO*                                     1.00E+00  1.00E-15  1.00E+00
+ 1468 gO2       PHOEXC              gO        gO                                      1.00E+00  1.00E-15  1.00E+00
+ 1469 gO2       PHOEXC              gO2*                                              1.00E+00  1.00E-15  1.00E+00
+ 1467 bO2       PHOION              bO*       bO*                                     1.00E+00  1.00E-15  1.00E+00
+ 1468 bO2       PHOEXC              bO        bO                                      1.00E+00  1.00E-15  1.00E+00
+ 1469 bO2       PHOEXC              bO2*                                              1.00E+00  1.00E-15  1.00E+00
+ 1473 gO3       PHOION              gO2*      gO*                                     1.00E+00  1.00E-15  1.00E+00
+ 1474 gO3       PHOEXC              gO2       gO                                      1.00E+00  1.00E-15  1.00E+00
+ 1474 gO3       PHOEXC              gO3*                                              1.00E+00  1.00E-15  1.00E+00
+ 1473 bO3       PHOION              bO2*      bO*                                     1.00E+00  1.00E-15  1.00E+00
+ 1474 bO3       PHOEXC              bO2       bO                                      1.00E+00  1.00E-15  1.00E+00
+ 1474 bO3       PHOEXC              bO3*                                              1.00E+00  1.00E-15  1.00E+00
+
