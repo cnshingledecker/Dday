@@ -1,0 +1,21 @@
+Do necessary imports
+
+Create np.linspace for vector d (1a)
+Create np.linspace for vector e (1b)
+Create np.linspace for vector f (1c)
+
+Use 3 layers of for loops to output model predictions (write them to a file) and calculate error (deviation) from actual data (2), and use this error to calculate the root mean square deviation of the data
+    error set to zero if it is in a certain range
+    Root mean square deviation written to a file
+
+    (3) Two sets of a series of elses/elifs in the inner for loop: one to write something (model predictions? what is this?) to a file, and one to calculate the root mean square deviation and write it to a file
+
+
+
+
+
+Need to figure out how to do:
+
+(1) a, b, and c--figure out why these linspaces have the starting and ending values they do, as well as the number of values in the linspace
+(2) need to get an array of the actual data so we don't hardcode these values in
+(3) For the first set of elses/elifs, there are some for d, some for e, and some for f. What are d, e, and f, and why are there certain numbers of each? If we get arrays of the various chemicals and reactions, we can turn the series of elifs into a for loop that loops over the chemicals and creates the string of the model output
