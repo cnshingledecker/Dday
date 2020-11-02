@@ -69,8 +69,8 @@ DO i = 1, timesteps
 
 
   ! Do chemistry this timestep
-  PRINT *, "Here we are in run_dvode_solver"
   CALL DVODE_F90(re,nspecies,Y,tt,tnext,ITASK,ISTATE,OPTIONS)
+  PRINT *, "Here we are in run_dvode_solver"
 
   ! Save results
   CALL save_analytics(nspecies, Y, tt, i)
