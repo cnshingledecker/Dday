@@ -47,7 +47,7 @@ DES_CRP               = 0          ; Cosmic ray desorption 1-on/0-off
 DES_PHOTON            = 0          ; Photodesorption 1-on/0-off
 PH_YIELD              = 1.0000E-03 ; Photodesorption yield
 DES_REACTIVE          = 0.0000E-01 ; Efficiency of the reactive desorption
-DES_REACTIVE_TYPE     = 2          ; Type of RE: 0 - Garrod_ea07, 1 - Vasyunin&Herbst13, 2 - Minissale&Dulieu
+DES_REACTIVE_TYPE     = 0          ; Type of RE: 0 - Garrod_ea07, 1 - Vasyunin&Herbst13, 2 - Minissale&Dulieu
 AGR                   = 1.0000E-04 ; Grain size, cm
 DRHO                  = 3.0000E+00 ; Grain density, g*cm-3
 DUST2GAS              = 1.0000E-02 ; Dust-to-gas mass ratio
@@ -71,29 +71,6 @@ TIMESTEPS             = 100        ; Amount of time moments in output
 TSTART                = 1.0000E-12 ; Time of the first output
 TEND                  = 1.1420E-04 ; Time of the last output
 
-N_DET_SPEC            = 25         ; # of species for detailed study
-H2O
-H2
-OH
-H2O2
-O2
-bO
-bO*
-bO2
-bO3
-bO2*
-bO3*
-bH2
-bH
+N_DET_SPEC            = 2         ; # of species for detailed study
 bH2O
-bHO2
 bH2O2
-bH2*
-bH*
-bH2O*
-bHO2*
-bH2O2*
-bHO3
-bHO3*
-bOH
-bOH*

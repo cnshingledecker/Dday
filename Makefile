@@ -8,10 +8,10 @@ source= mod_calculate_rates.f90 mod_global_functions.f90 mod_global_variables.f9
 #flowFLAG = -check underflow -check overflow
 
 # Optimierung:
-optFLAG = -Ofast  -march=native
+#optFLAG = -Ofast  -march=native
 
 # Memory debugging
-#debugFLAG = -g -pg -Wall -traceback -Wunderflow -Woverflow
+debugFLAG = -pg -Wall -traceback -Wunderflow -Woverflow
 
 FLAGS = $(debugFLAG) $(optFLAG) $(formFLAG) $(flowFLAG)
 

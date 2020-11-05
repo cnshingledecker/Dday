@@ -13,16 +13,18 @@ CHARACTER*30 :: abform, csvform
 CHARACTER*10 :: species
 CHARACTER*40 :: keycomment
 DOUBLE PRECISION :: abundance
+LOGICAL :: existsAb
+LOGICAL :: existsCsv
 
 PRINT*, "SAVE_RESULTS: Saving results..."
 
-CALL SYSTEM("rm -rf ab")
-CALL SYSTEM("rm -rf csv")
-CALL SYSTEM("mkdir ab")
-CALL SYSTEM("mkdir csv")
-CALL SYSTEM("rm final_gas_abundances.out")
-CALL SYSTEM("rm final_surface_abundances.out")
-CALL SYSTEM("rm final_bulk_abundances.out")
+CALL SYSTEM("rmdir ab 2>nul")
+CALL SYSTEM("rmdir csv 2>nul")
+CALL SYSTEM("md ab")
+CALL SYSTEM("md csv")
+CALL SYSTEM("del final_gas_abundances.out")
+CALL SYSTEM("del final_surface_abundances.out")
+CALL SYSTEM("del final_bulk_abundances.out")
 
 1004 FORMAT(a10, 14x, e14.12, 1x, a40)
 1957 FORMAT(2E10.3)
@@ -33,8 +35,16 @@ keycomment = ";"
 DO i=1,nspecies
   abfile  = TRIM(s(i)%name)//".ab"
   csvfile = TRIM(s(i)%name)//".csv"
-  OPEN ( UNIT=20, FILE=abfile,STATUS='unknown',ACCESS='append' )
-  OPEN ( UNIT=30, FILE=csvfile,STATUS='unknown',ACCESS='append' )
+
+  INQUIRE(FILE=abfile, EXIST=existsAb)
+  INQUIRE(FILE=csvfile, EXIST=existsCsv)
+  IF (existsAb .EQV. .TRUE.) THEN
+    OPEN (UNIT=20, FILE=abfile,STATUS='unknown',ACCESS='append')
+  ENDIF
+  IF (existsCsv .EQV. .TRUE.) THEN
+    OPEN (UNIT=30, FILE=csvfile,STATUS='unknown',ACCESS='append')
+  ENDIF
+
   OPEN ( UNIT=40, FILE="final_gas_abundances.out",STATUS='unknown',ACCESS='append' )
   OPEN ( UNIT=50, FILE="final_surface_abundances.out",STATUS='unknown',ACCESS='append' )
   OPEN ( UNIT=60, FILE="final_bulk_abundances.out",STATUS='unknown',ACCESS='append' )
@@ -73,8 +83,8 @@ DO i=1,nspecies
   CLOSE (60)
 ENDDO
 
-CALL SYSTEM("mv *.ab ab/")
-CALL SYSTEM("mv *.csv csv/")
+CALL SYSTEM("MOVE *.ab ab/")
+CALL SYSTEM("MOVE *.csv csv/")
 
 PRINT*, "SAVE_RESULTS: Done"
 
