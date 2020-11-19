@@ -55,6 +55,8 @@ DO i=1,nspecies
     ELSE
       WRITE(40,1004) s(i)%name,s(i)%abundance_out(j)/gdens*ddens, keycomment
     ENDIF
+
+
   ELSE
     DO j=1,timesteps
 !      abundance = s(i)%abundance_out(j)/s(species_idx('bH2O      '))%abundance_out(j)
@@ -63,6 +65,9 @@ DO i=1,nspecies
       IF (abundance .LT. 1.0e-35) abundance = 0.0E0
       WRITE(20,1957) timesteps_out(j),abundance
       WRITE(30,1958) timesteps_out(j),",",abundance
+
+      WRITE(70,1957) timesteps_out(j),(s(species_idx('gO2       '))%abundance_out(j) + s(species_idx('bO2       '))%abundance_out(j))
+      WRITE(80,1958) timesteps_out(j),",",(s(species_idx('gO2       '))%abundance_out(j) + s(species_idx('bO2       '))%abundance_out(j))
     ENDDO
   ENDIF
 
@@ -73,10 +78,38 @@ DO i=1,nspecies
   CLOSE (60)
 ENDDO
 
+IF ( MODEL_EXPERIMENT.EQ.1) THEN
+  OPEN ( UNIT=70, FILE="total_ice_O2.ab",STATUS='unknown',ACCESS='append' )
+  OPEN ( UNIT=80, FILE="total_ice_O2.csv",STATUS='unknown',ACCESS='append' )
+  OPEN ( UNIT=90, FILE="total_ice_O3.ab",STATUS='unknown',ACCESS='append' )
+  OPEN ( UNIT=100, FILE="total_ice_O3.csv",STATUS='unknown',ACCESS='append' )
+  OPEN ( UNIT=110, FILE="total_ice_O.ab",STATUS='unknown',ACCESS='append' )
+  OPEN ( UNIT=120, FILE="total_ice_O.csv",STATUS='unknown',ACCESS='append' )
+  DO j=1,timesteps
+      WRITE(70,1957) timesteps_out(j),(s(species_idx('gO2       '))%abundance_out(j) + s(species_idx('bO2       '))%abundance_out(j))
+      WRITE(80,1958) timesteps_out(j),",",(s(species_idx('gO2       '))%abundance_out(j) + s(species_idx('bO2       '))%abundance_out(j))
+      WRITE(90,1957) timesteps_out(j),(s(species_idx('gO3       '))%abundance_out(j) + s(species_idx('bO3       '))%abundance_out(j))
+      WRITE(100,1958) timesteps_out(j),",",(s(species_idx('gO3       '))%abundance_out(j) + s(species_idx('bO3       '))%abundance_out(j))
+      WRITE(110,1957) timesteps_out(j),(s(species_idx('gO        '))%abundance_out(j) + s(species_idx('bO        '))%abundance_out(j))
+      WRITE(120,1958) timesteps_out(j),",",(s(species_idx('gO        '))%abundance_out(j) + s(species_idx('bO        '))%abundance_out(j))
+  ENDDO
+  CLOSE (70)
+  CLOSE (80)
+  CLOSE (90)
+  CLOSE (100)
+  CLOSE (110)
+  CLOSE (120)
+ENDIF
+
+
+CALL SYSTEM("rm -rf ab")
+CALL SYSTEM("rm -rf csv")
+CALL SYSTEM("mkdir ab")
+CALL SYSTEM("mkdir csv")
 CALL SYSTEM("mv *.ab ab/")
 CALL SYSTEM("mv *.csv csv/")
 
-PRINT*, "SAVE_RESULTS: Done"
+PRINT*, "SAVE_RESULTS: Done!"
 
 END SUBROUTINE save_results_shingledecker
 

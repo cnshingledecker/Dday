@@ -16,14 +16,18 @@ OPEN(newunit=myunit,file='rd_eff.txt')
 CALL read_model_setup
 CALL read_rate06database
 
-nsites = sitedens*2.0d0*pi*agr**2.0d0
+IF (MODEL_EXPERIMENT.EQ.0) THEN
+  nsites = sitedens*2.0d0*pi*agr**2.0d0
+ELSE
+  nsites = sitedens*1.0e-8 ! number of sites on 1um^2
+ENDIF
 
 ALLOCATE (reaction_importance(n_det_spec,nreactions,timesteps))
 call save_Results_bulk
 
 print*, 'Sing_Mult           = ', sing_mult
 print*, 'is_disk_model       = ', is_disk_model
-print*, 'radiolysis          = ', radiolysis 
+print*, 'radiolysis          = ', radiolysis
 print*, 'chem_file           = ', chem_file(1:LEN_TRIM(chem_file))
 print*, 'n_s_ml              = ', n_s_ml
 print*, 'Density             = ', rho
@@ -61,18 +65,17 @@ DO i = 1, init_non_zero
 ENDDO
 
 CALL calc_rates(0.d0)
-PRINT *, "Here we are"
 
 SELECT CASE (eqtype)
-  CASE (1) 
+  CASE (1)
     CALL run_dvode_solver_sparse
-  CASE (2) 
+  CASE (2)
     CALL run_dvode_solver_sparse_mre
-  CASE (3) 
+  CASE (3)
     PRINT*, 'Moment equations are not implemented yet!'
   CASE (4)
       CALL run_dvode_solver
-  CASE DEFAULT 
+  CASE DEFAULT
     PRINT*, 'Unknown type of equations: ', eqtype
 END SELECT
 

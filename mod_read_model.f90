@@ -49,6 +49,7 @@ READ(1,1001)keyname, atol, keycomment
 READ(1,*)
 READ(1,1001)keyname, n_s_ml
 READ(1,*)
+READ(1,1001)keyname, EXTFAC, keycomment
 READ(1,1001)keyname, DVAL, keycomment
 READ(1,1001)keyname, ICE_THICK, keycomment
 READ(1,1001)keyname, RHO_ICE, keycomment

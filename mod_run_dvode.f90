@@ -28,7 +28,8 @@ DO i =1, init_non_zero
     s(species_idx(s_init(i)%name))%abundance = s_init(i)%abundance*gdens/ddens
   ELSE
     IF ( (s(species_idx(s_init(i)%name))%name(1:1) == 'g') .OR. (s(species_idx(s_init(i)%name))%name(1:1) == 'b') ) THEN
-      s(species_idx(s_init(i)%name))%abundance = s_init(i)%abundance*RHO_ICE*1.0e-12 ! 1 um^3 in cm^3
+      s(species_idx(s_init(i)%name))%abundance = s_init(i)%abundance*RHO_ICE*(1.0e-8*ICE_THICK) ! equivalent to an ice 1μm x 1μm x ICE_THICK/1e-4 μm
+!      s(species_idx(s_init(i)%name))%abundance = s_init(i)%abundance*RHO_ICE*1.0e-12 ! 1 um^3 in cm^3
     ElSE
       s(species_idx(s_init(i)%name))%abundance = s_init(i)%abundance*gdens/ddens
     ENDIF
@@ -41,7 +42,6 @@ DO i =1, init_non_zero
   ! Question: why not also add 'b' species? - CNS
   IF (s(species_idx(s_init(i)%name))%name(1:4) == 'bH2O') initial_water = s(species_idx(s_init(i)%name))%abundance
 ENDDO
-
 
 nml = aint(nml/nsites)
 nml_old = -1
@@ -58,7 +58,6 @@ ALLOCATE(y(nspecies))
 y(:) = 0.0d0
 y(1:nspecies) = s(1:nspecies)%abundance
 
-
 OPTIONS = SET_OPTS(MXSTEP=500000, RELERR=RTOL, ABSERR=ATOL, METHOD_FLAG=22)
 
 CALL open_analytics_files
@@ -70,7 +69,6 @@ DO i = 1, timesteps
 
   ! Do chemistry this timestep
   CALL DVODE_F90(re,nspecies,Y,tt,tnext,ITASK,ISTATE,OPTIONS)
-  PRINT *, "Here we are in run_dvode_solver"
 
   ! Save results
   CALL save_analytics(nspecies, Y, tt, i)
@@ -215,6 +213,7 @@ SUBROUTINE re(neq, t, y, ydot)
 INTEGER, INTENT (IN)     :: neq
 INTEGER                  :: i, j, k, nml_int
 REAL(wp)                 :: rr, transit, cov, diff_s2m, diff_m2s, diff_m2s_tot, tot_diff, dtran_fd, dtran_sr, diff_s2m_tot, dtran_tmp, d3, d4, dtran_chb
+REAL(wp)                 :: dtran_freeze,dtran_desorb,dtran_chemdes
 REAL(wp)                 :: cd_p1, cd_p2, cd_p3, cd_p4, cd_p5, effmass, non_h2o_surf_frac
 REAL(wp)                 :: total_abundance, wrt
 REAL(wp), INTENT (IN) :: t
@@ -222,7 +221,7 @@ REAL(wp), DIMENSION(neq), INTENT (IN) :: y
 REAL(wp), DIMENSION(neq), INTENT (OUT) :: ydot
 character*10 :: sss
 logical :: file_exists
-REAL(wp) :: f1,f2,tot_surf_ab,tot_bulk_ab
+REAL(wp) :: f1,f2,tot_surf_ab,tot_bulk_ab,total_s,temp_element
 
 IF (delta_rho==1 .OR. delta_t==1) CALL calc_rates(t)
 1001 FORMAT(1X,I4,1X,I2,1X,2(A10),10X,5(A10),1pE14.5,1X,1pE14.5,1x,1pE14.5)
@@ -237,12 +236,20 @@ cov  = sum(y(first_surf_spec:first_surf_spec+n_surf_spec-1))/nsites !(nsites*n_s
 non_h2o_surf_frac = 0.0d0
 non_h2o_surf_frac = 1.0d0 - y(species_idx('gH2O      '))/(sum(y(first_surf_spec:first_surf_spec+n_surf_spec-1)) + 1.0d-99)
 
+! smol is the sum of the abundance of surface species
 smol = sum(y(first_surf_spec:first_surf_spec+n_surf_spec-1))
+
+
+! bmol is the sum of the abundance of bulk species
 bmol = sum(y(first_surf_spec+n_surf_spec:nspecies))
 
 dtran_fd = 0.0d0
 dtran_sr = 0.0d0
 dtran_chb = 0.0d0
+
+dtran_freeze = 0.0d0
+dtran_desorb = 0.0d0
+dtran_chemdes = 0.0d0
 
 ! Get the total abundance of bulk species
 tot_bulk_ab = 0.0
@@ -260,6 +267,10 @@ DO j = 1, nspecies
     tot_surf_ab = tot_surf_ab + y(j)
   ENDIF
 ENDDO
+
+! MODIFICATION: SET smol = tot_surf_ab and bmol = tot_bulk_ab
+smol = tot_surf_ab
+bmol = tot_bulk_ab
 
 
 DO j = 1, nreactions
@@ -472,9 +483,31 @@ DO j = 1, nreactions
 
   !DIAGNOSTIC TERMS!
 
-    if (r(j)%rtype==11) dtran_fd = dtran_fd + rr
-    if (r(j)%rtype==12) dtran_fd = dtran_fd - rr
-    if (r(j)%rtype==13 .or. (r(j)%rtype==2 .and. r(j)%r1(1:1)=='g') .or. (r(j)%rtype==3 .and. r(j)%r1(1:1)=='g')) then
+    ! Collect freeze rate
+    IF (r(j)%rtype==11) THEN
+      dtran_fd = dtran_fd + rr
+      dtran_freeze = dtran_freeze + rr
+    ENDIF
+
+    ! Collect desorb rate
+    IF (r(j)%rtype==12) THEN
+      dtran_fd = dtran_fd - rr
+      dtran_desorb = dtran_desorb + rr
+    ENDIF
+
+    ! Collect chemi-desorption rate
+    IF ((r(j)%rtype==13 .or. r(j)%rtype==15).AND.(r(j)%p1(1:1).NE.'g')) THEN
+        dtran_chemdes = dtran_chemdes + rr
+    ENDIF
+
+    if ( &
+        r(j)%rtype==13 .or. &
+        r(j)%rtype==15 .OR. &
+        (r(j)%rtype==2 .and. r(j)%r1(1:1)=='g') .or. &
+        (r(j)%rtype==3 .and.  r(j)%r1(1:1)=='g') .OR. &
+        (r(j)%rtype==17 .and.  r(j)%r1(1:1)=='g') .OR. &
+        (r(j)%rtype==18 .and.  r(j)%r1(1:1)=='g') &
+        ) then
         if (r(j)%r1(1:1)=='g') dtran_sr = dtran_sr - rr
         if (r(j)%r2(1:1)=='g') dtran_sr = dtran_sr - rr
         if (r(j)%p1(1:1)=='g') dtran_sr = dtran_sr + rr
@@ -509,10 +542,12 @@ DO j = 1, nreactions
          ) ) pause
 
 ENDDO
+
 !Calculating dtran - total transition rate between bulk and surface due to chemical processes
 dtran = 0.0d0 !dtran === (dn_s/dt)0
 
 DO j = first_surf_spec, first_surf_spec + n_surf_spec - 1
+!    PRINT *, s(j)%name," at j=",j
     dtran = dtran + ydot(j)
 ENDDO
 
@@ -524,25 +559,42 @@ enddo
 transit = 0.0d0
 dtran_tmp = 0.0d0
 DO j = first_surf_spec, first_surf_spec + n_surf_spec - 1
-    IF (dtran>=0.0d0) THEN
-        IF (smol>0.0d0) transit = dtran*y(j)/(nsites*n_s_ml)
-        if (tdust>150.0d0 .AND. cov<5.0d-3) transit = 0.0d0
-        ydot(j) = ydot(j) - transit
-        ydot(j+n_surf_spec) = ydot(j+n_surf_spec) + transit
-        dtran_tmp = dtran_tmp + transit
-    ELSE
-        IF (bmol>0.0d0) transit = dtran*dmin1(bmol,smol)/smol*y(j+n_surf_spec)/bmol !y(nspecies+3)
-        if (tdust>150.0d0 .AND. cov<5.0d-3) transit = 0.0d0
-        ydot(j) = ydot(j) - transit
-        ydot(j+n_surf_spec) = ydot(j+n_surf_spec) + transit
-        dtran_tmp = dtran_tmp + transit
+  ! Loop over all surface species
+  IF (dtran>=0.0d0) THEN
+    ! If the change in the number of surface species increases, then it may be
+    !necessary to move some to bulk
+    IF (smol>0.0d0) transit = dtran*y(j)/(nsites*n_s_ml)
+    if (tdust>150.0d0 .AND. cov<5.0d-3) transit = 0.0d0
+    ydot(j) = ydot(j) - transit
+    ! The assumption here is that the species at j is the surface
+    ! counterpart of the species at j+n_surf_spec
+    ydot(j+n_surf_spec) = ydot(j+n_surf_spec) + transit
+    IF ( s(j)%name(2:LEN_TRIM(s(j)%name)).NE.s(j+n_surf_spec)%name(2:LEN_TRIM(s(j)%name)) ) THEN
+      PRINT *, s(j)%name(2:LEN_TRIM(s(j)%name)), " ≠ ",s(j+n_surf_spec)%name(2:LEN_TRIM(s(j)%name))
+      CALL EXIT()
     ENDIF
+    dtran_tmp = dtran_tmp + transit
+  ELSE
+    ! If the change in the number of surface species is negative, then it may be
+    ! necessary to move some species from the bulk to the surface
+    IF (bmol>0.0d0) transit = dtran*dmin1(bmol,smol)/smol*y(j+n_surf_spec)/bmol !y(nspecies+3)
+    if (tdust>150.0d0 .AND. cov<5.0d-3) transit = 0.0d0
+    ydot(j) = ydot(j) - transit
+    ydot(j+n_surf_spec) = ydot(j+n_surf_spec) + transit
+    dtran_tmp = dtran_tmp + transit
+  ENDIF
 ENDDO
 
+
+! d3 is supposedly the total of the rate of change in bulk species, after
+! accounting for mantle growth
 d3 = sum(ydot(first_surf_spec+n_surf_spec:first_surf_spec+n_surf_spec+n_surf_spec-1))
+
 !Building transition terms due to bulk diffusion (swapping):
 diff_m2s_tot = 0.0d0
 diff_s2m_tot = 0.0d0
+
+! Loop over all (and only) bulk species
 DO i = first_surf_spec + n_surf_spec, first_surf_spec + n_surf_spec + n_surf_spec - 1 !Loop through bulk species
     diff_m2s = 0.0d0
     IF (bmol>0.0d0) diff_m2s = dmin1(1.0d0, smol/bmol)*y(i)*s(i)%bdiffrate * bulk_diff_slowdown
@@ -551,6 +603,7 @@ DO i = first_surf_spec + n_surf_spec, first_surf_spec + n_surf_spec + n_surf_spe
     diff_m2s_tot = diff_m2s_tot + diff_m2s
 ENDDO
 
+! Loop over all (and only) bulk species, again
 DO i = first_surf_spec + n_surf_spec, first_surf_spec + n_surf_spec + n_surf_spec - 1 !Second loop through bulk species
     diff_s2m = 0.0d0
     IF (smol>0.0d0) diff_s2m = y(i-n_surf_spec)/smol*diff_m2s_tot*cov
@@ -559,6 +612,7 @@ DO i = first_surf_spec + n_surf_spec, first_surf_spec + n_surf_spec + n_surf_spe
     diff_s2m_tot = diff_s2m_tot + diff_s2m
 ENDDO
 d4 = sum(ydot(first_surf_spec+n_surf_spec:first_surf_spec+n_surf_spec+n_surf_spec-1))
+
 
 nml = aint(sum(y(first_surf_spec:nspecies))/nsites)
 
@@ -572,42 +626,69 @@ IF (nml/=nml_old .AND. t/=told) THEN
 ENDIF
 nml_old = nml
 
+! If modeling an experiment and nml < 1, then end: not enough ice to study
+IF ( (MODEL_EXPERIMENT.EQ.1).AND.(nml.LT.1) ) THEN
+  PRINT *, "STOPPING SIMULATION! Number of Monolayers Less Than 1"
+  CALL save_results_shingledecker
+  CALL EXIT()
+ENDIF
+
 if (t/=told) then
   IF ( MODEL_EXPERIMENT .EQ. 0 ) THEN
     write(*,'(a11,1pe12.4,a5,1pe12.4,a5,1pe12.4)')'t (yrs.) = ',t/3.155e7 !,' d= ',gdens,' t = ',get_parameter(t/year, n_t_steps, time_t_array, t_array)
     write(*,*) "Nml=",sum(y(first_surf_spec:nspecies))/nsites
+!    write(*,*)'time, absolute coverage, alpha (fractional coverage), absolute coverage as sum(y(first_surf_spec:nspecies)), bulk abs. cov. by derivative, bult abs. cov. as sum of abundances'
+!    write(*,'(7(1pe15.7))')t/3.155d7, dtran, diff_m2s_tot, sum(y(first_surf_spec:first_surf_spec+n_surf_spec-1)), dtran_fd, sum(y(first_surf_spec+n_surf_spec:first_surf_spec+n_surf_spec+n_surf_spec-1)), cov
+!    write(*,*)"t/3.155d7, dtran, dtran_tmp, -diff_s2m_tot, diff_m2s_tot, dtran-dtran_tmp-diff_s2m_tot+diff_m2s_tot, d3, d4, dtran_chb"
+!    write(*,'(10(1pe12.4,2x))')t/3.155d7, dtran, dtran_tmp, -diff_s2m_tot, diff_m2s_tot, dtran-dtran_tmp-diff_s2m_tot+diff_m2s_tot, d3, d4, dtran_chb
+    PRINT *, "smol=",smol," and tot_surf_ab=",tot_surf_ab
+    PRINT *, "bmol=",bmol," and tot_bulk_ab=",tot_bulk_ab
+    IF ( ABS(smol-tot_surf_ab) .GT. EPSILON(smol) ) PRINT *, "!!!!!ERROR: bmol≠tot_bulk_ab, diff=",ABS(smol-tot_surf_ab)
+    IF ( ABS(bmol-tot_bulk_ab) .GT. EPSILON(bmol) ) PRINT *, "!!!!!ERROR: bmol≠tot_bulk_ab, diff=",ABS(bmol-tot_bulk_ab)
+    PRINT *, "dtran_freeze=",dtran_freeze
+    PRINT *, "dtran_desorb=",dtran_desorb
+    PRINT *, "dtran_chemdes=",dtran_chemdes
+    PRINT *, "dtran=",dtran
+    PRINT *, "diff_s2m_tot=",diff_s2m_tot
+    PRINT *, "diff_m2s_tot=",diff_m2s_tot
+    write(*,*) "**********************************"
   ELSE
     1010 FORMAT(1X,A9,1X,ES12.4,A21,F12.4,A21)
 !    write(*,'(a22,1pES12.4)') 'Fluence (ions/cm^2) = ',t*PHI_EXP
+    write(*,*) "Nml=",sum(y(first_surf_spec:nspecies))/nsites
     write(*,'(a11,1pES12.4)') 'Time (s) = ',t
 !    wrt = y(species_idx('bH2O      '))
-    wrt = (y(species_idx('gH2O      ')) + y(species_idx('bH2O      ')))
+!    wrt = (y(species_idx('gH2O      ')) + y(species_idx('bH2O      ')))
+    wrt = (y(species_idx('gO2       ')) + y(species_idx('bO2       ')))
 !     wrt = 1.0e20*1.0e-12
 !    write(*,1010) "n(SO)   =",(y(species_idx('gSO       ')) + y(species_idx('bSO       ')))/1.0e20
 !    write(*,1010) "n(SO2)  =",(y(species_idx('gSO2      ')) + y(species_idx('bSO2      ')))/1.0e20
 !    write(*,1010) "n(SO3)  =",(y(species_idx('gSO3      ')) + y(species_idx('bSO3      ')))/1.0e20
 !    write(*,1010) "n(S2O)  =",(y(species_idx('gS2O      ')) + y(species_idx('bS2O      ')))/1.0e20
     WRITE(*,*) "-----GRAIN-----"
-    write(*,*)    "Current water = ", (100.0*wrt)/initial_water," % of initial"
-    write(*,1010) "n(H2O)grain  =",100*(y(species_idx('gH2O      ')) + y(species_idx('bH2O      ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bH2O      '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
-    write(*,1010) "n(H2)grain   =",100*(y(species_idx('gH2       ')) + y(species_idx('bH2       ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bH2       '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
-    write(*,1010) "n(O2)grain   =",100*(y(species_idx('gO2       ')) + y(species_idx('bO2       ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bO2       '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
-    write(*,1010) "n(O3)grain   =",100*(y(species_idx('gO3       ')) + y(species_idx('bO3       ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bO3       '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
-    write(*,1010) "n(H2O2)grain =",100*(y(species_idx('gH2O2     ')) + y(species_idx('bH2O2     ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bH2O2     '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
-    write(*,1010) "n(H)grain    =",100*(y(species_idx('gH        ')) + y(species_idx('bH        ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bH        '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
-    write(*,1010) "n(O)grain    =",100*(y(species_idx('gO        ')) + y(species_idx('bO        ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bO        '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
-    write(*,1010) "n(OH)grain   =",100*(y(species_idx('gOH       ')) + y(species_idx('bOH       ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bOH       '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
-    write(*,1010) "n(HO2)grain  =",100*(y(species_idx('gHO2      ')) + y(species_idx('bHO2      ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bHO2      '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
+!    write(*,*)    "Current water = ", (100.0*wrt)/initial_water," % of initial"
+!    write(*,1010) "n(H2O)grain  =",100*(y(species_idx('gH2O      ')) + y(species_idx('bH2O      ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bH2O      '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
+!    write(*,1010) "n(H2)grain   =",100*(y(species_idx('gH2       ')) + y(species_idx('bH2       ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bH2       '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
+    write(*,1010) "n(O2)grain   =",100*(y(species_idx('gO2       ')) + y(species_idx('bO2       ')))/wrt,"% wrt. total O2 : ",100.0*(y(species_idx('bO2       '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
+!    write(*,1010) "n(O2)grain   =",100*(y(species_idx('gO2       ')) + y(species_idx('bO2       ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bO2       '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
+    write(*,1010) "n(O3)grain   =",100*(y(species_idx('gO3       ')) + y(species_idx('bO3       ')))/wrt,"% wrt. total O2 : ",100.0*(y(species_idx('bO3       '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
+!    write(*,1010) "n(O3)grain   =",100*(y(species_idx('gO3       ')) + y(species_idx('bO3       ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bO3       '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
+!    write(*,1010) "n(H2O2)grain =",100*(y(species_idx('gH2O2     ')) + y(species_idx('bH2O2     ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bH2O2     '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
+!    write(*,1010) "n(H)grain    =",100*(y(species_idx('gH        ')) + y(species_idx('bH        ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bH        '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
+    write(*,1010) "n(O)grain    =",100*(y(species_idx('gO        ')) + y(species_idx('bO        ')))/wrt,"% wrt. total O2 : ",100.0*(y(species_idx('bO        '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
+!    write(*,1010) "n(O)grain    =",100*(y(species_idx('gO        ')) + y(species_idx('bO        ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bO        '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
+!    write(*,1010) "n(OH)grain   =",100*(y(species_idx('gOH       ')) + y(species_idx('bOH       ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bOH       '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
+!    write(*,1010) "n(HO2)grain  =",100*(y(species_idx('gHO2      ')) + y(species_idx('bHO2      ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bHO2      '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
 !    write(*,1010) "n(HO3)grain  =",100*(y(species_idx('gHO3      ')) + y(species_idx('bHO3      ')))/wrt
     WRITE(*,*) "-----GAS-----"
-    write(*,1010) "n(H)gas      =",100*y(species_idx('H         '))/wrt
-    write(*,1010) "n(H2)gas     =",100*y(species_idx('H2        '))/wrt
+!    write(*,1010) "n(H)gas      =",100*y(species_idx('H         '))/wrt
+!    write(*,1010) "n(H2)gas     =",100*y(species_idx('H2        '))/wrt
     write(*,1010) "n(O)gas      =",100*y(species_idx('O         '))/wrt
     write(*,1010) "n(O2)gas     =",100*y(species_idx('O2        '))/wrt
     write(*,1010) "n(O3)gas     =",100*y(species_idx('O3        '))/wrt
-    write(*,1010) "n(OH)gas     =",100*y(species_idx('OH        '))/wrt
-    write(*,1010) "n(H2O)gas    =",100*y(species_idx('H2O       '))/wrt
-    write(*,1010) "n(HO2)gas    =",100*y(species_idx('HO2       '))/wrt
+!    write(*,1010) "n(OH)gas     =",100*y(species_idx('OH        '))/wrt
+!    write(*,1010) "n(H2O)gas    =",100*y(species_idx('H2O       '))/wrt
+!    write(*,1010) "n(HO2)gas    =",100*y(species_idx('HO2       '))/wrt
 !    write(*,1010) "n(HO3)gas    =", y(species_idx('HO3       '))/wrt
 !    write(*,1010) "n(HS)   =",(y(species_idx('gHS       ')) + y(species_idx('bHS       ')))/1.0e20
 !    write(*,1010) "n(H2S)  =",(y(species_idx('gH2S      ')) + y(species_idx('bH2S      ')))/1.0e20

@@ -578,9 +578,9 @@ DO i = 1, nreactions
             r(i)%rate = suprathermal*radiolysis*r(i)%alpha*(r(i)%gamma/1.0d2)*PHI_EXP*Se_EXP
 !            r(i)%rate = suprathermal*radiolysis*r(i)%alpha*(r(i)%gamma/1.0d2)*PHI_EXP*Se_EXP*(1.0)*RHO_ICE*(1.0/0.7071067)
             IF ( r(i)%rate .GT. 0.0d0 ) THEN
-              PRINT *, r(i)%r1," + IONRAD -> ",r(i)%p1," + ",r(i)%p2," + ",r(i)%p3
-              PRINT *, "k_rad=",r(i)%rate
-              PRINT *, "************************"
+!             PRINT *, r(i)%r1," + IONRAD -> ",r(i)%p1," + ",r(i)%p2," + ",r(i)%p3
+!             PRINT *, "k_rad=",r(i)%rate
+!             PRINT *, "************************"
             ENDIF
           ENDIF
         CASE (18) ! Quenching of suprathermal species
@@ -592,11 +592,20 @@ DO i = 1, nreactions
           ! beta  -> σ, the photoionization cross section
           ! gamma -> δ, the fitting value
           ! PHI_EXP -> ϕ, the photon flux
+          ! EXTFAC -> accounts for extinction of photons in the bulk
           ! k = fbr*σ*ϕ*δ
           IF ( FIXED_DVAL .EQ. 1 ) THEN
-            r(i)%rate = PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
+            IF (s(r(i)%ir1)%name(1:1) =='b') THEN
+              r(i)%rate = EXTFAC*PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
+            ELSE
+              r(i)%rate = PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
+            ENDIF
           ElSE
-            r(i)%rate = PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
+            IF (s(r(i)%ir1)%name(1:1) =='b') THEN
+              r(i)%rate = EXTFAC*PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
+            ELSE
+              r(i)%rate = PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
+            ENDIF
           ENDIF
         CASE(20) ! Photoexcitation
           ! alpha -> branching fractiona
@@ -605,9 +614,17 @@ DO i = 1, nreactions
           ! PHI_EXP -> ϕ, the photon flux
           ! k = fbr*σ*ϕ*δ
           IF ( FIXED_DVAL .EQ. 1 ) THEN
-            r(i)%rate = PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
+            IF (s(r(i)%ir1)%name(1:1) =='b') THEN
+              r(i)%rate = EXTFAC*PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
+            ELSE
+              r(i)%rate = PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
+            ENDIF
           ElSE
-            r(i)%rate = PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
+            IF (s(r(i)%ir1)%name(1:1) =='b') THEN
+              r(i)%rate = EXTFAC*PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
+            ELSE
+              r(i)%rate = PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
+            ENDIF
           ENDIF
         CASE DEFAULT
         END SELECT

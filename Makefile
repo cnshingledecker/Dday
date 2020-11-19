@@ -8,7 +8,7 @@ source= mod_calculate_rates.f90 mod_global_functions.f90 mod_global_variables.f9
 #flowFLAG = -check underflow -check overflow
 
 # Optimierung:
-optFLAG = -O2  -march=native
+optFLAG = -Ofast  -march=native -ffree-line-length-512 
 
 # Memory debugging
 #debugFLAG = -g -pg -Wall -traceback -Wunderflow -Woverflow
@@ -16,7 +16,7 @@ optFLAG = -O2  -march=native
 FLAGS = $(debugFLAG) $(optFLAG) $(formFLAG) $(flowFLAG)
 
 monaco: $(source)
-	@ifort $(FLAGS) $(source) -o $@
+	@gfortran $(FLAGS) $(source) -o $@
 	@echo make complete
 
 clean:

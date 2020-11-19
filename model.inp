@@ -18,9 +18,9 @@ FAST_BULK             = 1          ; 1 - Reactive bulk species react non-diffusi
 FAST_ATOMS            = 0          ; 1 - Reactive bulk species react non-diffusively; 0 - not
 PHOTOEXC              = 1          ; 1 - Detailed photoexcitation/dissociation; 0 - off
 PHOTOION              = 1          ; 1 - Detailed photoionization/dissociation to suprathermal products; 0 - off
-FIXED_DVAL            = 0          ; 1 - Fixed δ value, used in detailed photo rate coefficients
+FIXED_DVAL            = 1          ; 1 - Fixed δ value, used in detailed photo rate coefficients
 FIXED_NU              = 1          ; 1 - Fixed ν value, the "trial frequency" used in fast bulk rates
-DISABLE_DESORB        = 1          ; 1 - No desorption. Used when modeling some experiments. NB: must also set DES_REACTIVE=0
+DISABLE_DESORB        = 0          ; 1 - No desorption. Used when modeling some experiments. NB: must also set DES_REACTIVE=0
 
 CHEM_FILE             = network.dat
 RTOL                  = 1.0000E-16 ; Relative tolerance
@@ -28,9 +28,10 @@ ATOL                  = 1.0000E-16 ; Absolute tolerance
 
 N_S_ML                = 4.0000E+00 ; Number of `surface` monolayers (to mimic model 4-4 in VH13)
 
+EXTFAC                = 1.0000E-01 ; A factor used in calculating bulk photo rates accounting for extinction 
 DVAL                  = 1.0000E-01 ; δ value representing difference between gas and solid cross-sections
 ICE_THICK             = 1.0000E-04 ; Thickness of ice, cm (MODEL_EXPERIMENT=1 only!)
-RHO_ICE               = 3.1000E+22 ; Density of ice, cm-3 (MODEL_EXPERIMENT=1 only!)
+RHO_ICE               = 5.7000E+22 ; Density of ice, cm-3 (MODEL_EXPERIMENT=1 only!)
 RHO                   = 2.0000E+02 ; Density of gas, cm-3
 T                     = 1.0000E+01 ; Temperature, K
 TDUST                 = 1.0000E+01 ; Dust temperature, K
@@ -46,7 +47,7 @@ DES_T                 = 1          ; Thermal desorption 1-on/0-off
 DES_CRP               = 0          ; Cosmic ray desorption 1-on/0-off
 DES_PHOTON            = 0          ; Photodesorption 1-on/0-off
 PH_YIELD              = 1.0000E-03 ; Photodesorption yield
-DES_REACTIVE          = 0.0000E-01 ; Efficiency of the reactive desorption
+DES_REACTIVE          = 1.0000E-02 ; Efficiency of the reactive desorption
 DES_REACTIVE_TYPE     = 0          ; Type of RE: 0 - Garrod_ea07, 1 - Vasyunin&Herbst13, 2 - Minissale&Dulieu
 AGR                   = 1.0000E-04 ; Grain size, cm
 DRHO                  = 3.0000E+00 ; Grain density, g*cm-3
@@ -67,7 +68,7 @@ EFFSURFMASS           = 1.2000E+02 ; effective mass of surface molecules for RD 
 
 INIT_NON_ZERO         = 1          ; 0 - no initial abundances, 1 - read from init* files
 
-TIMESTEPS             = 100        ; Amount of time moments in output
+TIMESTEPS             = 1000        ; Amount of time moments in output
 TSTART                = 1.0000E-12 ; Time of the first output
 TEND                  = 1.1420E-04 ; Time of the last output
 

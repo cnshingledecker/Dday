@@ -344,13 +344,13 @@ IF ( suprathermal .EQ. 1 ) THEN
               s_r_counter = s_r_counter + 1
               r(nreactions+s_r_counter)%idx = nreactions+s_r_counter
 
-              PRINT *, "nreactions=",nreactions
-              PRINT *, "s_r_counter=",s_r_counter
-              PRINT *, "n_surf_react=",n_surf_react
-              PRINT *, "nreactions+s_r_counter=",nreactions+s_r_counter
-              PRINT *, "size(r)=",size(r,1)
-              PRINT *, r(i)%r1," + ",r(i)%r2," -> ",r(i)%p1," + ",r(i)%p2," + ",r(i)%p3," + ",r(i)%p4
-              PRINT *, "************************"
+!              PRINT *, "nreactions=",nreactions
+!              PRINT *, "s_r_counter=",s_r_counter
+!              PRINT *, "n_surf_react=",n_surf_react
+!              PRINT *, "nreactions+s_r_counter=",nreactions+s_r_counter
+!              PRINT *, "size(r)=",size(r,1)
+!              PRINT *, r(i)%r1," + ",r(i)%r2," -> ",r(i)%p1," + ",r(i)%p2," + ",r(i)%p3," + ",r(i)%p4
+!              PRINT *, "************************"
 
 
               r(nreactions+s_r_counter)%r1 = r(i)%r1
@@ -623,13 +623,13 @@ IF ( suprathermal .EQ. 1 ) THEN
         IF ( r(i)%ip4 .NE. 0 ) prodatoms = prodatoms + s(r(i)%ip4)%natoms
         reactatoms = s(r(i)%ir1)%natoms
 
-        IF (ANY(r(i)%r2 .EQ. (/"QUENCH","CRPHOT","PHOTON","FREEZE","DESORB","IONRAD","G-","G0","CR","CRP","PHOION","PHOEXC"/)) .EQV. .FALSE.) THEN
+        IF (ANY(r(i)%r2 .EQ. (/"QUENCH","CRPHOT","PHOTON","FREEZE","DESORB","IONRAD","G-    ","G0    ","CR    ","CRP   ","PHOION","PHOEXC"/)) .EQV. .FALSE.) THEN
           reactatoms = reactatoms + s(r(i)%ir2)%natoms
         ENDIF
 
-        PRINT *, "Prodatoms=",prodatoms
-        PRINT *, "Reactatoms=",reactatoms
-        PRINT *, r(i)%ir1,r(i)%ir2,r(i)%ip1,r(i)%ip2,r(i)%ip3,r(i)%ip4
+        ! PRINT *, "Prodatoms=",prodatoms
+        ! PRINT *, "Reactatoms=",reactatoms
+        ! PRINT *, r(i)%ir1,r(i)%ir2,r(i)%ip1,r(i)%ip2,r(i)%ip3,r(i)%ip4
         IF ( prodatoms .NE. reactatoms ) THEN
           PRINT *, "Atoms not equal for reaction involving",r(i)%r1," + ",r(i)%r2
           CALL EXIT()
