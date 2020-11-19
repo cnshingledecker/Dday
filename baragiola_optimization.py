@@ -225,7 +225,7 @@ for d in range(0,10):
                 # now calculate RMSD from deviations and write 1 value into results file. if i write the deviation values inside the if statements can i still do a calculation with them outside the if statements?
                 rmsd = ((dev73**2 + dev75**2 + dev77**2 + dev78**2 + dev80**2 + dev81**2 + dev82**2 + dev84**2 + dev85**2 + dev87**2 + dev88**2 + dev90**2 + dev91**2 + dev93**2 + dev95**2 + dev96**2 + dev98**2 + dev100**2)/16)**0.5
                 # i can't tell if the code is obeying the dev = 0 between errors because no set came back as 0..?
-                results.write("O2-->2O delta value: "+str(dvald)+"\n O2-->2O* delta value: "+str(dvale)+"\n O2-->O2*, O3-->O2+O, and O3-->O3* delta value: "+str(dvalf)+"\n RMSD: "+str(rmsd)+"\n \n")
+                results.write("O2-->2O delta value: "+str(dvald)+"\nO2-->2O* delta value: "+str(dvale)+"\nO2-->O2*, O3-->O2+O, and O3-->O3* delta value: "+str(dvalf)+"\nRMSD: "+str(rmsd)+"\n \n")
                 # will it do two enters if i put two \n's like that or does it ignore the second one. also is it ok to put \n at the beginning of a quote like i did
 results.close()
 print("Done!")
