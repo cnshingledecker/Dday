@@ -5,14 +5,14 @@ import csv
 import numpy as np
 import itertools
 
-def isInt(val):
+def is_int(val):
     try:
         int(val)
         return True
     except ValueError:
         return False
 
-def isFloat(val):
+def is_float(val):
     try:
         float(val)
         return True
@@ -50,7 +50,7 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
         num_modified_fitting_factors += 1
         args_for_single_vector = []  # A vector to hold the set of arguments to be used to create the linspace for the fitting factors for a reaction
         for argument in row:
-            if isFloat(argument):
+            if is_float(argument):
                 args_for_single_vector.append(float(argument)) # Adds the arguments to the previously created vector (2 lines above)
             else:  # It is text (it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
                 reactions.append(argument)
@@ -74,10 +74,10 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
         line_as_list = line.split()  # Convert the DAT file line into an array
         # Need to find the first index in the line (as a list) where there is a delta value (it is the first number besides the first element of the list, hence why i (below) is set to 1)
         index_first_float_value_in_line = 1  # Skips the first value because it is an integer and would thus be counted as a float. 
-        while(index_first_float_value_in_line < len(line_as_list) and not(isFloat(line_as_list[index_first_float_value_in_line]))):
+        while(index_first_float_value_in_line < len(line_as_list) and not(is_float(line_as_list[index_first_float_value_in_line]))):
             index_first_float_value_in_line += 1
         possible_fitting_factor_index = line_as_list[len(line_as_list) - 1] # See below comment for the meaning of this variable
-        if(isInt(possible_fitting_factor_index)): # If the last value of the line is an integer, which means it is one of the reactions for which we are modifying the fitting factors
+        if(is_int(possible_fitting_factor_index)): # If the last value of the line is an integer, which means it is one of the reactions for which we are modifying the fitting factors
             fitting_factor_index = int(possible_fitting_factor_index)            
             new_fitting_factor_val = fitting_factor_combination[fitting_factor_index] # Get the correct fitting factor (where fitting_factor_index tells the computer which fitting factor to get)
             if(new_fitting_factor_val < 1.00):
@@ -90,9 +90,9 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     outfile.close()
     print("Running model...")
     os.system('./run.sh')
-    print("Finding RMSD...")
+    print("Finding RMSD...")  # RMSD is root-mean square deviation
 
-    # Beginning of rmsd generalization (possible replacement of previous code--lines 95-119 of baragiola_optimization_generalization.py)
+    num_experimental_data_points = 0
     with open('experimental_data/experimental_o3.csv') as csv_file: # Experimental data
         deviations = []
         csv_reader = csv.reader(csv_file, delimiter=',')
@@ -113,10 +113,11 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
             if allowed_lower_deviation < deviation < allowed_upper_deviation:
                 deviation = 0
             deviations.append(deviation)
+            num_experimental_data_points += 1
         sum = 0
         for value in deviations:
             sum += (value**2)
-        rmsd = (sum / 16)**0.5
+        rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
         output_string = "" # Create a string to hold the rmsd along with the delta value for each reaction set (the delta values combination)
         i = 0
         for reaction in reactions:  
@@ -124,6 +125,5 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
             i += 1
         output_string += "\nRMSD: " + str(rmsd) + "\n\n"
         results.write(output_string)
-        # End of rmsd generalization (possible replacement of previous code)
 results.close()
 print("Done!")
