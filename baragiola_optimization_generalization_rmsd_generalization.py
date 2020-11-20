@@ -63,7 +63,7 @@ for vector_args in all_vector_args:
     single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
     fitting_factors.append(single_vector_fitting_factors) 
 
-all_fitting_factor_combinations = itertools.product(*fitting_factors)    # Creates all possible combinations of delta values from the previously created lists (created in the 'for vector args in all_vector_args' for loop)
+all_fitting_factor_combinations = itertools.product(*fitting_factors)    # Creates all possible combinations of fitting factor values from the previously created lists (created in the 'for vector args in all_vector_args' for loop)
                                                                          #    Note that this creates an array of n arrays (where n is the product of the number of values for each list of fitting factors), and each of these 
                                                                          #    n arrays has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
 
@@ -72,9 +72,9 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     outfile = open("photo_processes_2.dat",'w')
     for line in infile:
         line_as_list = line.split()  # Convert the DAT file line into an array
-        # Need to find the first index in the line (as a list) where there is a delta value (it is the first number besides the first element of the list, hence why i (below) is set to 1)
+        # We need to find the first index in the line (as a list) where there is a fitting factor value (it is the first number besides the first element of the list, hence why i (below) is set to 1)
         index_first_float_value_in_line = 1  # Skips the first value because it is an integer and would thus be counted as a float. 
-        while(index_first_float_value_in_line < len(line_as_list) and not(is_float(line_as_list[index_first_float_value_in_line]))):
+        while(index_first_float_value_in_line < len(line_as_list) and not(is_float(line_as_list[index_first_float_value_in_line]))):  # Increments the index value until the first float value (fitting factor value) is found
             index_first_float_value_in_line += 1
         possible_fitting_factor_index = line_as_list[len(line_as_list) - 1] # See below comment for the meaning of this variable
         if(is_int(possible_fitting_factor_index)): # If the last value of the line is an integer, which means it is one of the reactions for which we are modifying the fitting factors
@@ -84,7 +84,7 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
                 # Note that in baragiola_optimization.py, new_fitting_factor_value was multiplied by 10 here; in this code, I commented out the line to produce the same results as baragiola_optimization.py--I'm not sure why
                 new_fitting_factor_val = round(new_fitting_factor_val, 2)
             new_fitting_factor_val = np.format_float_scientific(new_fitting_factor_val, precision=2,unique=False)  # Convert the new fitting factor value into a string of a number in scientific notation rounded to 2 places after the decimal point
-            line = line[0:106] + new_fitting_factor_val + line[114:len(line)]
+            line = line[0:106] + new_fitting_factor_val + line[114:len(line)] # In the line, replace the old fitting factor with the new value
         outfile.write(line)
     infile.close()
     outfile.close()
@@ -96,18 +96,14 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     with open('experimental_data/experimental_o3.csv') as csv_file: # Experimental data
         deviations = []
         csv_reader = csv.reader(csv_file, delimiter=',')
-        for row in csv_reader: # This assumes that row[0] is the time, row[1] is the y-value (I'm not sure what this is), 
-                            #     if the length of the row is 4, row[2] is the specified lower bound that the deviation of the model from the y-value 
-                            #     is allowed to be and row[3] is the specified upper bound for the deviation. If the row length is 3, row[2] is 
-                            #     assumed to be a tolerance percentage (where the deviation (previously described) is allowed to be less than 
-                            #     that percentage of the y-value away from the y-value)
+        for row in csv_reader: # This assumes that row[0] is the time, row[1] is the y-value (I'm not sure what this is),
             csv_model_data = open('csv/total_ice_o3.csv')
             csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
             csv_model_data_list = list(csv_model_data_reader)
             closest_model_values = csv_model_data_list[find_nearest_index(row[0], 0, csv_model_data_list)]
             deviation = float(closest_model_values[1])*1e7 - float(row[1])
             
-            # Use a default tolerance value of 10% away from the y-value (the deviation of the model from the y-value is allowed to be that much away from the y-value)
+            # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
             allowed_lower_deviation = 0.9 * float(row[1])
             allowed_upper_deviation = 1.1 * float(row[1])
             if allowed_lower_deviation < deviation < allowed_upper_deviation:
@@ -118,7 +114,7 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
         for value in deviations:
             sum += (value**2)
         rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
-        output_string = "" # Create a string to hold the rmsd along with the delta value for each reaction set (the delta values combination)
+        output_string = "" # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
         i = 0
         for reaction in reactions:  
             output_string = output_string + " \n" + reaction + " delta values: " + str(fitting_factor_combination[i])
