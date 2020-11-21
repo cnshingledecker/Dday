@@ -117,9 +117,9 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
         output_string = "" # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
         i = 0
         for reaction in reactions:  
-            output_string = output_string + " \n" + reaction + " delta values: " + str(fitting_factor_combination[i])
+            output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reaction + " delta values \n"
             i += 1
-        output_string += "\nRMSD: " + str(rmsd) + "\n\n"
+        output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"
         results.write(output_string)
 results.close()
 print("Done!")

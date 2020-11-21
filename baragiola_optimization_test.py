@@ -5,7 +5,7 @@ import csv
 import subprocess
 import numpy as np
 
-results = open("results", 'w')
+results = open("results_3", 'w')
 # first for loop to modify fitting factor of O2->2O photoexc reaction
 vectord = np.linspace(1.7, 2.7, num=10)
 vectore = np.linspace(0, 2, num=3)
@@ -22,7 +22,7 @@ for d in range(0,10):
             # print([dvald, dvale, dvalf])
             # fixed 'no such file' for parameter_inputs_template by adding .dat which is hidden in Folders
             infile = open("parameter_inputs_template.dat",'r')
-            outfile = open("photo_processes.dat",'w')
+            outfile = open("photo_processes_3.dat",'w')
             # we know ahead of time that d is 4TH and 7TH lines of file, e is 3RD and 6TH lines of file, and f is the 5TH, 8TH, 10TH, 11TH, 13TH, 14TH lines of the file so we are working under that assumption
             lines = infile.readlines()
             linecounter = 0
@@ -225,7 +225,7 @@ for d in range(0,10):
                 # now calculate RMSD from deviations and write 1 value into results file. if i write the deviation values inside the if statements can i still do a calculation with them outside the if statements?
                 rmsd = ((dev73**2 + dev75**2 + dev77**2 + dev78**2 + dev80**2 + dev81**2 + dev82**2 + dev84**2 + dev85**2 + dev87**2 + dev88**2 + dev90**2 + dev91**2 + dev93**2 + dev95**2 + dev96**2 + dev98**2 + dev100**2)/16)**0.5
                 # i can't tell if the code is obeying the dev = 0 between errors because no set came back as 0..?
-                results.write("O2-->2O delta value: "+str(dvald)+"\nO2-->2O* delta value: "+str(dvale)+"\nO2-->O2*, O3-->O2+O, and O3-->O3* delta value: "+str(dvalf)+"\nRMSD: "+str(rmsd)+"\n \n")
+                results.write(str(dvald) + "".join(" "*(23 - len(str(dvald)))) +"O2-->2O delta value\n" + str(dvale) + "".join(" "*(23 - len(str(dvale)))) + "O2-->2O* delta value\n" + str(dvalf) + "".join(" "*(23 - len(str(dvalf)))) + "O2-->O2*, O3-->O2+O, and O3-->O3* delta value\n" + str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) +"RMSD" + "\n\n")
                 # will it do two enters if i put two \n's like that or does it ignore the second one. also is it ok to put \n at the beginning of a quote like i did
 results.close()
 print("Done!")
