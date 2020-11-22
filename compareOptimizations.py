@@ -7,11 +7,11 @@ from exportable_custom_functions import is_float, is_int
 # endTime1 = int(round(time.time() * 1000))
 
 startTime2 = int(round(time.time() * 1000))
-os.system("python3 baragiola_optimization_generalization_rmsd_generalization.py")
+os.system("python3 baragiola_optimization_generalization_rmsd_generalization.py") # Run the generalized baragiola optimization
 endTime2 = int(round(time.time() * 1000))
 
 startTime3 = int(round(time.time() * 1000))
-os.system("python3 baragiola_optimization_test.py")
+os.system("python3 baragiola_optimization_test.py") # Run the original baragiola optimization file (the modified copy used for testing)
 endTime3 = int(round(time.time() * 1000))
 
 
