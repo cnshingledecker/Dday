@@ -102,6 +102,8 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
         for value in deviations:
             sum += (value**2)
         rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
+
+        # Should I create a boolean to only write to the output string if there was data in the experimental data csv file?
         output_string = "" # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
         i = 0
         for reaction in reactions:  
