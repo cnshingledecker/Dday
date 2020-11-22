@@ -4,20 +4,7 @@ import os
 import csv
 import numpy as np
 import itertools
-
-def is_int(val):
-    try:
-        int(val)
-        return True
-    except ValueError:
-        return False
-
-def is_float(val):
-    try:
-        float(val)
-        return True
-    except ValueError:
-        return False
+from exportable_custom_functions import is_float, is_int
 
 def find_nearest_index(value_to_find, pos, in_order_list):
     index = 0
@@ -71,20 +58,21 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     infile = open("parameter_inputs_template.dat",'r')
     outfile = open("photo_processes_2.dat",'w')
     for line in infile:
-        line_as_list = line.split()  # Convert the DAT file line into an array
+        line_as_list = line.split()  # Convert the DAT file line into a list
         # We need to find the first index in the line (as a list) where there is a fitting factor value (it is the first number besides the first element of the list, hence why i (below) is set to 1)
-        index_first_float_value_in_line = 1  # Skips the first value because it is an integer and would thus be counted as a float. 
+        index_first_float_value_in_line = 1  # The first entry in the line is a float, but we are looking for the first fitting factor (the 2nd float value in the line); starting at 1 therefore makes the implementation of the below while loop easier
+        # The while loop below skips the first value because it is an integer and would thus be counted as a float. 
         while(index_first_float_value_in_line < len(line_as_list) and not(is_float(line_as_list[index_first_float_value_in_line]))):  # Increments the index value until the first float value (fitting factor value) is found
             index_first_float_value_in_line += 1
         possible_fitting_factor_index = line_as_list[len(line_as_list) - 1] # See below comment for the meaning of this variable
         if(is_int(possible_fitting_factor_index)): # If the last value of the line is an integer, which means it is one of the reactions for which we are modifying the fitting factors
-            fitting_factor_index = int(possible_fitting_factor_index)            
+            fitting_factor_index = int(possible_fitting_factor_index)
             new_fitting_factor_val = fitting_factor_combination[fitting_factor_index] # Get the correct fitting factor (where fitting_factor_index tells the computer which fitting factor to get)
             if(new_fitting_factor_val < 1.00):
                 # Note that in baragiola_optimization.py, new_fitting_factor_value was multiplied by 10 here; in this code, I commented out the line to produce the same results as baragiola_optimization.py--I'm not sure why
                 new_fitting_factor_val = round(new_fitting_factor_val, 2)
             new_fitting_factor_val = np.format_float_scientific(new_fitting_factor_val, precision=2,unique=False)  # Convert the new fitting factor value into a string of a number in scientific notation rounded to 2 places after the decimal point
-            line = line[0:106] + new_fitting_factor_val + line[114:len(line)] # In the line, replace the old fitting factor with the new value
+            line = line[0:106] + new_fitting_factor_val + line[114:len(line)] # In the line, replace the old fitting factor with the new value             
         outfile.write(line)
     infile.close()
     outfile.close()
