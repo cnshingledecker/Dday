@@ -6,11 +6,12 @@ import subprocess
 import numpy as np
 
 results = open("results_3", 'w')
-# first for loop to modify fitting factor of O2->2O photoexc reaction
+
 vectord = np.linspace(1.7, 2.7, num=10)
 vectore = np.linspace(0, 2, num=3)
 vectorf = np.linspace(0.25, 0.35, num=3)
 
+# first for loop to modify fitting factor of O2->2O photoexc reaction
 for d in range(0,10):
     dvald = vectord[d]
     #second for loop is to modify fitting factor of O2->2O* photoion reaction
@@ -19,7 +20,6 @@ for d in range(0,10):
         #third for loop is to modify fitting factor for O2->O2*, O3->O2+O, and O3->O3* reactions
         for f in range(1,2):
             dvalf = vectorf[f]
-            # print([dvald, dvale, dvalf])
             # fixed 'no such file' for parameter_inputs_template by adding .dat which is hidden in Folders
             infile = open("parameter_inputs_template.dat",'r')
             outfile = open("photo_processes_3.dat",'w')
