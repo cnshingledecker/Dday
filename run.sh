@@ -1,27 +1,5 @@
 # Remove old output files and directories
-if [ -d "ab" ]; then
-   rm -rf ab 
-else
-  echo "ab directory doesn't exist"
-fi
-
-if [ -d "csv" ]; then
-   rm -rf csv 
-else
-  echo "csv directory doesn't exist"
-fi
-
-if [ -f "H2.ab" ]; then
-  rm *.ab 
-else
-  echo "no old *.ab files to remove"
-fi
-
-if [ -f "H2.csv" ]; then
-  rm *.csv 
-else
-  echo "no old *.csv files to remove"
-fi
+./clean.sh
 
 mkdir ab
 mkdir csv
