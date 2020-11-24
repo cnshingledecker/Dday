@@ -20,7 +20,7 @@ def find_nearest_index(value_to_find, pos, in_order_list):
         index += 1
     return smallest_index
 
-results = open("results_2", 'w')
+results = open("resultsFile_2", 'w')
 
 reactions = []
 
@@ -68,9 +68,6 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
         if(is_int(possible_fitting_factor_index)): # If the last value of the line is an integer, which means it is one of the reactions for which we are modifying the fitting factors
             fitting_factor_index = int(possible_fitting_factor_index)
             new_fitting_factor_val = fitting_factor_combination[fitting_factor_index] # Get the correct fitting factor (where fitting_factor_index tells the computer which fitting factor to get)
-            if(new_fitting_factor_val < 1.00):
-                # Note that in baragiola_optimization.py, new_fitting_factor_value was multiplied by 10 here; in this code, I commented out the line to produce the same results as baragiola_optimization.py--I'm not sure why
-                new_fitting_factor_val = round(new_fitting_factor_val, 2)
             new_fitting_factor_val = np.format_float_scientific(new_fitting_factor_val, precision=2,unique=False)  # Convert the new fitting factor value into a string of a number in scientific notation rounded to 2 places after the decimal point
             line = line[0:106] + new_fitting_factor_val + line[114:len(line)] # In the line, replace the old fitting factor with the new value             
         outfile.write(line)
