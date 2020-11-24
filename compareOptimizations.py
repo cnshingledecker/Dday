@@ -24,8 +24,8 @@ print("Modified original (baragiola_optimization_test.py) took " + str((endTime3
 num_errors = 0
 
 # Compare the output in the results files; note: gen is short for generalization
-results_original = open('results_3', 'r')
-results_gen_rmsd_gen = open('results_2', 'r')
+results_original = open('resultsFile_3', 'r')
+results_gen_rmsd_gen = open('resultsFile_2', 'r')
 results_original_lines = results_original.readlines()
 results_gen_rmsd_gen_lines = results_gen_rmsd_gen.readlines()
 
