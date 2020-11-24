@@ -5,7 +5,7 @@ import csv
 import subprocess
 import numpy as np
 
-results = open("results_3", 'w')
+results = open("resultsFile_3", 'w')
 
 vectord = np.linspace(1.7, 2.7, num=10)
 vectore = np.linspace(0, 2, num=3)
