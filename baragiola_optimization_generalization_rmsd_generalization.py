@@ -101,10 +101,8 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
 
         # Should I create a boolean to only write to the output string if there was data in the experimental data csv file?
         output_string = "" # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
-        i = 0
-        for reaction in reactions:  
-            output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reaction + " delta values \n"
-            i += 1
+        for i in range(0, len(reactions)): 
+            output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reactions[i] + " delta values \n"
         output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"
         results.write(output_string)
 results.close()
