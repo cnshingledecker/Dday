@@ -74,7 +74,7 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     infile.close()
     outfile.close()
     print("Running model...")
-    os.system('./run.sh')
+    os.system('./runGeneralization.sh')
     print("Finding RMSD...")  # RMSD is root-mean square deviation
 
     num_experimental_data_points = 0

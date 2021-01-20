@@ -98,7 +98,7 @@ for d in range(0,10):
             # make a system call to model
             # fixed syntax error due to using os.system() with shell file
             # fixed OSError: [Errno 8] Exec format error by adding #!/bin/sh to top of run.sh file
-            os.system('./run.sh')
+            os.system('./runTest.sh')
             # open the output file created when the model runs
             # i got much of the following about reading csv from the internet so it may not be correct
             print("Finding RMSD...")
