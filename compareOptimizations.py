@@ -110,5 +110,7 @@ else:
 photo_processes_gen_rmsd_gen.close()
 photo_processes_original.close()
 
+os.system('./clean.sh')
+
 if(num_errors == 0):
     print("Success! The generalized optimization produced the same results as the original optimization.")
