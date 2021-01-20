@@ -30,9 +30,8 @@ num_modified_fitting_factors = 0
 
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
-    fields = next(reader) # Skips first line of the csv file (the line contains headers and info about what each line means)
-    fields = next(reader) # Skips second line of the csv file (the line describes how each line in the csv file corresponds to the values in each fitting_factor_combination in all_fitting_factor_combinations)
-    fields = next(reader) # Skips the third line of the csv file (a contnuation of the second line)
+    for i in range(0, 3): # Skips the first 3 lines of the csv file (lines which are comments)
+        fields = next(reader)
     for row in reader:  # Each row is a set of arguments to be used to create the linspace for fitting factors for a reaction
         num_modified_fitting_factors += 1
         args_for_single_vector = []  # A vector to hold the set of arguments to be used to create the linspace for the fitting factors for a reaction
