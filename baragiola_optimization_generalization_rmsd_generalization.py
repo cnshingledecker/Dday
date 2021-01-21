@@ -4,28 +4,12 @@ import os
 import csv
 import numpy as np
 import itertools
-from exportable_custom_functions import is_float, is_int
-
-def find_nearest_index(value_to_find, pos, in_order_list):
-    index = 0
-    smallest_index = 0
-    smallest_diff = 1e20
-    for value in in_order_list:
-        diff = abs(float(value_to_find) - float(value[pos]))
-        if diff < smallest_diff:
-            smallest_index = index
-            smallest_diff = diff
-        elif diff > smallest_diff:
-            return smallest_index
-        index += 1
-    return smallest_index
+from exportable_custom_functions import find_nearest_index,is_float, is_int
 
 results = open("resultsFile_2", 'w')
 
 reactions = []
-
 all_vector_args = [] # Holds a series of arrays (one for each of the linspaces that is created for a reaction)
-
 num_modified_fitting_factors = 0
 
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
