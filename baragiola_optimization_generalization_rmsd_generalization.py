@@ -23,7 +23,7 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
         for argument in row:
             if is_float(argument):
                 args_for_single_vector.append(float(argument)) # Adds the arguments to the previously created vector (2 lines above)
-            else:  # It is text (it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
+            else:  # It is text (it is not an index specifying a delta value to choose; because it is text, it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
                 reactions.append(argument)
         all_vector_args.append(args_for_single_vector) 
 
@@ -56,7 +56,7 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     infile.close()
     outfile.close()
     print("Running model...")
-    os.system('./runGeneralization.sh')
+    os.system('./runGeneralization.sh') # Executes a version of run.sh that runs the monaco executable for this generalization 
     print("Finding RMSD...")  # RMSD is root-mean square deviation
 
     num_experimental_data_points = 0
