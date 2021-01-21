@@ -11,6 +11,7 @@ results = open("resultsFile_2", 'w')
 reactions = []
 all_vector_args = [] # Holds a series of arrays (one for each of the linspaces that is created for a reaction)
 num_modified_fitting_factors = 0
+fitting_factors = [] # Holds arrays containing the fitting_factors for the reactions (each element of the array is a list with the various fitting factors for a reaction)
 
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
@@ -25,8 +26,6 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
             else:  # It is text (it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
                 reactions.append(argument)
         all_vector_args.append(args_for_single_vector) 
-
-fitting_factors = [] # Holds arrays containing the fitting_factors for the reactions (each element of the array is a list with the various fitting factors for a reaction)
 
 for vector_args in all_vector_args:
     single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], num=int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
