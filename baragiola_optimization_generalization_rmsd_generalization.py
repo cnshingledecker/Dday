@@ -71,9 +71,7 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
             deviation = float(closest_model_values[1])*1e7 - float(row[1])
             
             # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
-            allowed_lower_deviation = 0.9 * float(row[1])
-            allowed_upper_deviation = 1.1 * float(row[1])
-            if allowed_lower_deviation < deviation < allowed_upper_deviation:
+            if 0.9 * float(row[1]) < deviation < 1.1 * float(row[1]): # 0.9 * float(row[1]) is the allowed_lower_deviation, 1.1 * float(row[1]) is the allowed_upper_deviation
                 deviation = 0
             deviations.append(deviation)
             num_experimental_data_points += 1
