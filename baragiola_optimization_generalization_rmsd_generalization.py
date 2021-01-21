@@ -48,8 +48,7 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
             index_first_float_value_in_line += 1
         possible_fitting_factor_index = line_as_list[len(line_as_list) - 1] # See below comment for the meaning of this variable
         if(is_int(possible_fitting_factor_index)): # If the last value of the line is an integer, which means it is one of the reactions for which we are modifying the fitting factors
-            fitting_factor_index = int(possible_fitting_factor_index)
-            new_fitting_factor_val = fitting_factor_combination[fitting_factor_index] # Get the correct fitting factor (where fitting_factor_index tells the computer which fitting factor to get)
+            new_fitting_factor_val = fitting_factor_combination[int(possible_fitting_factor_index)] # Convert the possible fitting factor index to an int and get the correct fitting factor (where fitting_factor_index tells the computer which fitting factor to get)
             new_fitting_factor_val = np.format_float_scientific(new_fitting_factor_val, precision=2,unique=False)  # Convert the new fitting factor value into a string of a number in scientific notation rounded to 2 places after the decimal point
             line = line[0:106] + new_fitting_factor_val + line[114:len(line)] # In the line, replace the old fitting factor with the new value             
         outfile.write(line)
