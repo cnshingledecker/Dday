@@ -62,10 +62,10 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     with open('experimental_data/experimental_o3.csv') as csv_file: # Experimental data
         deviations = []
         csv_reader = csv.reader(csv_file, delimiter=',')
+        csv_model_data = open('csv/total_ice_o3.csv')
+        csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
+        csv_model_data_list = list(csv_model_data_reader)
         for row in csv_reader: # This assumes that row[0] is the time, row[1] is the y-value (I'm not sure what this is),
-            csv_model_data = open('csv/total_ice_o3.csv')
-            csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
-            csv_model_data_list = list(csv_model_data_reader)
             closest_model_values = csv_model_data_list[find_nearest_index(row[0], 0, csv_model_data_list)]
             deviation = float(closest_model_values[1])*1e7 - float(row[1])
             
