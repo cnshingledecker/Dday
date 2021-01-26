@@ -48,13 +48,14 @@ if __name__ == '__main__':
                                                                             #    Note that this creates an array of n arrays (where n is the product of the number of values for each list of fitting factors), and each of these 
                                                                             #    n arrays has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
     results2 = []
+    monaco_and_files_currently_being_used = [False for i in range(0, mp.cpu_count())]
     ts = time.time()
 
     pool = mp.Pool(mp.cpu_count)
     for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_factor_combinations[n] is a value from the (n + 1)th np.linspace created 
         pool.apply_async(my_function, args=(fitting_factor_combination[0], fitting_factor_combination[1], fitting_factor_combination[2]), callback=get_result)
         # Need to have created a makefile, a monaco file, and a photo_processes file for each of the cpus on the device this is running on (or less than that number, if so desired).
-        #     Preferably put the above files in a directory for each of them (need to see how this affects the makefile, the fortran code, and this python script. (file paths))
+        #     Preferably put the above files in a directory for each of them (need to see how this affects the makefile, the fortran code, and this python script. (file paths)). I am strongly considering (if it is possible) to put all of these directories into one directory, for a cleaner file structure.
         # Need to have the pool use the first not currently in use monaco file and photo_processes.dat file
         # Pool needs to run the below code (lines '--BEGINNING---  to --END--- (approximately lines 69 and 118) in the function it runs, 
         #     and append the result (the lines for the output file) to an array, all the lines in which will be written to the output file after the pool has ran Monaco with all of the possible fitting_factor_combinations
