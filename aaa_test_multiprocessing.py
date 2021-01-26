@@ -49,8 +49,8 @@ if __name__ == '__main__':
                                                                             #    n arrays has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
     results2 = []
     ts = time.time()
-    print('CPU count:', mp.cpu_count())
-    pool = mp.Pool(mp.cpu_count())
+
+    pool = mp.Pool(mp.cpu_count)
     for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_factor_combinations[n] is a value from the (n + 1)th np.linspace created 
         pool.apply_async(my_function, args=(fitting_factor_combination[0], fitting_factor_combination[1], fitting_factor_combination[2]), callback=get_result)
         # Need to have created a makefile, a monaco file, and a photo_processes file for each of the cpus on the device this is running on (or less than that number, if so desired).
