@@ -16,6 +16,20 @@ def get_result(result):
     global results2
     results2.append(result)
 
+def determine_next_available_monaco_and_fileset():
+    global monaco_and_files_currently_being_used
+    ts = time.time()
+    i = 0
+    while(True):
+        while(i < len(monaco_and_files_currently_being_used) and monaco_and_files_currently_being_used[i] == False):
+            i += 1
+        if(i >= len(monaco_and_files_currently_being_used)):
+            if(time.time() - ts > 180):
+                return -1
+            time.sleep(2.5)
+            i = 0
+        elif(i >= 0 and i < len(monaco_and_files_currently_being_used)):
+            return i
 
 if __name__ == '__main__':
     results = open("resultsFile_2", 'w')
@@ -49,9 +63,10 @@ if __name__ == '__main__':
                                                                             #    n arrays has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
     results2 = []
     monaco_and_files_currently_being_used = [False for i in range(0, mp.cpu_count())]
+    print("Lowest index of available monaco and fileset is " + str(determine_next_available_monaco_and_fileset()))
     ts = time.time()
 
-    pool = mp.Pool(mp.cpu_count)
+    pool = mp.Pool(mp.cpu_count())
     for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_factor_combinations[n] is a value from the (n + 1)th np.linspace created 
         pool.apply_async(my_function, args=(fitting_factor_combination[0], fitting_factor_combination[1], fitting_factor_combination[2]), callback=get_result)
         # Need to have created a makefile, a monaco file, and a photo_processes file for each of the cpus on the device this is running on (or less than that number, if so desired).
