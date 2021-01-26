@@ -61,8 +61,8 @@ if __name__ == '__main__':
     pool.close()
     pool.join()
     print('Time in parallel:', time.time() - ts)
-    for k in results2:
-        print(k)
+    # for k in results2:
+    #     print(k)
 
 #     infile = open("parameter_inputs_template.dat",'r')
 #     outfile = open("photo_processes_2.dat",'w')
