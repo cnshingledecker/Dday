@@ -53,7 +53,9 @@ if __name__ == '__main__':
     pool = mp.Pool(mp.cpu_count())
     for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_factor_combinations[n] is a value from the (n + 1)th np.linspace created 
         pool.apply_async(my_function, args=(fitting_factor_combination[0], fitting_factor_combination[1], fitting_factor_combination[2]), callback=get_result)
- 
+        # Need to have the pool use the first not currently in use monaco file and photo_processes.dat file
+        # Pool needs to run the below code (lines 65 to 112) in the function it runs, 
+        #     and append the result (the lines for the output file) to an array, all the lines in which will be written to the output file after the pool has ran Monaco with all of the possible fitting_factor_combinations
     pool.close()
     pool.join()
     print('Time in parallel:', time.time() - ts)
