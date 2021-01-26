@@ -56,7 +56,7 @@ if __name__ == '__main__':
         # Need to have created a makefile, a monaco file, and a photo_processes file for each of the cpus on the device this is running on (or less than that number, if so desired).
         #     Preferably put the above files in a directory for each of them (need to see how this affects the makefile, the fortran code, and this python script. (file paths))
         # Need to have the pool use the first not currently in use monaco file and photo_processes.dat file
-        # Pool needs to run the below code (lines 67 to 114) in the function it runs, 
+        # Pool needs to run the below code (lines '--BEGINNING---  to --END--- (approximately lines 69 and 118) in the function it runs, 
         #     and append the result (the lines for the output file) to an array, all the lines in which will be written to the output file after the pool has ran Monaco with all of the possible fitting_factor_combinations
     pool.close()
     pool.join()
@@ -64,6 +64,9 @@ if __name__ == '__main__':
     # for k in results2:
     #     print(k)
 
+
+
+#--------Beginning------
 #     infile = open("parameter_inputs_template.dat",'r')
 #     outfile = open("photo_processes_2.dat",'w')
 #     for line in infile:
@@ -112,5 +115,6 @@ if __name__ == '__main__':
 #             output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reactions[i] + " delta values \n"
 #         output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"
 #         results.write(output_string)
+#---------END-------
 # results.close()
 # print("Done!")
