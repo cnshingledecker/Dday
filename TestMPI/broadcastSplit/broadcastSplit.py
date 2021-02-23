@@ -24,7 +24,6 @@ if rank == 0:
     for i in range(0, num_processors):
         new_dir_name = "files_processor" + str(i)
         os.system("mkdir " + new_dir_name)
-        os.system("cp parameter_inputs_template.dat " + new_dir_name)
         for file_name in files_to_copy_to_new_dir:
             os.system("cp " + file_name + " " + new_dir_name)
         os.system("touch " + new_dir_name + "/results_file")
