@@ -1,7 +1,7 @@
 import numpy as np
 import csv, itertools, math, os, random, time
 
-from customFunctions import split_array, split_array_chunks
+from ../customFunctions import split_array, split_array_chunks
 from mpi4py import MPI
 
 comm = MPI.COMM_WORLD
