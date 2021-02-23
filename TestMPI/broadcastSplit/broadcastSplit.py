@@ -1,4 +1,5 @@
-# This file tests: 
+# This file tests: The creation of 100 matrices of a certain size (the time it takes to do so is compared 
+#                  with a non-parallel version (nonParallelBroadcastSplit.py)
 
 import numpy as np
 import csv, itertools, math, os, random, time
