@@ -22,7 +22,7 @@ for matrix_dimension in matrix_dimensions:
     ts2 = time.time() * 1000
     os.system("python3 nonParallelBroadcastSplit.py")
     te2 = time.time() * 1000
-    j.append("Matrix dim: " + str(matrix_dimension) + " "*(6-len(str(matrix_dimension))) + " Time: Non-par: " + (str(te2-ts2)) + " ms" + " "*(40-len(" Time: Non-par: " + (str(te2-ts2)) + " ms")) + " Par: " + str(te1-ts1) + " ms   Runtime ratio p/np: " + str((te1-ts1)/(te2-ts2)))
+    output_strings.append("Matrix dim: " + str(matrix_dimension) + " "*(6-len(str(matrix_dimension))) + " Time: Non-par: " + (str(te2-ts2)) + " ms" + " "*(40-len(" Time: Non-par: " + (str(te2-ts2)) + " ms")) + " Par: " + str(te1-ts1) + " ms   Runtime ratio p/np: " + str((te1-ts1)/(te2-ts2)))
 
 for output_string in output_strings:
     print(output_string)
