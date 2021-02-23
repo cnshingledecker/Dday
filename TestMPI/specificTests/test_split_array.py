@@ -1,4 +1,4 @@
-from broadcastSplit.customFunctions import split_array
+from customFunctions import split_array
 import numpy as np
 import itertools
 

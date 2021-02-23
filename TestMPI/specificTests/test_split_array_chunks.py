@@ -1,4 +1,4 @@
-from broadcastSplit.customFunctions import *
+from customFunctions import *
 import numpy as np
 import itertools
 
