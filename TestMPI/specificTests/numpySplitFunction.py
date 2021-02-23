@@ -1,6 +1,5 @@
+import itertools, time
 import numpy as np
-import itertools
-import time
 
 a = list(np.linspace(1.7,2.7,10))
 b = list(np.linspace(1,2,1))
