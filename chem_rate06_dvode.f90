@@ -9,6 +9,8 @@ USE save_results
 IMPLICIT NONE
 
 INTEGER :: i
+LOGICAL testing
+testing = .FALSE.
 
 rde = 0
 OPEN(newunit=myunit,file='rd_eff.txt')
@@ -25,38 +27,40 @@ ENDIF
 ALLOCATE (reaction_importance(n_det_spec,nreactions,timesteps))
 call save_Results_bulk
 
-print*, 'Sing_Mult           = ', sing_mult
-print*, 'is_disk_model       = ', is_disk_model
-print*, 'radiolysis          = ', radiolysis
-print*, 'chem_file           = ', chem_file(1:LEN_TRIM(chem_file))
-print*, 'n_s_ml              = ', n_s_ml
-print*, 'Density             = ', rho
-print*, 'Temperature         = ', t
-print*, 'G0_stellar          = ', G0_stellar
-print*, 'AvSt                = ', AvSt
-print*, 'AvIS                = ', AvIS
-print*, 'ZetaCR              = ', ZetaCR
-print*, 'ZetaX               = ', ZetaX
-print*, 'des_t               = ', des_t
-print*, 'des_crp             = ', des_crp
-print*, 'des_photon          = ', des_photon
-print*, 'ph_yield            = ', ph_yield
-print*, 'des_reactive        = ', des_reactive
-print*, 'des_reactive_type   = ', des_reactive_type
-print*, 'agr                 = ', agr
-print*, 'drho                = ', drho
-print*, 'dust2gas            = ', dust2gas
-print*, 'ebed                = ', ebed
-print*, 'tunneling           = ', tunneling
-print*, 'barrier_tunneling   = ', barrier_tunneling
-print*, 'barrier_tunneling_w = ', barrier_tunneling_w
-print*, 'btw_ch3oh_only      = ', btw_ch3oh_only
-print*, 'hop_act_competition = ', hop_act_competition
-print*, 'eqtype              = ', eqtype
-print*, 'sitedens            = ', sitedens
-print*, 'ini_non_zero        = ', init_non_zero
-print*, 'nspecies            = ', nspecies
-print*, 'nreactions          = ', nreactions
+IF (testing) THEN
+  print*, 'Sing_Mult           = ', sing_mult
+  print*, 'is_disk_model       = ', is_disk_model
+  print*, 'radiolysis          = ', radiolysis
+  print*, 'chem_file           = ', chem_file(1:LEN_TRIM(chem_file))
+  print*, 'n_s_ml              = ', n_s_ml
+  print*, 'Density             = ', rho
+  print*, 'Temperature         = ', t
+  print*, 'G0_stellar          = ', G0_stellar
+  print*, 'AvSt                = ', AvSt
+  print*, 'AvIS                = ', AvIS
+  print*, 'ZetaCR              = ', ZetaCR
+  print*, 'ZetaX               = ', ZetaX
+  print*, 'des_t               = ', des_t
+  print*, 'des_crp             = ', des_crp
+  print*, 'des_photon          = ', des_photon
+  print*, 'ph_yield            = ', ph_yield
+  print*, 'des_reactive        = ', des_reactive
+  print*, 'des_reactive_type   = ', des_reactive_type
+  print*, 'agr                 = ', agr
+  print*, 'drho                = ', drho
+  print*, 'dust2gas            = ', dust2gas
+  print*, 'ebed                = ', ebed
+  print*, 'tunneling           = ', tunneling
+  print*, 'barrier_tunneling   = ', barrier_tunneling
+  print*, 'barrier_tunneling_w = ', barrier_tunneling_w
+  print*, 'btw_ch3oh_only      = ', btw_ch3oh_only
+  print*, 'hop_act_competition = ', hop_act_competition
+  print*, 'eqtype              = ', eqtype
+  print*, 'sitedens            = ', sitedens
+  print*, 'ini_non_zero        = ', init_non_zero
+  print*, 'nspecies            = ', nspecies
+  print*, 'nreactions          = ', nreactions
+ENDIF
 
 !pause
 

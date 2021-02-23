@@ -37,9 +37,14 @@ REAL(wp) w1, w2
 CHARACTER*1 s1, tmp1, multi
 CHARACTER*2 s2, tmp2
 LOGICAL cond
+LOGICAL :: testing
 DIMENSION s1(8), w1(8), s2(6), w2(6)
 
-PRINT *, x
+testing = .FALSE.
+
+IF (testing) THEN
+    PRINT *, x
+ENDIF
 
 ! Initialization of the output:
 aweight = 0.0D0
