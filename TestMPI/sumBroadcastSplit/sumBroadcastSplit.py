@@ -34,7 +34,7 @@ if rank == 0:
     data = [list(fitting_factor_combination) for fitting_factor_combination in data] # Converts the result of itertools.product into a list (completely array-indexible)
     data = split_array(data, num_processors) # Splits the array into 'num_processors' chunks
     data = split_array_chunks(data, 15) # Splits each of the array chunks into mini-chunks of up to size 15 (creates as many with size 15 as possible)
-    for i in range(0, len(data)): # Tell each processor how many mini-chunks it is going ot be receiving
+    for i in range(0, len(data)): # Tell each processor how many mini-chunks it is going to be receiving
         comm.send(len(data[i]), dest=i)
     mini_chunk_to_send = [0 for i in range(num_processors)] # Tells comm.send which mini-chunk to send (tells the index) to a certain processor
     chunks_left_to_send = [True for i in range(num_processors)] # List of boolean variables that says whether there are mini-chunks left to send to each processor
