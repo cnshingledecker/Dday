@@ -1,7 +1,7 @@
 import numpy as np
 import itertools
 import math
-from customFunctions import split_array
+from broadcastSplit.customFunctions import split_array
 
 data = [list(np.linspace(1.7,2.7,4)), list(np.linspace(1,2,4)), list(np.linspace(0.3,0.35,4))]
 data = itertools.product(*data)
