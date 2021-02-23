@@ -1,4 +1,5 @@
-# This file tests: The time taken to create 100 matrices of various sizes (using parallel and non-parallel scripts)
+# This file tests: Whether parallel and non-parallel versions of a script that finds the smallest fake performance metric (and associated fitting factors) produce the same results
+#                  Note: the 'test' is simply printing the results from each version (for a variety of matrix sizes (the matrices are made to simulate the work done by Monaco by the processor))
 
 import csv, os, time
 
