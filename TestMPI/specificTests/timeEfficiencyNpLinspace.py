@@ -22,4 +22,4 @@ b = list(np.linspace(1,2,1))
 c = list(np.linspace(0.3,0.35,1))
 time.sleep(0.5)
 te = time.time() * 1000
-print("Way 2 (creating the numpy linspaces and converting them to lists inside a conversion of them to lists) took " + str(te-ts) + " milliseconds.")
+print("Way 2 (combining the creation of the numpy linspaces and their conversion into lists into one line) took " + str(te-ts) + " milliseconds.")
