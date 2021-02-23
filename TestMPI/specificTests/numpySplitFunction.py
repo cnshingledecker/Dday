@@ -9,23 +9,15 @@ c = list(np.linspace(0.3,0.35,2))
 ts1 = time.time() * 1000
 data = [a,b,c]
 data = itertools.product(*data)
-# print(data)
 l = [list(j) for j in np.array_split([list(j) for j in data],6)]
-for j in l:
-    # print(j)
-    pass
 time.sleep(0.5)
 te1 = time.time() * 1000
 print("Way 1 took " + str(te1 - ts1) + " milliseconds.")
 
 ts2 = (time.time() * 1000)
 # data = [a,b,c]
-data = itertools.product(*[a,b,c]) # This way takes longer as the number of arrays in data increases, but is comparable for smaller test sets
-# print(data)
+data = itertools.product(*[a,b,c]) # This way takes longer as the number of arrays in data increases, but is comparable in terms of time for smaller test sets
 l = [list(j) for j in np.array_split([list(j) for j in data],6)]
-for j in l:
-    # print(j)
-    pass
 time.sleep(0.5)
 te2 = (time.time() * 1000)
 print("Way 2 took " + str(te2 - ts2) + " milliseconds.")
