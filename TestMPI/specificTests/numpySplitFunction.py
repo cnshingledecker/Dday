@@ -17,7 +17,6 @@ te1 = time.time() * 1000
 print("Way 1 (itertools.product(*data)) took " + str(te1 - ts1) + " milliseconds.")
 
 ts2 = (time.time() * 1000)
-# data = [a,b,c]
 data = itertools.product(*[a,b,c]) # This way takes longer as the number of arrays in data increases, but is comparable in terms of time for smaller test sets
 l = [list(j) for j in np.array_split([list(j) for j in data],6)]
 time.sleep(0.5)
