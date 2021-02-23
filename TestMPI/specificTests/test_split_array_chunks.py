@@ -1,11 +1,13 @@
+# This file tests: The number of elements that split_array and split_array_chunks split a list into (inspect manually) 
+
 from customFunctions import *
 import itertools
 import numpy as np
 
-for j in range(1, 5):
+for j in range(1, 5): # J is the number of chunks the array is split into using split_array
     print("\n\n\nSplitting into " + str(j) + " chunks.")
     total_elements_from_chunks = 0
-    for i in range(61,79,2):
+    for i in range(61,79,2): # I is the number of fitting factor combinations in the array
         print("Number of elements: " + str(i) + "\n")
         data = [list(np.linspace(1.7,2.7,i)), list(np.linspace(1,2,1)), list(np.linspace(0.3,0.35,1))]
         data = itertools.product(*data)
@@ -15,7 +17,7 @@ for j in range(1, 5):
         for k in range(0, len(data)):
             print("Chunk " + str(k) + " has " + str(len(data[k])) + " elements.")
             total_elements_from_chunks += len(data[k])
-        print("For a total of " + str(total_elements_from_chunks) + " among all the chunks.")
+        print("For a total of " + str(total_elements_from_chunks) + " elements among all the chunks.")
         data = split_array_chunks(data,15)
         print("\nAfter running split_array_chunks(data,15):\n")
         for k in range(0, len(data)):
