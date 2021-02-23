@@ -1,6 +1,9 @@
+# This file tests: Finding the fitting factor combination with the least value of the fake performance metric,
+#                  the accuracy of calculating a fake performance measure (test is printing it out to console), 
+#                  and sorting a list of n-element lists (n > 1)
 import math
 
-i = [
+i = [   # I is essentially a list of 8 lists that is as if it had been split up into 2 chunks of 4 elements each
         [
             [10,1,-7],
             [3,2,5],
@@ -15,9 +18,9 @@ i = [
         ]
     ]
 
-fitting_factors_and_least_rmsd = [1e80,0,0,0]
-for mini_chunk in i:
-    for combination in mini_chunk:          
+fitting_factors_and_least_rmsd = [1e80,0,0,0] # 1e80 is a flag value (the fake_performance measure will be less than it)
+for mini_chunk in i: 
+    for combination in mini_chunk: # Calculate fake_performance measure and save it in the fitting_factors_and_least_rmsd list       
         fake_performance_measure = math.sqrt(sum([fitting_factor**2 for fitting_factor in combination]))
         if (fake_performance_measure < fitting_factors_and_least_rmsd[0]):
             fitting_factors_and_least_rmsd[0] = fake_performance_measure
@@ -27,7 +30,7 @@ for mini_chunk in i:
 
 print(fitting_factors_and_least_rmsd)
 
-j = [
+j = [ # An array to test how the sort function works with sorting lists with more than 1 element
     [math.sqrt(9+25+64), 3,5,8],
     [math.sqrt(41), 2,6,1],
     [6.0,4,2,4],
