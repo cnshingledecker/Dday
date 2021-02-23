@@ -1,3 +1,5 @@
+# This file tests: creation of fitting factor combinations, using the bcast function to broadcast data to all processors
+
 from mpi4py import MPI
 import numpy as np
 import itertools
@@ -14,7 +16,7 @@ if rank == 0:
 elif rank != 0:
     data = None
     
-data = comm.bcast(data, root=0)
+data = comm.bcast(data, root=0) # Broadcast data to all nodes
 
 if rank >= 0:
     print("This came to node " + str(rank) + ": ")

@@ -1,3 +1,5 @@
+# This file tests: Using the send function to send data to individual processors
+
 from mpi4py import MPI
 
 comm = MPI.COMM_WORLD
