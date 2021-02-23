@@ -1,7 +1,7 @@
 # This file tests: the time it takes (collectively and on average per matrix) to make 100 matrices of various sizes using the np.random.rand function
 
 import numpy as np
-import time, os
+import os, time
 
 array_num_rows_and_num_cols = [32,64,128,256,512,1024,2048] # Each element is the size of a matrix (it is N, where a matrix that is N x N is made)
 times_ms = [0,0,0,0,0,0,0]

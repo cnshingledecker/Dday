@@ -1,6 +1,7 @@
 # This file does: Creates 3 numpy.linspaces and their Cartesian product, adds the sum of each combination to a sum variable, and returns that sum variable
 
-import numpy as np, itertools
+import itertools
+import numpy as np
 
 def sum_num(a,b,c):
     sum_total = 0

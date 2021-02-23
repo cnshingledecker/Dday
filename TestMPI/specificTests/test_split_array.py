@@ -1,6 +1,6 @@
 from customFunctions import split_array
-import numpy as np
 import itertools
+import numpy as np
 
 for j in range(1, 10): # J is the number of chunks the array is split into using split_array
     print("\n\n\nSplitting into " + str(j) + " chunks.")
