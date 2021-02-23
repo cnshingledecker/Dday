@@ -28,7 +28,7 @@ for mini_chunk in i:
             fitting_factors_and_least_rmsd[2] = combination[1]
             fitting_factors_and_least_rmsd[3] = combination[2]
 
-print(fitting_factors_and_least_rmsd)
+print("Fitting factors and associated (is smallest) performance metric: " + str(fitting_factors_and_least_rmsd))
 
 j = [ # An array to test how the sort function works with sorting lists with more than 1 element
     [math.sqrt(9+25+64), 3,5,8],
