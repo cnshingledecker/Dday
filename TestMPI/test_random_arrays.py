@@ -15,13 +15,3 @@ for i in range(0,len(array_num_rows_and_num_cols)):
 print(times_ms)
 for i in range(0, len(times_ms)):
     print(str(array_num_rows_and_num_cols[i]) + ": " + str(float(times_ms[i]/100)) + " For an average of " + str(times_ms[i]/(100*array_num_rows_and_num_cols[i])))
-
-ts = time.time()
-file = open('test_file.txt', 'w')
-for i in range(70):
-    j = np.random.rand(256,256)
-    file.write("\n Determinant: " + str(np.linalg.det(j)))
-file.close()
-os.system("del test_file")
-te= time.time()
-print("\nTook " + str((te-ts)*1000) + " milliseconds.")
