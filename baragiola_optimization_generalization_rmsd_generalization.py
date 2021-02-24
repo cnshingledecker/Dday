@@ -22,7 +22,7 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
         args_for_single_vector = []  # A vector to hold the set of arguments to be used to create the linspace for the fitting factors for a reaction
         for argument in row:
             if is_float(argument):
-                args_for_single_vector.append(float(argument)) # Adds the arguments to the previously created vector (2 lines above)
+                args_for_single_vector.append(float(argument)) # Adds the arguments to the previously created vector (3 lines above)
             else:  # It is text (it is not an index specifying a delta value to choose; because it is text, it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
                 reactions.append(argument)
         all_vector_args.append(args_for_single_vector) 
