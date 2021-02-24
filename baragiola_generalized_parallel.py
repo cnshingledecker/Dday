@@ -37,7 +37,13 @@ if rank == 0:
     all_fitting_factor_combinations = split_array_chunks(all_fitting_factor_combinations, 15) # Splits each of the array chunks into mini-chunks of up to size 15 (creates as many with size 15 as possible)
                                                                                               # Note: Sending a mini-chunk on my (Daniel's) machine does not arrive at the destination (the program just sits and the mini-chunk
                                                                                               #       never gets to its destination). Feel free to change this if desired and if your machine can handle a smaller or bigger mini-chunk size.
-    files_to_copy_to_new_dir = ["TestREADME.md"] 
+    files_to_copy_to_new_dir = ["clean.sh", "run.sh", "save_results.mod", "run_dvode.mod", "read_rate06.mod", "read_model.mod", 
+                                "rd_eff.txt", "radiolysis.dat", "photo_processes.dat", "parameter_inputs_template.dat",
+                                "network.dat", "monaco", "model.inp", "mod_save_results.f90", "mod_run_dvode.f90", 
+                                "mod_read_rate06.f90", "mod_read_model.f90", "mod_global_variables.f90", "mod_global_functions.f90",
+                                "mod_calculate_rates.f90", "Lee_ea_17.txt", "init_surf_ab.inp", "init_gas_ab.inp", "init_bulk_ab.inp",
+                                "global_variables.mod", "global_functions.mod", "enthalpias.txt", "dvode_f90_m.mod",
+                                "dvode_f90_m.f90", "class_2_suprathermal.dat", "chem_rate06_dvode.f90", "calculate_rates.mod"] 
 
     for i in range(0, num_processors): # Create directory for the files for each processor, copy into it the files specified in the above array, and create the results file in each array
         new_dir_name = "baragiola_files_processor" + str(i)
@@ -45,6 +51,7 @@ if rank == 0:
         os.system("touch " + new_dir_name + "/results_file")
         for file_name in files_to_copy_to_new_dir:
             os.system("cp " + file_name + " " + new_dir_name)
+        os.system("cp -R experimental_data " + new_dir_name)
     for i in range(0, len(all_fitting_factor_combinations)): # Tell each processor how many mini-chunks it is going to be receiving
         comm.send(len(all_fitting_factor_combinations[i]), dest=i)
     mini_chunk_to_send = [0 for i in range(num_processors)] # Tells comm.send which mini-chunk to send (tells the index) to a certain processor
@@ -62,15 +69,11 @@ if rank >= 0:
     num_mini_chunks_to_recv = comm.recv(source=0) # Receive the number of mini-chunks it is going to receive
     processor_fitting_factor_combinations = []
 #     fitting_factors_and_least_rmsd = [1e80, 0,0,0]
-#     reactions = ["Reaction 1", "Reaction 2", "Reaction 3"] # Used in writing output string of fitting factors and the fake_performance_measure to output file
 
 #     results = open("files_processor" + str(rank) + "/results_file",'w')
-#     num_items_recv = 0
     for i in range(0, num_mini_chunks_to_recv): # Receive all the mini-chunks
         data = comm.recv(source=0)
-#         num_items_recv += len(data)
         processor_fitting_factor_combinations.append(data)
-#     num_samples_processed = 0
     for mini_chunk in processor_fitting_factor_combinations:
         pass
 #         num_samples_processed += len(mini_chunk)
@@ -104,10 +107,3 @@ if rank >= 0:
 
 #     print("The smallest performance metric value and associated fitting factors: ")
 #     print(least_rmsds_and_fitting_factors[least_rmsd_index])
-    
-#     # Optional test to verify that the fake performance metric value is the square root of the sum of the squares of its associated fitting factors
-#     # for array in least_rmsds_and_fitting_factors:
-#     #     fake_performance_measure = 0
-#     #     for i in range(1,4):
-#     #         fake_performance_measure += array[i]**2
-#     #     assert array[0] == math.sqrt(fake_performance_measure)
