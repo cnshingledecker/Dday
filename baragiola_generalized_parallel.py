@@ -33,6 +33,8 @@ if rank == 0:
                                                                          #    n arrays has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
     all_fitting_factor_combinations = [list(fitting_factor_combination) for fitting_factor_combination in all_fitting_factor_combinations]
     all_fitting_factor_combinations = split_array(all_fitting_factor_combinations, num_processors)
+    all_fitting_factor_combinations = split_array_chunks(all_fitting_factor_combinations, 15) # Note: Sending a mini-chunk on my (Daniel's) machine does not arrive at the destination (the program just sits and the mini-chunk
+                                                                                              #       never gets to its destination). Feel free to change this if desired and if your machine can handle a smaller or bigger mini-chunk size.
 #     data = [list(np.linspace(1.7,2.7,23)), list(np.linspace(1,2,15)), list(np.linspace(0.3,0.35,1))] # Creates the numpy linspaces to be usedin making the cartesian product (all possible fitting factor combinations)
 #     data = itertools.product(*data) # Creates the cartesian product of all possible fitting factor combinations
 #     data = [list(fitting_factor_combination) for fitting_factor_combination in data] # Converts the result of itertools.product into a list (completely array-indexible)
