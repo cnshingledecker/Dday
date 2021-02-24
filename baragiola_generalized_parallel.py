@@ -7,6 +7,7 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 reactions = []
 all_vector_args = [] # Holds a series of arrays (one for each of the linspaces that is created for a reaction)
+base_dir_name = "baragiola_files_processor" # The partial name for each directory of the files for a processor
 
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
@@ -47,7 +48,7 @@ if rank == 0:
                                 "dvode_f90_m.f90", "class_2_suprathermal.dat", "chem_rate06_dvode.f90", "calculate_rates.mod"] 
 
     for i in range(0, num_processors): # Create directory for the files for each processor, copy into it the files specified in the above array, copy the experimental_data directory into it, and create the results file in each array
-        new_dir_name = "baragiola_files_processor" + str(i)
+        new_dir_name = base_dir_name + str(i)
         os.system("mkdir " + new_dir_name)
         os.system("touch " + new_dir_name + "/results_file")
         for file_name in files_to_copy_to_new_dir:
@@ -69,9 +70,9 @@ if rank >= 0:
     random.seed()
     num_mini_chunks_to_recv = comm.recv(source=0) # Receive the number of mini-chunks it is going to receive
     processor_fitting_factor_combinations = []
-#     fitting_factors_and_least_rmsd = [1e80, 0,0,0]
+    fitting_factors_and_least_rmsd = [1e80, 0,0,0] # Holds the least rmsd and the fitting factors that produced it
 
-#     results = open("files_processor" + str(rank) + "/results_file",'w')
+    results = open(base_dir_name + str(rank) + "/results_file",'w')
     for i in range(0, num_mini_chunks_to_recv): # Receive all the mini-chunks
         data = comm.recv(source=0)
         processor_fitting_factor_combinations.append(data)
