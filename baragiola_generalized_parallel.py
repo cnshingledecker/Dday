@@ -10,7 +10,7 @@ if rank == 0:
     ts = time.time()
 
 reactions = []
-all_vector_args = [] # Holds a series of arrays (one for each of the linspaces that is created for a reaction)
+all_vector_args = [] # Holds a series of arrays (with each array containing the values in each of the linspaces that is created for a reaction)
 base_dir_name = "baragiola_files_processor" # The partial name for each directory of the files for a processor
 
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
@@ -58,8 +58,11 @@ if rank == 0:
         for file_name in files_to_copy_to_new_dir:
             os.system("cp " + file_name + " " + new_dir_name)
         os.system("cp -R experimental_data " + new_dir_name)
+    
     for i in range(0, len(all_fitting_factor_combinations)): # Tell each processor how many mini-chunks it is going to be receiving
         comm.send(len(all_fitting_factor_combinations[i]), dest=i)
+    
+    # Send all of the mini_-chunks to the different processors
     mini_chunk_to_send = [0 for i in range(num_processors)] # Tells comm.send which mini-chunk to send (tells the index) to a certain processor
     chunks_left_to_send = [True for i in range(num_processors)] # List of boolean variables that says whether there are mini-chunks left to send to each processor
     while(sum(chunks_left_to_send) > 0):
@@ -74,7 +77,7 @@ if rank >= 0:
     new_dir_name = base_dir_name + str(rank)
     num_mini_chunks_to_recv = comm.recv(source=0) # Receive the number of mini-chunks it is going to receive
     processor_fitting_factor_combinations = []
-    fitting_factors_and_least_rmsd = [1e80, 0,0,0] # Holds the least rmsd and the fitting factors that produced it
+    fitting_factors_and_least_rmsd = [1e80, 0,0,0] # Holds the least rmsd and the fitting factors that produced it; fitting_factors_and_least_rmsd[0] is the rmsd, indices 1-3 are the fitting factors that led to that rmsd value
 
     results = open(new_dir_name + "/output_file_results",'w')
     for i in range(0, num_mini_chunks_to_recv): # Receive all the mini-chunks
@@ -130,7 +133,7 @@ if rank >= 0:
                     output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reactions[i] + " delta values \n"
                 output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"
                 results.write(output_string)
-                if (rmsd < fitting_factors_and_least_rmsd[0]):
+                if (rmsd < fitting_factors_and_least_rmsd[0]):  
                     fitting_factors_and_least_rmsd[0] = rmsd
                     fitting_factors_and_least_rmsd[1] = fitting_factor_combination[0]
                     fitting_factors_and_least_rmsd[2] = fitting_factor_combination[1]
