@@ -22,7 +22,15 @@ if rank == 0:
                 else:  # It is text (it is not an index specifying a delta value to choose; because it is text, it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
                     reactions.append(argument)
             all_vector_args.append(args_for_single_vector)
+    for vector_args in all_vector_args:
+        single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
+        single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
+        fitting_factors.append(single_vector_fitting_factors)     
     
+    all_fitting_factor_combinations = itertools.product(*fitting_factors)    # Creates all possible combinations of fitting factor values from the previously created lists (created in the 'for vector args in all_vector_args' for loop)
+                                                                         #    Note that this creates an array of n arrays (where n is the product of the number of values for each list of fitting factors), and each of these 
+                                                                         #    n arrays has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
+    all_fitting_factor_combinations = [list(fitting_factor_combination) for fitting_factor_combination in all_fitting_factor_combinations]
     # num_processors = 4
 #     data = [list(np.linspace(1.7,2.7,23)), list(np.linspace(1,2,15)), list(np.linspace(0.3,0.35,1))] # Creates the numpy linspaces to be usedin making the cartesian product (all possible fitting factor combinations)
 #     data = itertools.product(*data) # Creates the cartesian product of all possible fitting factor combinations
