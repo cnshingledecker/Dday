@@ -10,6 +10,7 @@ reactions = []
 if rank == 0:
     all_vector_args = [] # Holds a series of arrays (one for each of the linspaces that is created for a reaction)
     fitting_factors = [] # Holds arrays containing the fitting_factors for the reactions (each element of the array is a list with the various fitting factors for a reaction)
+    num_processors = 4
     with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
         reader = csv.reader(vector_creation_args_csv, delimiter=',')      
         for i in range(0, 3): # Skips the first 3 lines of the csv file (lines which are comments)
@@ -18,7 +19,7 @@ if rank == 0:
             args_for_single_vector = []  # A vector to hold the set of arguments to be used to create the linspace for the fitting factors for a reaction
             for argument in row:
                 if is_float(argument):
-                    args_for_single_vector.append(float(argument)) # Adds the arguments to the previously created vector (2 lines above)
+                    args_for_single_vector.append(float(argument)) # Adds the arguments to the previously created vector (3 lines above)
                 else:  # It is text (it is not an index specifying a delta value to choose; because it is text, it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
                     reactions.append(argument)
             all_vector_args.append(args_for_single_vector)
@@ -31,7 +32,7 @@ if rank == 0:
                                                                          #    Note that this creates an array of n arrays (where n is the product of the number of values for each list of fitting factors), and each of these 
                                                                          #    n arrays has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
     all_fitting_factor_combinations = [list(fitting_factor_combination) for fitting_factor_combination in all_fitting_factor_combinations]
-    # num_processors = 4
+    all_fitting_factor_combinations = split_array(all_fitting_factor_combinations, num_processors)
 #     data = [list(np.linspace(1.7,2.7,23)), list(np.linspace(1,2,15)), list(np.linspace(0.3,0.35,1))] # Creates the numpy linspaces to be usedin making the cartesian product (all possible fitting factor combinations)
 #     data = itertools.product(*data) # Creates the cartesian product of all possible fitting factor combinations
 #     data = [list(fitting_factor_combination) for fitting_factor_combination in data] # Converts the result of itertools.product into a list (completely array-indexible)
