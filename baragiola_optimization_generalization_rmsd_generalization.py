@@ -28,7 +28,7 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
         all_vector_args.append(args_for_single_vector) 
 
 for vector_args in all_vector_args:
-    single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], num=int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
+    single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
     single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
     fitting_factors.append(single_vector_fitting_factors) 
 
