@@ -6,23 +6,24 @@ from mpi4py import MPI
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 reactions = []
+all_vector_args = [] # Holds a series of arrays (one for each of the linspaces that is created for a reaction)
+
+with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
+    reader = csv.reader(vector_creation_args_csv, delimiter=',')      
+    for i in range(0, 3): # Skips the first 3 lines of the csv file (lines which are comments)
+        fields = next(reader)
+    for row in reader:  # Each row is a set of arguments to be used to create the linspace for fitting factors for a reaction
+        args_for_single_vector = []  # A vector to hold the set of arguments to be used to create the linspace for the fitting factors for a reaction
+        for argument in row:
+            if is_float(argument):
+                args_for_single_vector.append(float(argument)) # Adds the arguments to the previously created vector (3 lines above)
+            else:  # It is text (it is not an index specifying a delta value to choose; because it is text, it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
+                reactions.append(argument)
+        all_vector_args.append(args_for_single_vector)
 
 if rank == 0:
-    all_vector_args = [] # Holds a series of arrays (one for each of the linspaces that is created for a reaction)
     fitting_factors = [] # Holds arrays containing the fitting_factors for the reactions (each element of the array is a list with the various fitting factors for a reaction)
     num_processors = 4
-    with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
-        reader = csv.reader(vector_creation_args_csv, delimiter=',')      
-        for i in range(0, 3): # Skips the first 3 lines of the csv file (lines which are comments)
-            fields = next(reader)
-        for row in reader:  # Each row is a set of arguments to be used to create the linspace for fitting factors for a reaction
-            args_for_single_vector = []  # A vector to hold the set of arguments to be used to create the linspace for the fitting factors for a reaction
-            for argument in row:
-                if is_float(argument):
-                    args_for_single_vector.append(float(argument)) # Adds the arguments to the previously created vector (3 lines above)
-                else:  # It is text (it is not an index specifying a delta value to choose; because it is text, it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
-                    reactions.append(argument)
-            all_vector_args.append(args_for_single_vector)
     for vector_args in all_vector_args:
         single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
         single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
@@ -57,7 +58,7 @@ if rank == 0:
                 chunks_left_to_send[j] = False
 
 if rank >= 0:
-#     random.seed()
+    random.seed()
     num_mini_chunks_to_recv = comm.recv(source=0) # Receive the number of mini-chunks it is going to receive
     processor_fitting_factor_combinations = []
 #     fitting_factors_and_least_rmsd = [1e80, 0,0,0]
