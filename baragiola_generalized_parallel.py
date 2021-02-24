@@ -37,14 +37,14 @@ if rank == 0:
     all_fitting_factor_combinations = split_array_chunks(all_fitting_factor_combinations, 15) # Splits each of the array chunks into mini-chunks of up to size 15 (creates as many with size 15 as possible)
                                                                                               # Note: Sending a mini-chunk on my (Daniel's) machine does not arrive at the destination (the program just sits and the mini-chunk
                                                                                               #       never gets to its destination). Feel free to change this if desired and if your machine can handle a smaller or bigger mini-chunk size.
-#     files_to_copy_to_new_dir = [] 
+    files_to_copy_to_new_dir = ["TestREADME.md"] 
 
-#     for i in range(0, num_processors): # Create directory for the files for each processor, copy into it the files specified in the above array, and create the results file in each array
-#         new_dir_name = "files_processor" + str(i)
-#         os.system("mkdir " + new_dir_name)
-#         os.system("touch " + new_dir_name + "/results_file")
-#         for file_name in files_to_copy_to_new_dir:
-#             os.system("cp " + file_name + " " + new_dir_name)
+    for i in range(0, num_processors): # Create directory for the files for each processor, copy into it the files specified in the above array, and create the results file in each array
+        new_dir_name = "baragiola_files_processor" + str(i)
+        os.system("mkdir " + new_dir_name)
+        os.system("touch " + new_dir_name + "/results_file")
+        for file_name in files_to_copy_to_new_dir:
+            os.system("cp " + file_name + " " + new_dir_name)
     for i in range(0, len(all_fitting_factor_combinations)): # Tell each processor how many mini-chunks it is going to be receiving
         comm.send(len(all_fitting_factor_combinations[i]), dest=i)
     mini_chunk_to_send = [0 for i in range(num_processors)] # Tells comm.send which mini-chunk to send (tells the index) to a certain processor
@@ -72,7 +72,7 @@ if rank >= 0:
         processor_fitting_factor_combinations.append(data)
 #     num_samples_processed = 0
     for mini_chunk in processor_fitting_factor_combinations:
-        print("Mini-chunk " + str(mini_chunk) + " came to processor " + str(rank))
+        pass
 #         num_samples_processed += len(mini_chunk)
 #         for combination in mini_chunk:
 #             for i in range(100): # This is to simulate the work done by the processor (and the time it takes) when running monaco
