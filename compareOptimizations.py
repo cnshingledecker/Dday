@@ -14,11 +14,15 @@ startTime3 = int(round(time.time() * 1000))
 os.system("python3 baragiola_optimization_test.py") # Run the original baragiola optimization file (the modified copy used for testing)
 endTime3 = int(round(time.time() * 1000))
 
+startTime4 = int(round(time.time() * 1000))
+os.system("mpiexec -n 4 python3 baragiola_generalized_parallel.py") # Run the parallel, generalized baragiola optimization
+endTime4 = int(round(time.time() * 1000))
+
 
 # print("Original (baragiola_optimization.py) took " + str((endTime1 - startTime1) / 1000) + " seconds")
 print("Generalization (baragiola_optimization_generalization_rmsd_generalization.py) took " + str((endTime2 - startTime2) / 1000) + " seconds")
 print("Modified original (baragiola_optimization_test.py) took " + str((endTime3 - startTime3) / 1000) + " seconds")
-
+print("Generalized and parallel version (baragiola_generalized_parallel.py) took " + str((endTime4 - startTime4) / 1000) + " seconds")
 
 # Compare the results from the original optimization and the generalized optimization
 num_errors = 0
