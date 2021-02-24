@@ -37,6 +37,7 @@ if rank == 0:
     all_fitting_factor_combinations = split_array_chunks(all_fitting_factor_combinations, 15) # Splits each of the array chunks into mini-chunks of up to size 15 (creates as many with size 15 as possible)
                                                                                               # Note: Sending a mini-chunk on my (Daniel's) machine does not arrive at the destination (the program just sits and the mini-chunk
                                                                                               #       never gets to its destination). Feel free to change this if desired and if your machine can handle a smaller or bigger mini-chunk size.
+    # This is done for each processor
     files_to_copy_to_new_dir = ["clean.sh", "run.sh", "save_results.mod", "run_dvode.mod", "read_rate06.mod", "read_model.mod", 
                                 "rd_eff.txt", "radiolysis.dat", "photo_processes.dat", "parameter_inputs_template.dat",
                                 "network.dat", "monaco", "model.inp", "mod_save_results.f90", "mod_run_dvode.f90", 
@@ -45,7 +46,7 @@ if rank == 0:
                                 "global_variables.mod", "global_functions.mod", "enthalpias.txt", "dvode_f90_m.mod",
                                 "dvode_f90_m.f90", "class_2_suprathermal.dat", "chem_rate06_dvode.f90", "calculate_rates.mod"] 
 
-    for i in range(0, num_processors): # Create directory for the files for each processor, copy into it the files specified in the above array, and create the results file in each array
+    for i in range(0, num_processors): # Create directory for the files for each processor, copy into it the files specified in the above array, copy the experimental_data directory into it, and create the results file in each array
         new_dir_name = "baragiola_files_processor" + str(i)
         os.system("mkdir " + new_dir_name)
         os.system("touch " + new_dir_name + "/results_file")
