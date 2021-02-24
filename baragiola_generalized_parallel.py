@@ -1,10 +1,14 @@
 import numpy as np
-import csv, itertools, math, os, random, time
+import csv, itertools, math, os, time
 from exportable_custom_functions import *
 from mpi4py import MPI
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
+
+if rank == 0:
+    ts = time.time()
+
 reactions = []
 all_vector_args = [] # Holds a series of arrays (one for each of the linspaces that is created for a reaction)
 base_dir_name = "baragiola_files_processor" # The partial name for each directory of the files for a processor
@@ -38,7 +42,7 @@ if rank == 0:
     all_fitting_factor_combinations = split_array_chunks(all_fitting_factor_combinations, 15) # Splits each of the array chunks into mini-chunks of up to size 15 (creates as many with size 15 as possible)
                                                                                               # Note: Sending a mini-chunk on my (Daniel's) machine does not arrive at the destination (the program just sits and the mini-chunk
                                                                                               #       never gets to its destination). Feel free to change this if desired and if your machine can handle a smaller or bigger mini-chunk size.
-    # This is done for each processor
+    # These file are copied into a directory for each processor
     files_to_copy_to_new_dir = ["clean.sh", "run.sh", "save_results.mod", "run_dvode.mod", "read_rate06.mod", "read_model.mod", 
                                 "rd_eff.txt", "radiolysis.dat", "photo_processes.dat", "parameter_inputs_template.dat",
                                 "network.dat", "monaco", "model.inp", "mod_save_results.f90", "mod_run_dvode.f90", 
@@ -50,7 +54,7 @@ if rank == 0:
     for i in range(0, num_processors): # Create directory for the files for each processor, copy into it the files specified in the above array, copy the experimental_data directory into it, and create the results file in each array
         new_dir_name = base_dir_name + str(i)
         os.system("mkdir " + new_dir_name)
-        os.system("touch " + new_dir_name + "/results_file")
+        os.system("touch " + new_dir_name + "/output_file_results")
         for file_name in files_to_copy_to_new_dir:
             os.system("cp " + file_name + " " + new_dir_name)
         os.system("cp -R experimental_data " + new_dir_name)
@@ -67,45 +71,83 @@ if rank == 0:
                 chunks_left_to_send[j] = False
 
 if rank >= 0:
-    random.seed()
+    new_dir_name = base_dir_name + str(rank)
     num_mini_chunks_to_recv = comm.recv(source=0) # Receive the number of mini-chunks it is going to receive
     processor_fitting_factor_combinations = []
     fitting_factors_and_least_rmsd = [1e80, 0,0,0] # Holds the least rmsd and the fitting factors that produced it
 
-    results = open(base_dir_name + str(rank) + "/results_file",'w')
+    results = open(new_dir_name + "/output_file_results",'w')
     for i in range(0, num_mini_chunks_to_recv): # Receive all the mini-chunks
         data = comm.recv(source=0)
         processor_fitting_factor_combinations.append(data)
     for mini_chunk in processor_fitting_factor_combinations:
-        pass
-#         num_samples_processed += len(mini_chunk)
-#         for combination in mini_chunk:
-#             for i in range(100): # This is to simulate the work done by the processor (and the time it takes) when running monaco
-#                 j = np.random.rand(256,256)
-#             # For the parallel generalized baragiola optimization, will do work of inserting new parameters; running the run.sh file for this processor (includes monaco), and calculation of a performance measure  
-#             fake_performance_measure = math.sqrt(sum([fitting_factor**2 for fitting_factor in combination]))
-#             if (fake_performance_measure < fitting_factors_and_least_rmsd[0]):
-#                 fitting_factors_and_least_rmsd[0] = fake_performance_measure
-#                 fitting_factors_and_least_rmsd[1] = combination[0]
-#                 fitting_factors_and_least_rmsd[2] = combination[1]
-#                 fitting_factors_and_least_rmsd[3] = combination[2]
-#             output_string  = ""
-#             for i in range(0, len(reactions)): # Write to the output file for this processor (write reactions and associated fitting factors and the fake performance metric)
-#                 output_string = output_string + str(combination[i]) + "".join(" "*(23 - len(str(combination[i])))) + reactions[i] + " delta values \n"
-#             output_string += str(fake_performance_measure) + "".join(" "*(23 - len(str(fake_performance_measure)))) + "RMSD" + "\n\n"
-#             results.write(output_string)
-#         # print("The number of samples processed is " + str(num_samples_processed))
-#     results.close()
+        for fitting_factor_combination in mini_chunk:
+            infile = open(new_dir_name + "/parameter_inputs_template.dat",'r')
+            outfile = open(new_dir_name + "/photo_processes_2.dat",'w')
+            for line in infile:
+                line_as_list = line.split()  # Convert the DAT file line into a list
+                # We need to find the first index in the line (as a list) where there is a fitting factor value (it is the first number besides the first element of the list, hence why i (below) is set to 1)
+                index_first_float_value_in_line = 1  # The first entry in the line is a float, but we are looking for the first fitting factor (the 2nd float value in the line); starting at 1 therefore makes the implementation of the below while loop easier
+                # The while loop below skips the first value because it is an integer and would thus be counted as a float. 
+                while(index_first_float_value_in_line < len(line_as_list) and not(is_float(line_as_list[index_first_float_value_in_line]))):  # Increments the index value until the first float value (fitting factor value) is found
+                    index_first_float_value_in_line += 1
+                possible_fitting_factor_index = line_as_list[len(line_as_list) - 1] # See below comment for the meaning of this variable
+                if(is_int(possible_fitting_factor_index)): # If the last value of the line is an integer, which means it is one of the reactions for which we are modifying the fitting factors
+                    new_fitting_factor_val = fitting_factor_combination[int(possible_fitting_factor_index)] # Convert the possible fitting factor index to an int and get the correct fitting factor (where fitting_factor_index tells the computer which fitting factor to get)
+                    new_fitting_factor_val = np.format_float_scientific(new_fitting_factor_val, precision=2,unique=False)  # Convert the new fitting factor value into a string of a number in scientific notation rounded to 2 places after the decimal point
+                    line = line[0:106] + new_fitting_factor_val + line[114:len(line)] # In the line, replace the old fitting factor with the new value             
+                outfile.write(line)
+            infile.close()
+            outfile.close()
+            print("Running model...")
+            os.system('cd ' + new_dir_name + '; ./run.sh') # Includes a run of monaco
+            print("Finding RMSD...")  # RMSD is root-mean square deviation
 
-# least_rmsds_and_fitting_factors = comm.gather(fitting_factors_and_least_rmsd, root=0) # Gather the least fake performance metric value and associated fitting factors from each processor back to the root processor (0)
+            num_experimental_data_points = 0
+            with open(new_dir_name + '/experimental_data/experimental_o3.csv') as csv_file: # Experimental data
+                deviations = []
+                csv_reader = csv.reader(csv_file, delimiter=',')
+                csv_model_data = open(new_dir_name + '/csv/total_ice_o3.csv')
+                csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
+                csv_model_data_list = list(csv_model_data_reader)
+                for row in csv_reader: # This assumes that row[0] is the time, row[1] is the y-value (I'm not sure what this is),
+                    closest_model_values = csv_model_data_list[find_nearest_index(row[0], 0, csv_model_data_list)]
+                    deviation = float(closest_model_values[1])*1e7 - float(row[1])
+                    
+                    # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
+                    if 0.9 * float(row[1]) < deviation < 1.1 * float(row[1]): # 0.9 * float(row[1]) is the allowed_lower_deviation, 1.1 * float(row[1]) is the allowed_upper_deviation
+                        deviation = 0
+                    deviations.append(deviation)
+                    num_experimental_data_points += 1
+                sum = 0
+                for value in deviations:
+                    sum += (value**2)
+                rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
 
-# if rank == 0:
-#     least_rmsd_index = 0
-#     for i in range(1, len(least_rmsds_and_fitting_factors)): # Loop through the least fake performance metric value and associated fitting factors 
-#                                                              # from each processor and find the ones with the least value for the fake performance metrix
-#         if least_rmsds_and_fitting_factors[i][0] < least_rmsds_and_fitting_factors[least_rmsd_index][0]:
-#             least_rmsd_index = i
+                # Should I create a boolean to only write to the output string if there was data in the experimental data csv file?
+                output_string = "" # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
+                for i in range(0, len(reactions)): 
+                    output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reactions[i] + " delta values \n"
+                output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"
+                results.write(output_string)
+                if (rmsd < fitting_factors_and_least_rmsd[0]):
+                    fitting_factors_and_least_rmsd[0] = rmsd
+                    fitting_factors_and_least_rmsd[1] = fitting_factor_combination[0]
+                    fitting_factors_and_least_rmsd[2] = fitting_factor_combination[1]
+                    fitting_factors_and_least_rmsd[3] = fitting_factor_combination[2]
+                csv_file.close()
+    results.close()
+
+least_rmsds_and_fitting_factors = comm.gather(fitting_factors_and_least_rmsd, root=0) # Gather the least fake performance metric value and associated fitting factors from each processor back to the root processor (0)
+
+if rank == 0:
+    least_rmsd_index = 0
+    for i in range(1, len(least_rmsds_and_fitting_factors)): # Loop through the least fake performance metric value and associated fitting factors 
+                                                             # from each processor and find the ones with the least value for the fake performance metrix
+        if least_rmsds_and_fitting_factors[i][0] < least_rmsds_and_fitting_factors[least_rmsd_index][0]:
+            least_rmsd_index = i
 #     # os.system("rm -r files_processor*")
-
-#     print("The smallest performance metric value and associated fitting factors: ")
-#     print(least_rmsds_and_fitting_factors[least_rmsd_index])
+    print("The smallest performance metric value and associated fitting factors: ")
+    print(least_rmsds_and_fitting_factors[least_rmsd_index])
+    te = time.time()
+    print("The script took " + str(te-ts) + " seconds.")
