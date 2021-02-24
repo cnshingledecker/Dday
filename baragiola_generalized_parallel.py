@@ -32,15 +32,10 @@ if rank == 0:
                                                                          #    Note that this creates an array of n arrays (where n is the product of the number of values for each list of fitting factors), and each of these 
                                                                          #    n arrays has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
     all_fitting_factor_combinations = [list(fitting_factor_combination) for fitting_factor_combination in all_fitting_factor_combinations]
-    all_fitting_factor_combinations = split_array(all_fitting_factor_combinations, num_processors)
-    all_fitting_factor_combinations = split_array_chunks(all_fitting_factor_combinations, 15) # Note: Sending a mini-chunk on my (Daniel's) machine does not arrive at the destination (the program just sits and the mini-chunk
+    all_fitting_factor_combinations = split_array(all_fitting_factor_combinations, num_processors) # Splits the array into 'num_processors' chunks
+    all_fitting_factor_combinations = split_array_chunks(all_fitting_factor_combinations, 15) # Splits each of the array chunks into mini-chunks of up to size 15 (creates as many with size 15 as possible)
+                                                                                              # Note: Sending a mini-chunk on my (Daniel's) machine does not arrive at the destination (the program just sits and the mini-chunk
                                                                                               #       never gets to its destination). Feel free to change this if desired and if your machine can handle a smaller or bigger mini-chunk size.
-#     data = [list(np.linspace(1.7,2.7,23)), list(np.linspace(1,2,15)), list(np.linspace(0.3,0.35,1))] # Creates the numpy linspaces to be usedin making the cartesian product (all possible fitting factor combinations)
-#     data = itertools.product(*data) # Creates the cartesian product of all possible fitting factor combinations
-#     data = [list(fitting_factor_combination) for fitting_factor_combination in data] # Converts the result of itertools.product into a list (completely array-indexible)
-#     data = split_array(data, num_processors) # Splits the array into 'num_processors' chunks
-#     data = split_array_chunks(data, 15) # Splits each of the array chunks into mini-chunks of up to size 15 (creates as many with size 15 as possible)
-    
 #     files_to_copy_to_new_dir = [] 
 
 #     for i in range(0, num_processors): # Create directory for the files for each processor, copy into it the files specified in the above array, and create the results file in each array
@@ -49,33 +44,34 @@ if rank == 0:
 #         os.system("touch " + new_dir_name + "/results_file")
 #         for file_name in files_to_copy_to_new_dir:
 #             os.system("cp " + file_name + " " + new_dir_name)
-#     for i in range(0, len(data)): # Tell each processor how many mini-chunks it is going to be receiving
-#         comm.send(len(data[i]), dest=i)
-#     mini_chunk_to_send = [0 for i in range(num_processors)] # Tells comm.send which mini-chunk to send (tells the index) to a certain processor
-#     chunks_left_to_send = [True for i in range(num_processors)] # List of boolean variables that says whether there are mini-chunks left to send to each processor
-#     while(sum(chunks_left_to_send) > 0):
-#         for j in range(0, len(data)):
-#             if mini_chunk_to_send[j] < len(data[j]):
-#                 comm.send(data[j][mini_chunk_to_send[j]], dest=j)
-#                 mini_chunk_to_send[j] += 1
-#             else:
-#                 chunks_left_to_send[j] = False
+    for i in range(0, len(all_fitting_factor_combinations)): # Tell each processor how many mini-chunks it is going to be receiving
+        comm.send(len(all_fitting_factor_combinations[i]), dest=i)
+    mini_chunk_to_send = [0 for i in range(num_processors)] # Tells comm.send which mini-chunk to send (tells the index) to a certain processor
+    chunks_left_to_send = [True for i in range(num_processors)] # List of boolean variables that says whether there are mini-chunks left to send to each processor
+    while(sum(chunks_left_to_send) > 0):
+        for j in range(0, len(all_fitting_factor_combinations)):
+            if mini_chunk_to_send[j] < len(all_fitting_factor_combinations[j]):
+                comm.send(all_fitting_factor_combinations[j][mini_chunk_to_send[j]], dest=j)
+                mini_chunk_to_send[j] += 1
+            else:
+                chunks_left_to_send[j] = False
 
-# if rank >= 0:
+if rank >= 0:
 #     random.seed()
-#     num_mini_chunks_to_recv = comm.recv(source=0) # Receive the number of mini-chunks it is going to receive
-#     processor_fitting_factor_combinations = []
+    num_mini_chunks_to_recv = comm.recv(source=0) # Receive the number of mini-chunks it is going to receive
+    processor_fitting_factor_combinations = []
 #     fitting_factors_and_least_rmsd = [1e80, 0,0,0]
 #     reactions = ["Reaction 1", "Reaction 2", "Reaction 3"] # Used in writing output string of fitting factors and the fake_performance_measure to output file
 
 #     results = open("files_processor" + str(rank) + "/results_file",'w')
 #     num_items_recv = 0
-#     for i in range(0, num_mini_chunks_to_recv): # Receive all the mini-chunks
-#         data = comm.recv(source=0)
+    for i in range(0, num_mini_chunks_to_recv): # Receive all the mini-chunks
+        data = comm.recv(source=0)
 #         num_items_recv += len(data)
-#         processor_fitting_factor_combinations.append(data)
+        processor_fitting_factor_combinations.append(data)
 #     num_samples_processed = 0
-#     for mini_chunk in processor_fitting_factor_combinations:
+    for mini_chunk in processor_fitting_factor_combinations:
+        print("Mini-chunk " + str(mini_chunk) + " came to processor " + str(rank))
 #         num_samples_processed += len(mini_chunk)
 #         for combination in mini_chunk:
 #             for i in range(100): # This is to simulate the work done by the processor (and the time it takes) when running monaco
