@@ -6,9 +6,6 @@ from mpi4py import MPI
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
-if rank == 0:
-    ts = time.time()
-
 reactions = []
 all_vector_args = [] # Holds a series of arrays (with each array containing the values in each of the linspaces that is created for a reaction)
 base_dir_name = "baragiola_files_processor" # The partial name for each directory of the files for a processor
@@ -152,5 +149,3 @@ if rank == 0:
 #     # os.system("rm -r files_processor*")
     print("The smallest performance metric value and associated fitting factors: ")
     print(least_rmsds_and_fitting_factors[least_rmsd_index])
-    te = time.time()
-    print("The script took " + str(te-ts) + " seconds.")
