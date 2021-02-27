@@ -36,11 +36,11 @@ if rank == 0:
         fitting_factors.append(single_vector_fitting_factors)  
     
     all_fitting_factor_combinations = itertools.product(*fitting_factors)    # Creates all possible combinations of fitting factor values from the previously created lists (created in the 'for vector args in all_vector_args' for loop)
-                                                                         #    Note that this creates an array of n arrays (where n is the product of the number of values for each list of fitting factors), and each of these 
-                                                                         #    n arrays has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
+                                                                         #    Note that this creates a list of n lists (where n is the product of the number of values for each list of fitting factors), and each of these 
+                                                                         #    n lists has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
     all_fitting_factor_combinations = [list(fitting_factor_combination) for fitting_factor_combination in all_fitting_factor_combinations]
-    all_fitting_factor_combinations = split_array(all_fitting_factor_combinations, num_processors) # Splits the array into 'num_processors' chunks
-    all_fitting_factor_combinations = split_array_chunks(all_fitting_factor_combinations, 15) # Splits each of the array chunks into mini-chunks of up to size 15 (creates as many with size 15 as possible)
+    all_fitting_factor_combinations = split_list(all_fitting_factor_combinations, num_processors) # Splits the list into 'num_processors' chunks
+    all_fitting_factor_combinations = split_list_chunks(all_fitting_factor_combinations, 15) # Splits each of the list chunks into mini-chunks of up to size 15 (creates as many with size 15 as possible)
                                                                                               # Note: Sending a mini-chunk on my (Daniel's) machine does not arrive at the destination (the program just sits and the mini-chunk
                                                                                               #       never gets to its destination). Feel free to change this if desired and if your machine can handle a smaller or bigger mini-chunk size.
     # These file are copied into a directory for each processor
