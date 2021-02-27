@@ -1,6 +1,7 @@
-fitting factors for reactions linspaces (1 line per delta value that you want to change, line contains the following arguments to create the linspace): start, end, num_samples. 
+fitting factors for reactions linspaces (1 line per fitting factor that you want to change, line contains the following arguments to create the numpy linspace): start, end, num_samples. 
 Assuming that the indexing of lines in this file starts at 1 (it does for me in VS Code on Windows 10), the values for a linspace on line n are used to create a linspace whose values 
-appear in fitting_factor_combination[n - 3] (where fitting_factor_combination is an array containing a combination of values (one from each of the linspaces))
+appear in fitting_factor_combination[n - 3] in the baragiola optimization (where fitting_factor_combination is an array containing a combination of values (one from each of the linspaces)).
+The general structure of a line is: linspace argument, linspace argument, linspace argument, reaction for which the linspace's values are fitting factors
 1.7,2.7,10,O2-->2O
 1,2,1,O2-->2O*
 0.3,0.35,1,O2-->O2* and O3-->O2+O and O3-->O3*

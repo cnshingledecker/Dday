@@ -15,7 +15,7 @@ fitting_factors = [] # Holds arrays containing the fitting_factors for the react
 
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
-    for i in range(0, 3): # Skips the first 3 lines of the csv file (lines which are comments)
+    for i in range(0, 4): # Skips the first 4 lines of the csv file (lines which are comments)
         fields = next(reader)
     for row in reader:  # Each row is a set of arguments to be used to create the linspace for fitting factors for a reaction
         num_modified_fitting_factors += 1
@@ -55,7 +55,7 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     infile.close()
     outfile.close()
     print("Running model...")
-    os.system('./runGeneralization.sh') # Executes a version of run.sh that runs the monaco executable for this generalization 
+    os.system('./runGeneralization.sh') # Executes a version of run.sh that runs the monaco executable for this generalization (a monaco that uses certain fortran files for this generalization)
     print("Finding RMSD...")  # RMSD is root-mean square deviation
 
     num_experimental_data_points = 0
