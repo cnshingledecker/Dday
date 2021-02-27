@@ -21,4 +21,7 @@
     * Explain what OpenMPI is and why it was used
     * Mention use of mpi4py
     * Describe why certain functions were written and chnages werre made when writing this version.
-- Time comparisions between the 
+- Time comparisions between the different scripts
+
+# README file from main branch
+Include contents of the README file from the main branch for reference.
