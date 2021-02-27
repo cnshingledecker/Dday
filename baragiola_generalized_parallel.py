@@ -10,6 +10,7 @@ reactions = [] # Will hold the reactions for which the fitting factors are being
 all_vector_args = [] # Holds a series of arrays (with each array containing the values in each of the linspaces that is created for a reaction)
 base_dir_name = "baragiola_files_processor" # The partial name for each directory of the files for a processor
 
+# Note: the below code is ran on every processor because each processor needs the reaction, and reading it on each processor means the data from the file doesn't have to be sent to each processor
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
     for i in range(0, 3): # Skips the first 3 lines of the csv file (lines which are comments)
@@ -17,19 +18,22 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
     for row in reader:  # Each row is a set of arguments to be used to create the linspace for fitting factors for a reaction
         args_for_single_linspace = []  # A vector to hold the set of arguments to be used to create the linspace for the fitting factors for a reaction
         for argument in row:
-            if is_float(argument):
+            if is_float(argument): # It is one of the arguments to be used to make a numpy linspace
                 args_for_single_linspace.append(float(argument)) # Adds the arguments to the previously created vector (3 lines above)
             else:  # It is text (it is not an index specifying a delta value to choose; because it is text, it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
                 reactions.append(argument) # Note that for each fitting factor combination; fitting_factor_combination[i] is the fitting factor associated with reaction[i]
         all_vector_args.append(args_for_single_linspace)
 
-if rank == 0:
-    fitting_factors = [] # Holds arrays containing the fitting_factors for the reactions (each element of the array is a list with the various fitting factors for a reaction)
+# Notes: Processor is the one that handles the generation and distribution of fitting factors and the collection of data.
+#        In this if statement, a directory is created for each processor with the files necessary for it to run monaco as well as find the rmsd and write to output files,
+#        the fitting factor combinations are generated and distributed to each processor (including itself (processor 0)),         
+if rank == 0: 
+    fitting_factors = [] # Holds lists (there will be 3; each list is a numpy linspace (converted to a list) that was created using the arguments read in from the csv input file above)
     num_processors = 4
-    for vector_args in all_vector_args:
+    for vector_args in all_vector_args: # Create numpy linspace out using the parameters in vector_args (read from an input file)
         single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
         single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
-        fitting_factors.append(single_vector_fitting_factors)     
+        fitting_factors.append(single_vector_fitting_factors)  
     
     all_fitting_factor_combinations = itertools.product(*fitting_factors)    # Creates all possible combinations of fitting factor values from the previously created lists (created in the 'for vector args in all_vector_args' for loop)
                                                                          #    Note that this creates an array of n arrays (where n is the product of the number of values for each list of fitting factors), and each of these 
