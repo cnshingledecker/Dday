@@ -146,6 +146,5 @@ if rank == 0:
                                                              # from each processor and find the ones with the least value for the fake performance metrix
         if least_rmsds_and_fitting_factors[i][0] < least_rmsds_and_fitting_factors[least_rmsd_index][0]:
             least_rmsd_index = i
-#     # os.system("rm -r files_processor*")
     print("The smallest performance metric value and associated fitting factors: ")
     print(least_rmsds_and_fitting_factors[least_rmsd_index])
