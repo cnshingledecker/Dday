@@ -8,7 +8,7 @@ from exportable_custom_functions import find_nearest_index,is_float, is_int
 
 results = open("resultsFile_2", 'w')
 
-reactions = []
+reactions = [] # Will hold the reactions for which the fitting factors are being modified
 all_vector_args = [] # Holds a series of arrays (one for each of the linspaces that is created for a reaction)
 num_modified_fitting_factors = 0
 fitting_factors = [] # Holds arrays containing the fitting_factors for the reactions (each element of the array is a list with the various fitting factors for a reaction)
@@ -33,8 +33,8 @@ for vector_args in all_vector_args:
     fitting_factors.append(single_vector_fitting_factors) 
 
 all_fitting_factor_combinations = itertools.product(*fitting_factors)    # Creates all possible combinations of fitting factor values from the previously created lists (created in the 'for vector args in all_vector_args' for loop)
-                                                                         #    Note that this creates an array of n arrays (where n is the product of the number of values for each list of fitting factors), and each of these 
-                                                                         #    n arrays has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
+                                                                         #    Note that this creates a list of n lists (where n is the product of the number of values for each list of fitting factors), and each of these 
+                                                                         #    n lists has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
 
 for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_factor_combinations[n] is a value from the (n + 1)th np.linspace created 
     infile = open("parameter_inputs_template.dat",'r')
@@ -60,14 +60,14 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
 
     num_experimental_data_points = 0
     with open('experimental_data/experimental_o3.csv') as csv_file: # Experimental data
-        deviations = []
+        deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
         csv_reader = csv.reader(csv_file, delimiter=',')
         csv_model_data = open('csv/total_ice_o3.csv')
         csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
         csv_model_data_list = list(csv_model_data_reader)
         for row in csv_reader: # This assumes that row[0] is the time, row[1] is the y-value (I'm not sure what this is),
             closest_model_values = csv_model_data_list[find_nearest_index(row[0], 0, csv_model_data_list)]
-            deviation = float(closest_model_values[1])*1e7 - float(row[1])
+            deviation = float(closest_model_values[1])*1e7 - float(row[1]) # Deviation of the model value from the actual (experimental) value
             
             # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
             if 0.9 * float(row[1]) < deviation < 1.1 * float(row[1]): # 0.9 * float(row[1]) is the allowed_lower_deviation, 1.1 * float(row[1]) is the allowed_upper_deviation
@@ -80,7 +80,9 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
         rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
 
         # Should I create a boolean to only write to the output string if there was data in the experimental data csv file?
-        output_string = "" # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
+
+        # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
+        output_string = "" 
         for i in range(0, len(reactions)): 
             output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reactions[i] + " delta values \n"
         output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"

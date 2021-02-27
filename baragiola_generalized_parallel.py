@@ -7,7 +7,7 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
 reactions = [] # Will hold the reactions for which the fitting factors are being modified
-all_vector_args = [] # Holds a series of arrays (with each array containing the values in each of the linspaces that is created for a reaction)
+all_vector_args = [] # Holds a series of lists (with each list containing the values in each of the linspaces that is created for a reaction)
 base_dir_name = "baragiola_files_processor" # The partial name for each directory of the files for a processor
 
 # Note: the below code is ran on every processor because each processor needs the reaction, and reading it on each processor means the data from the file doesn't have to be sent to each processor
@@ -109,7 +109,7 @@ if rank >= 0:
 
             num_experimental_data_points = 0
             with open(new_dir_name + '/experimental_data/experimental_o3.csv') as csv_file: # Experimental data
-                deviations = []
+                deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
                 csv_reader = csv.reader(csv_file, delimiter=',')
                 csv_model_data = open(new_dir_name + '/csv/total_ice_o3.csv')
                 csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
