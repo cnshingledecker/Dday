@@ -55,7 +55,7 @@ if rank == 0:
     for i in range(0, num_processors): # Create directory for the files for each processor, copy into it the files specified in the above array, copy the experimental_data directory into it, and create the results file in each array
         new_dir_name = base_dir_name + str(i)
         os.system("mkdir " + new_dir_name)
-        os.system("touch " + new_dir_name + "/output_file_results")
+        os.system("touch " + new_dir_name + "/output_file_results") # Create file that each processor will write to (will write fitting factors and associated rmsds)
         for file_name in files_to_copy_to_new_dir:
             os.system("cp " + file_name + " " + new_dir_name)
         os.system("cp -R experimental_data " + new_dir_name)
@@ -68,14 +68,14 @@ if rank == 0:
     chunks_left_to_send = [True for i in range(num_processors)] # List of boolean variables that says whether there are mini-chunks left to send to each processor
     while(sum(chunks_left_to_send) > 0):
         for j in range(0, len(all_fitting_factor_combinations)):
-            if mini_chunk_to_send[j] < len(all_fitting_factor_combinations[j]):
+            if mini_chunk_to_send[j] < len(all_fitting_factor_combinations[j]): # If the possible index (of a mini-chunk to send) is a valid one (less than the number of mini-chunks)
                 comm.send(all_fitting_factor_combinations[j][mini_chunk_to_send[j]], dest=j)
-                mini_chunk_to_send[j] += 1
+                mini_chunk_to_send[j] += 1 # Increment the index for the next run of the loop
             else:
                 chunks_left_to_send[j] = False
 
 if rank >= 0:
-    new_dir_name = base_dir_name + str(rank)
+    new_dir_name = base_dir_name + str(rank) # The name of the directory conaining the files for this processor
     num_mini_chunks_to_recv = comm.recv(source=0) # Receive the number of mini-chunks it is going to receive
     processor_fitting_factor_combinations = []
     fitting_factors_and_least_rmsd = [1e80, 0,0,0] # Holds the least rmsd and the fitting factors that produced it; fitting_factors_and_least_rmsd[0] is the rmsd, indices 1-3 are the fitting factors that led to that rmsd value
@@ -104,7 +104,7 @@ if rank >= 0:
             infile.close()
             outfile.close()
             print("Running model...")
-            os.system('cd ' + new_dir_name + '; ./run.sh') # Includes a run of monaco
+            os.system('cd ' + new_dir_name + '; ./run.sh') # Includes a run of monaco (note that what these commands do is temporarily dipping down into the directory of the files for this processor and running run.sh); after runnign these commands, the current directory is the same as it was before these commands were run
             print("Finding RMSD...")  # RMSD is root-mean square deviation
 
             num_experimental_data_points = 0
@@ -116,7 +116,7 @@ if rank >= 0:
                 csv_model_data_list = list(csv_model_data_reader)
                 for row in csv_reader: # This assumes that row[0] is the time, row[1] is the y-value (I'm not sure what this is),
                     closest_model_values = csv_model_data_list[find_nearest_index(row[0], 0, csv_model_data_list)]
-                    deviation = float(closest_model_values[1])*1e7 - float(row[1])
+                    deviation = float(closest_model_values[1])*1e7 - float(row[1]) # Deviation of the model value from the actual (experimental) value
                     
                     # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
                     if 0.9 * float(row[1]) < deviation < 1.1 * float(row[1]): # 0.9 * float(row[1]) is the allowed_lower_deviation, 1.1 * float(row[1]) is the allowed_upper_deviation
@@ -129,12 +129,15 @@ if rank >= 0:
                 rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
 
                 # Should I create a boolean to only write to the output string if there was data in the experimental data csv file?
-                output_string = "" # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
+                
+                # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
+                output_string = ""
                 for i in range(0, len(reactions)): 
                     output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reactions[i] + " delta values \n"
                 output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"
                 results.write(output_string)
-                if (rmsd < fitting_factors_and_least_rmsd[0]):  
+
+                if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
                     fitting_factors_and_least_rmsd[0] = rmsd
                     fitting_factors_and_least_rmsd[1] = fitting_factor_combination[0]
                     fitting_factors_and_least_rmsd[2] = fitting_factor_combination[1]
@@ -150,5 +153,5 @@ if rank == 0:
                                                              # from each processor and find the ones with the least value for the fake performance metrix
         if least_rmsds_and_fitting_factors[i][0] < least_rmsds_and_fitting_factors[least_rmsd_index][0]:
             least_rmsd_index = i
-    print("The smallest performance metric value and associated fitting factors: ")
+    print("The smallest performance metric value and fitting factors that produced it: ")
     print(least_rmsds_and_fitting_factors[least_rmsd_index])
