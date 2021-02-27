@@ -6,7 +6,7 @@ from mpi4py import MPI
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
-reactions = []
+reactions = [] # Will hold the reactions for which the fitting factors are being modified
 all_vector_args = [] # Holds a series of arrays (with each array containing the values in each of the linspaces that is created for a reaction)
 base_dir_name = "baragiola_files_processor" # The partial name for each directory of the files for a processor
 
@@ -15,13 +15,13 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
     for i in range(0, 3): # Skips the first 3 lines of the csv file (lines which are comments)
         fields = next(reader)
     for row in reader:  # Each row is a set of arguments to be used to create the linspace for fitting factors for a reaction
-        args_for_single_vector = []  # A vector to hold the set of arguments to be used to create the linspace for the fitting factors for a reaction
+        args_for_single_linspace = []  # A vector to hold the set of arguments to be used to create the linspace for the fitting factors for a reaction
         for argument in row:
             if is_float(argument):
-                args_for_single_vector.append(float(argument)) # Adds the arguments to the previously created vector (3 lines above)
+                args_for_single_linspace.append(float(argument)) # Adds the arguments to the previously created vector (3 lines above)
             else:  # It is text (it is not an index specifying a delta value to choose; because it is text, it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
-                reactions.append(argument)
-        all_vector_args.append(args_for_single_vector)
+                reactions.append(argument) # Note that for each fitting factor combination; fitting_factor_combination[i] is the fitting factor associated with reaction[i]
+        all_vector_args.append(args_for_single_linspace)
 
 if rank == 0:
     fitting_factors = [] # Holds arrays containing the fitting_factors for the reactions (each element of the array is a list with the various fitting factors for a reaction)
