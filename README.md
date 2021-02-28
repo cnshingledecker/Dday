@@ -33,6 +33,8 @@ Note that monaco reads from certain input files (including reading fitting facto
 
 ##### Generalization
 
+How to run this: (how you would run a python script). Example "python3 baragiola_optimization_generalization_rmsd_generalization.py".
+
 As previously described, one of the goals of this project is to write the code in such a way that it can be ran with various input files to produce different models.
 
 Generally, what the original Python script (baragiola_optimization.py) did was as follows:
@@ -66,6 +68,8 @@ The following changes were made in the generalization the script (see baragiola_
 
 #### Parallelization
 
+How to run this: mpiexec -n (num_processors) (how you would run any other python file). Example: "mpiexec -n 4 python3 baragiola_generalized_parallel.py". Make sure the value you use for num_processors in the command line has the same value as the same-named variable in baragiola_generalized_parallel.py, and if you run compareOptimizations.py, which runs the original, generalized, and parallel/generalized scripts, you must change num_processors in the command line argument that runs the generalized/parallel baragiola script. 
+
 Why write a parallel version of the generalized script? The parallelized version has one significant benefit: multiple models can be ran at once, which can decrease runtime. However, the parallelized script has some drawbacks and possible risks:
 
 Drawbacks:
@@ -78,4 +82,10 @@ Benefits:
 - Possible Decreased Overall Runtime
 - Each processor can find the lowest RMSD that was produced from the fitting factors it was sent and send back to the root processor that RMSD and the fitting factors that produced it. This simplifies the process of finding the fitting factors that produce the least RMSD.
 
-Below is an overview of the changes from the parallelized version of the script to the generalized version:         
+Below is an overview of the changes from the parallelized version of the script to the generalized version: 
+1. For each processor, a directory is created, and a file is created in it where the fitting factors and RMSD that they produced is written for each fitting factor combination. The files that monaco uses (and many others; don't copy files if they don't need to be (for monaco)).
+2. Once the fitting factor combinations are created (a list of them), that list is split into n chunks (where n is the number of processors used).
+3. Once step 2 is completed, each chunk (there is 1 for each processor) is split up into mini-chunks, starting with size 15 (the last mini-chunk created is of size chunk-size mod 15). This function was written because on the machine this code was developed on, the processors did not receive chunks of size 16 or greater. The mini-chunk size is specified in the function call, and the for loops that send the fitting factor combinations to each processor are set up to send these mini-chunks (the for loops will send all the mini-chunks, regardless of the mini-chunk size).
+3. Steps 8 and 9 from the generalization additions above are not in place for this version, because for each processor, the files used with the original monaco are copied to the directory for each processor. Therefore, there is no need to change the files that monaco reads from.
+4. Instead of all of the processors writing to 1 common results file, each processor writes to its own results file.
+5. Each processor finds the lowest RMSD and the fitting factors that produced it, and sends that back to the root processor (processor 0). The root processor finds the lowest RMSD (and fittign factors that produced it) from among those returned and writes the one with the lowest RMSD and writes it to a results file.  
