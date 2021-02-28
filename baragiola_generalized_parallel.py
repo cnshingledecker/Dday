@@ -155,3 +155,10 @@ if rank == 0:
             least_rmsd_index = i
     print("The smallest performance metric value and fitting factors that produced it: ")
     print(least_rmsds_and_fitting_factors[least_rmsd_index])
+    results_file = open("results_generalized_parallel", 'w')
+    output_string = ""
+    for i in range(1, len(reactions)): 
+        output_string = output_string + str(least_rmsds_and_fitting_factors[least_rmsd_index][i]) + "".join(" "*(23 - len(str(least_rmsds_and_fitting_factors[least_rmsd_index][i])))) + reactions[i] + " delta values \n"
+    output_string += str(least_rmsds_and_fitting_factors[least_rmsd_index][0]) + "".join(" "*(23 - len(str(least_rmsds_and_fitting_factors[least_rmsd_index][0])))) + "RMSD" + "\n\n"
+    results.write(output_string)
+    results_file.write("")
