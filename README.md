@@ -28,6 +28,7 @@ Note that monaco reads from certain input files (including reading fitting facto
         - pip3 (version 20.0.2)
         - Installed using pip3: mpi4py
 
+### Note: the README on the 'main' branch may be helpful to read.
 
 #### Description of 2 Main Parts of the Project: (1) Generalization and (2) Parallelization
 
