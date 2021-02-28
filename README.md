@@ -55,7 +55,7 @@ The fitting factors that produced the least RMSD are thus the ones that produced
 The following changes were made in the generalization the script (see baragiola_optimization_generalization_rmsd_generalization) (note: this list may not be all changes):
 
 1. Place the arguments for the 3 numpy linspaces (and the associated reaction) in a csv file, to be read in when the program runs.
-    * This data is in the file 'reaction_fitting_factor_vector_arguments.csv', which is in the directory 'reaction_fitting_factor_linspace_args'. This is done because otherwise, the file is deleted when clean.sh is run.
+    1. This data is in the file 'reaction_fitting_factor_vector_arguments.csv', which is in the directory 'reaction_fitting_factor_linspace_args'. This is done because otherwise, the file is deleted when clean.sh is run.
 2. Instead of accessing a combination of fitting factors in the innermost loop of 3 nested for loops, generate a Cartesian combination of the linspaces (after converting them to lists), and run the code using only 1 for loop that uses 1 fitting factor combination per iteration of the for loop. **The rest of the script is run almost the same inside this for loop.**
 3. Note that the experimental file that the experimental data file that the baragiola optimization reads from is a csv file in the 'experimental_data' directory. Make sure the script reads from this file (change the file name that the python script reads from).
 4. The output of the program (fitting factors, their reactions, and rmsd that they produced, all in a string written to a file) was composed in a different way:
