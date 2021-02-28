@@ -99,4 +99,4 @@ Below is an overview of the changes from the parallelized version of the script 
 
 #### Comparison Script
 
-The python script compareOptimizations.py runs the original, generalized and (parallel and generalized) versions of the baragiola script, one after another, in that order, prints out the runtimes for each, and compares the results files for the original and generalized versions. Note that this will only work if all 3 scripts have (a) the same numpy linspace arguments and thus are dealing with the same reactions, (b) the same experimental data files, and (c) the same photo_processes.dat files. 
+The python script compareOptimizations.py runs the original, generalized and (parallel and generalized) versions of the baragiola script, one after another, in that order, prints out the runtimes for each, and compares the results files for the original and generalized versions. Note that this script will only work as expected if all 3 scripts have (a) the same numpy linspace arguments and thus are dealing with the same reactions, (b) the same experimental data files, and (c) the same photo_processes.dat files. 
