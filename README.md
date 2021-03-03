@@ -20,7 +20,8 @@ Note that monaco reads from certain input files (including reading fitting facto
     * Development Machine (Link to specs): [Dell Inspiron 7586](https://www.dell.com/support/manuals/en-us/inspiron-15-7586-2-in-1-laptop/inspiron_7586_setupandspecs/specifications-of-inspiron-7586?guid=guid-7c9f07ce-626e-44ca-be3a-a1fb036413f9&lang=en-us)
         - General Information: Intel i7 8th Generation processor (4 cores, speed: Up to 1.60/1.80 GHz (Boost - 3.90/4.60 GHz), 512 GB SSD, 16 GB RAM)
 - Environment Specifications
-    * Code ran using the Ubuntu (version 20.04) terminal
+    * Code ran using the Ubuntu (version 20.04) terminal (Ubuntu 20.04.1 LTS)
+    * **Note: The code (for this project) has developed to run in an environment that accepts Linux shell commands.**
 - Package/Language specifications
     * Python: Developed on version 3.8.5
     * Packages installed (on Ubuntu; for a full list, see installedPackagesUbuntu.txt)
