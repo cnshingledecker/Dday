@@ -623,7 +623,7 @@ IF ( suprathermal .EQ. 1 ) THEN
         IF ( r(i)%ip4 .NE. 0 ) prodatoms = prodatoms + s(r(i)%ip4)%natoms
         reactatoms = s(r(i)%ir1)%natoms
 
-        IF (ANY(r(i)%r2 .EQ. (/"QUENCH","CRPHOT","PHOTON","FREEZE","DESORB","IONRAD","G-","G0","CR","CRP","PHOION","PHOEXC"/)) .EQV. .FALSE.) THEN
+        IF (ANY(r(i)%r2 .EQ. (/"QUENCH","CRPHOT","PHOTON","FREEZE","DESORB","IONRAD","G-    ","G0    ","CR    ","CRP   ","PHOION","PHOEXC"/)) .EQV. .FALSE.) THEN
           reactatoms = reactatoms + s(r(i)%ir2)%natoms
         ENDIF
 
