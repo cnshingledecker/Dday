@@ -1,3 +1,4 @@
+  
 MODULE global_variables
 IMPLICIT NONE
 
