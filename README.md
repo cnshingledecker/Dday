@@ -70,7 +70,7 @@ The following changes were made in the generalization the script (see baragiola_
 
 #### Parallelization
 
-How to run this: mpiexec -n (num_processors) (how you would run any other python file). Example: "mpiexec -n 4 python3 baragiola_generalized_parallel.py". Make sure the value you use for num_processors in the command line has the same value as the same-named variable in baragiola_generalized_parallel.py, and if you run compareOptimizations.py, which runs the original, generalized, and parallel/generalized scripts, you must change num_processors in the command line argument that runs the generalized/parallel baragiola script. 
+How to run this: mpiexec -n (num_processors) (how you would run any other python file). Example: `mpiexec -n 4 python3 baragiola_generalized_parallel.py`. Make sure the value you use for num_processors in the command line has the same value as the same-named variable in baragiola_generalized_parallel.py, and if you run compareOptimizations.py, which runs the original, generalized, and parallel/generalized scripts, you must change num_processors in the command line argument that runs the generalized/parallel baragiola script. 
 
 If you want to run this with different input and output files, you need to overwrite the contents of the following files:
 1. photo_processes.dat, with the same conditions specified in (7) under the 'Generalization' header above.
