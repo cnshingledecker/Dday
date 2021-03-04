@@ -24,8 +24,8 @@ Note that monaco reads from certain input files (including reading fitting facto
     * **Note: The code (for this project) has developed to run in an environment that accepts Linux shell commands.**
 - Package/Language specifications
     * Python: Developed on version 3.8.5
-    * Packages installed (on Ubuntu; for a full list, see installedPackagesUbuntu.txt)
-        - openmpi-bin (possibly 'make all install' ran after running the initial command to install openmpi-bin)
+    * Packages installed (on Ubuntu; for a full list of all things installed, see installedPackagesUbuntu.txt)
+        - openmpi-bin 
         - pip3 (version 20.0.2)
         - Installed using pip3: mpi4py
 
