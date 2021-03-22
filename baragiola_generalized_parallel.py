@@ -160,5 +160,5 @@ if rank == 0:
     for i in range(1, len(reactions)): 
         output_string = output_string + str(least_rmsds_and_fitting_factors[least_rmsd_index][i]) + "".join(" "*(23 - len(str(least_rmsds_and_fitting_factors[least_rmsd_index][i])))) + reactions[i] + " delta values \n"
     output_string += str(least_rmsds_and_fitting_factors[least_rmsd_index][0]) + "".join(" "*(23 - len(str(least_rmsds_and_fitting_factors[least_rmsd_index][0])))) + "RMSD" + "\n\n"
-    results.write(output_string)
-    results_file.write("")
+    results_file.write(output_string)
+    results_file.close()
