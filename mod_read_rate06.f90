@@ -18,6 +18,8 @@ REAL*8  :: apriori_nml
 CHARACTER*10 :: groundstate,s_name, r1, r2, p1, p2, p3, p4, p5
 TYPE (reaction), DIMENSION(:), ALLOCATABLE :: rtemp
 
+LOGICAL :: testing = .FALSE.
+
 ! Set a priori number of monolayers
 apriori_nml = 1000000 !10.0*(ICE_THICK/5.0e-8)
 
@@ -286,7 +288,9 @@ ENDDO
 
 ! Now generate new reactions array with additional space for suprathermal
 ! reactions.
-PRINT *, "original size(r)= ",size(r)
+IF (testing) THEN
+  PRINT *, "original size(r)= ",size(r)
+ENDIF
 ALLOCATE( rtemp(SIZE(r) + Nsup_g) )
 rtemp(1:SIZE(r)) = r
 DEALLOCATE( r )
@@ -294,8 +298,10 @@ ALLOCATE( r(SIZE(rtemp)) )
 r = rtemp
 DEALLOCATE( rtemp )
 
-PRINT *, "Nsup_g = ",Nsup_g
-PRINT *, "next size(r)= ",size(r)
+IF (testing) THEN
+  PRINT *, "Nsup_g = ",Nsup_g
+  PRINT *, "next size(r)= ",size(r)
+ENDIF
 
 
 ! C. N. Shingledecker
@@ -517,7 +523,9 @@ IF ( suprathermal .EQ. 1 ) THEN
     ! Add the new quenching reactions to the temp reactions object
     OPEN(3,FILE='quenching.out',STATUS='REPLACE',IOSTAT=io)
     jj = first_suprathermal_species
-    PRINT *, "First suprathermal_species =",jj
+    IF (testing) THEN
+      PRINT *, "First suprathermal_species =",jj
+    ENDIF
     DO ii=nreactions+1,nreactions+(nspecies - first_suprathermal_species - 1)
       groundstate = s(jj)%name(1:LEN_TRIM(s(jj)%name)-1)
       rtemp(ii)%r1  = s(jj)%name
@@ -538,9 +546,11 @@ IF ( suprathermal .EQ. 1 ) THEN
       rtemp(ii)%exothermicity = 0.00e0
       rtemp(ii)%exothermicity_known = 0
       WRITE(3,1000)rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
-      PRINT *, s(jj)%name," -> ",s(jj)%name(1:LEN_TRIM(s(jj)%name)-1)
-      PRINT *, "jj = ",jj, " nspecies= ",nspecies
-      PRINT *, "************************"
+      IF (testing) THEN
+        PRINT *, s(jj)%name," -> ",s(jj)%name(1:LEN_TRIM(s(jj)%name)-1)
+        PRINT *, "jj = ",jj, " nspecies= ",nspecies
+        PRINT *, "************************"
+      ENDIF
       jj = jj + 1
     END DO
     CLOSE(3)
@@ -784,6 +794,7 @@ END SUBROUTINE get_rd_efficiency
 INTEGER FUNCTION get_rtype(r1,r2)
 IMPLICIT NONE
 CHARACTER*10 r1, r2
+LOGICAL :: testing = .FALSE., runIfStatement = .TRUE.
 
 get_rtype = 1
 
@@ -806,8 +817,12 @@ IF (((r1(LEN_TRIM(r1):LEN_TRIM(r1)) .EQ. '*' .OR. r2(LEN_TRIM(r2):LEN_TRIM(r2)) 
   .AND. ((r1(1:1) .EQ. 'b') .OR. (r2(1:1) .EQ. 'b'))) get_rtype = 16
 IF (r2(1:LEN_TRIM(r2)) == 'IONRAD') get_rtype = 17
 IF (r2(1:LEN_TRIM(r2)) == 'QUENCH') THEN
-  PRINT *, r1," + ",r2
   get_rtype = 18
+  runIfStatement = .TRUE.
+ENDIF
+
+IF (runIfStatement .AND. testing) THEN
+    PRINT *, r1," + ",r2
 ENDIF
 IF (r2(1:LEN_TRIM(r2)) == 'PHOION') get_rtype = 19
 IF (r2(1:LEN_TRIM(r2)) == 'PHOEXC') get_rtype = 20
