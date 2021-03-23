@@ -13,19 +13,31 @@ all_vector_args = [] # Holds a series of arrays (one for each of the linspaces t
 num_modified_fitting_factors = 0
 fitting_factors = [] # Holds arrays containing the fitting_factors for the reactions (each element of the array is a list with the various fitting factors for a reaction)
 
+# Note: the below code is ran on every processor because each processor needs the reaction, and reading it on each processor means the data from the file doesn't have to be sent to each processor
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
     for i in range(0, 4): # Skips the first 4 lines of the csv file (lines which are comments)
         fields = next(reader)
+    
+    i = 0
     for row in reader:  # Each row is a set of arguments to be used to create the linspace for fitting factors for a reaction
+        i += 1
         num_modified_fitting_factors += 1
-        args_for_single_vector = []  # A vector to hold the set of arguments to be used to create the linspace for the fitting factors for a reaction
+        args_for_single_linspace = []  # A vector to hold the set of arguments to be used to create the linspace for the fitting factors for a reaction
         for argument in row:
-            if is_float(argument):
-                args_for_single_vector.append(float(argument)) # Adds the arguments to the previously created vector (3 lines above)
+            if is_float(argument): # It is one of the arguments to be used to make a numpy linspace
+                args_for_single_linspace.append(float(argument)) # Adds the arguments to the previously created vector (3 lines above)
             else:  # It is text (it is not an index specifying a delta value to choose; because it is text, it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
-                reactions.append(argument)
-        all_vector_args.append(args_for_single_vector) 
+                reactions.append(argument) # Note that for each fitting factor combination; fitting_factor_combination[i] is the fitting factor associated with reaction[i]
+        if(i == 1):
+            num_fitting_factor_combinations = 0
+            with open("experimental_data/num_fitting_factor_combinations.csv", "r") as num_file:
+                for line in num_file:
+                    num_fitting_factor_combinations = int(line)
+            args_for_single_linspace[2] = num_fitting_factor_combinations
+        else:
+            args_for_single_linspace[2] = 1
+        all_vector_args.append(args_for_single_linspace)
 
 for vector_args in all_vector_args:
     single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file

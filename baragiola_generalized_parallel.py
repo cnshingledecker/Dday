@@ -15,13 +15,24 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
     for i in range(0, 4): # Skips the first 4 lines of the csv file (lines which are comments)
         fields = next(reader)
+    
+    i = 0
     for row in reader:  # Each row is a set of arguments to be used to create the linspace for fitting factors for a reaction
+        i += 1
         args_for_single_linspace = []  # A vector to hold the set of arguments to be used to create the linspace for the fitting factors for a reaction
         for argument in row:
             if is_float(argument): # It is one of the arguments to be used to make a numpy linspace
                 args_for_single_linspace.append(float(argument)) # Adds the arguments to the previously created vector (3 lines above)
             else:  # It is text (it is not an index specifying a delta value to choose; because it is text, it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
                 reactions.append(argument) # Note that for each fitting factor combination; fitting_factor_combination[i] is the fitting factor associated with reaction[i]
+        if(i == 1):
+            num_fitting_factor_combinations = 0
+            with open("experimental_data/num_fitting_factor_combinations.csv", "r") as num_file:
+                for line in num_file:
+                    num_fitting_factor_combinations = int(line)
+            args_for_single_linspace[2] = float(num_fitting_factor_combinations)
+        else:
+            args_for_single_linspace[2] = 1
         all_vector_args.append(args_for_single_linspace)
 
 # Notes: Processor is the one that handles the generation and distribution of fitting factors and the collection of data.
@@ -103,7 +114,7 @@ if rank >= 0:
                 outfile.write(line)
             infile.close()
             outfile.close()
-            print("Running model...")
+            print("Running model...processor " + str(rank))
             os.system('cd ' + new_dir_name + '; ./run.sh') # Includes a run of monaco (note that what these commands do is temporarily dipping down into the directory of the files for this processor and running run.sh); after runnign these commands, the current directory is the same as it was before these commands were run
             print("Finding RMSD...")  # RMSD is root-mean square deviation
 
@@ -153,8 +164,8 @@ if rank == 0:
                                                              # from each processor and find the ones with the least value for the fake performance metrix
         if least_rmsds_and_fitting_factors[i][0] < least_rmsds_and_fitting_factors[least_rmsd_index][0]:
             least_rmsd_index = i
-    print("The smallest performance metric value and fitting factors that produced it: ")
-    print(least_rmsds_and_fitting_factors[least_rmsd_index])
+    # print("The smallest performance metric value and fitting factors that produced it: ")
+    # print(least_rmsds_and_fitting_factors[least_rmsd_index])
     results_file = open("results_generalized_parallel", 'w')
     output_string = ""
     for i in range(1, len(reactions)): 
