@@ -25,6 +25,14 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
                 args_for_single_linspace.append(float(argument)) # Adds the arguments to the previously created vector (3 lines above)
             else:  # It is text (it is not an index specifying a delta value to choose; because it is text, it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
                 reactions.append(argument) # Note that for each fitting factor combination; fitting_factor_combination[i] is the fitting factor associated with reaction[i]
+        if(i == 1):
+            num_fitting_factor_combinations = 0
+            with open("experimental_data/num_fitting_factor_combinations.csv", "r") as num_file:
+                for line in num_file:
+                    num_fitting_factor_combinations = int(line)
+            args_for_single_linspace[2] = float(num_fitting_factor_combinations)
+        else:
+            args_for_single_linspace[2] = 1
         all_vector_args.append(args_for_single_linspace)
 
 # Notes: Processor is the one that handles the generation and distribution of fitting factors and the collection of data.
