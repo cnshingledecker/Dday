@@ -1,8 +1,8 @@
 import os, time
 
-num_fitting_factor_combinations = [1,2,4,8,12,16,20,40,60,100,200,300,400]
-startTimesOriginal = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-startTimesParallel = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+num_fitting_factor_combinations = [1,2,5,10,20,40,60,100,200]
+startTimesOriginal = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+startTimesParallel = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 index = -1
 for number in num_fitting_factor_combinations:
