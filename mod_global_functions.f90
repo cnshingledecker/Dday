@@ -84,7 +84,7 @@ last = LEN_TRIM(x)
 
 
 ! Special species:
-IF (x(1:2)=='e-' .OR. x(1:2)=='G0' .OR. x(1:2)=='G-' .OR. x(1:2)=='G+') RETURN
+IF (x(1:2)=='e-' .OR. x(1:2)=='G0' .OR. x(1:2)=='G-' .OR. x(1:2)=='G+' .OR. x(1:3)=='ge-') RETURN
 
 ! First consider a special case of C10-bearing species:
 IF ((x(1:3).EQ.'C10').or.(x(2:4).EQ.'C10')) THEN
@@ -98,10 +98,14 @@ first = 1
 ! Adsorbed species:
 IF (x(first:first).EQ.'g') THEN
 	first = 2
+END IF
+
 ! Ions:
-ELSE IF (x(last:last).EQ.'+') THEN
+IF (x(last:last).EQ.'+') THEN
 	last = last - 1
-ELSE IF (x(last:last).EQ.'-') THEN
+END IF
+
+IF (x(last:last).EQ.'-') THEN
 	last = last - 1
 END IF
 
@@ -236,7 +240,7 @@ x = x(1:LEN_TRIM(x))
 last = LEN_TRIM(x)
 
 ! Special species:
-IF (x(1:2)=='e-' .OR. x(1:2)=='G0' .OR. x(1:2)=='G-' .OR. x(1:2)=='G+') RETURN
+IF (x(1:2)=='e-' .OR. x(1:2)=='G0' .OR. x(1:2)=='G-' .OR. x(1:2)=='G+' .OR. x(1:3)=='ge-') RETURN
 
 ! First consider a special case of C10-bearing species:
 IF ((x(1:3).EQ.'C10').or.(x(2:4).EQ.'C10')) THEN
@@ -250,10 +254,14 @@ first = 1
 ! Adsorbed species:
 IF (x(first:first).EQ.'g') THEN
 	first = 2
+END IF
+
 ! Ions:
-ELSE IF (x(last:last).EQ.'+') THEN
+IF (x(last:last).EQ.'+') THEN
 	last = last - 1
-ELSE IF (x(last:last).EQ.'-') THEN
+END IF
+
+IF (x(last:last).EQ.'-') THEN
 	last = last - 1
 END IF
 

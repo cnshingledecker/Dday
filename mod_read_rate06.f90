@@ -31,7 +31,9 @@ READ(1,*)nspecies
 DO i = 1, nspecies
   READ(1,'(a10)')s_name
   IF (s_name(1:1) == 'g') n_surf_spec = n_surf_spec + 1
+  PRINT *, "The species is ",s_name
 ENDDO
+
 
 READ(1,*)nreactions
 
@@ -94,12 +96,17 @@ first_surf_spec = 0
 
 DO i = 1, nspecies
   READ(1,'(a10)')s(i)%name
+  PRINT *, s(i)%name
   s(i)%idx = i
   s(i)%gas_idx = i
   s(i)%weight = aweight(s(i)%name)
+  PRINT *, "Weight = ", s(i)%weight
   s(i)%natoms = numatoms(s(i)%name)
+  PRINT *, "N_atoms = ", s(i)%natoms
   IF (first_surf_spec == 0 .AND. s(i)%name(1:1) == 'g') first_surf_spec = i
 ENDDO
+
+
 
 !Looking for indexes of gas counterparts of surface species
 DO i = 1, nspecies
@@ -111,6 +118,24 @@ DO i = 1, nspecies
     ENDDO
   ENDIF
 ENDDO
+
+IF ( suprathermal .EQ. 1 ) THEN
+  !Adding suprathermal surface species
+  DO i = 1, n_surf_spec
+      s(nspecies+i)%name = s(first_surf_spec+i-1)%name(1:LEN_TRIM(s(first_surf_spec+i-1)%name))//'*'
+      s(nspecies+i)%idx = nspecies + i
+      s(nspecies+i)%gas_idx = s(first_surf_spec+i-1)%gas_idx
+      s(nspecies+i)%weight = s(first_surf_spec+i-1)%weight
+      s(nspecies+i)%natoms = s(first_surf_spec+i-1)%natoms
+      s(nspecies+i)%enthalpia_known = s(first_surf_spec+i-1)%enthalpia_known
+      s(nspecies+i)%enthalpia = s(first_surf_spec+i-1)%enthalpia
+      s(nspecies+i)%edes = s(first_surf_spec+i-1)%edes
+      s(nspecies+i)%racc = s(first_surf_spec+i-1)%racc
+  ENDDO
+  nspecies = nspecies + n_surf_spec
+END IF
+
+
 
 CALL read_enthalpias
 
@@ -139,6 +164,7 @@ DO i = 1, nreactions
   r(ii)%ip5 = species_idx(r(ii)%p5)
   IF (r(ii)%ir1==-1 .OR. r(ii)%ir2==-1 .OR. r(ii)%ip1==-1 .OR. r(ii)%ip2==-1 .OR. r(ii)%ip3==-1 .OR. r(ii)%ip4==-1 .OR. r(ii)%ip5==-1) THEN
       PRINT '(a31, i5, 1x, 7a10)','Reaction with unknown species: ', r(ii)%idx, r(ii)%r1, r(ii)%r2, r(ii)%p1, r(ii)%p2, r(ii)%p3, r(ii)%p4, r(ii)%p5
+      PRINT *, "Around line 150"
       STOP
   ENDIF
 
@@ -182,20 +208,6 @@ first_suprathermal_species = nspecies+1
 
 ! C. N. Shingledecker
 IF ( suprathermal .EQ. 1 ) THEN
-  !Adding suprathermal surface species
-  DO i = 1, n_surf_spec
-      s(nspecies+i)%name = s(first_surf_spec+i-1)%name(1:LEN_TRIM(s(first_surf_spec+i-1)%name))//'*'
-      s(nspecies+i)%idx = nspecies + i
-      s(nspecies+i)%gas_idx = s(first_surf_spec+i-1)%gas_idx
-      s(nspecies+i)%weight = s(first_surf_spec+i-1)%weight
-      s(nspecies+i)%natoms = s(first_surf_spec+i-1)%natoms
-      s(nspecies+i)%enthalpia_known = s(first_surf_spec+i-1)%enthalpia_known
-      s(nspecies+i)%enthalpia = s(first_surf_spec+i-1)%enthalpia
-      s(nspecies+i)%edes = s(first_surf_spec+i-1)%edes
-      s(nspecies+i)%racc = s(first_surf_spec+i-1)%racc
-  ENDDO
-  nspecies = nspecies + n_surf_spec
-
   !Adding suprathermal bulk species
   DO i = 1, n_surf_spec
       s(nspecies+i)%name = 'b'//s(first_surf_spec+i-1)%name(2:LEN_TRIM(s(first_surf_spec+i-1)%name))//'*'
@@ -531,6 +543,9 @@ IF ( suprathermal .EQ. 1 ) THEN
       rtemp(ii)%ir1 = species_idx(s(jj)%name)
       rtemp(ii)%ir2 = 0
       rtemp(ii)%ip1 = species_idx(groundstate)
+      rtemp(ii)%ip2 = 0
+      rtemp(ii)%ip3 = 0
+      rtemp(ii)%ip4 = 0
       rtemp(ii)%alpha = 1.00e0
       rtemp(ii)%beta = 1.00e0
       rtemp(ii)%gamma = 1.00e0
@@ -627,16 +642,47 @@ IF ( suprathermal .EQ. 1 ) THEN
           reactatoms = reactatoms + s(r(i)%ir2)%natoms
         ENDIF
 
+        PRINT *, "-----------------------------------------"
+        PRINT *, r(i)%r1," + ",r(i)%r2," -> ",r(i)%p1," + ",r(i)%p2
         PRINT *, "Prodatoms=",prodatoms
         PRINT *, "Reactatoms=",reactatoms
+        PRINT *, "ir1_natoms = ",s(r(i)%ir1)%natoms
+        PRINT *, "ip1_natoms = ",s(r(i)%ip1)%natoms
+        PRINT *, "alpha=",r(i)%alpha," beta=",r(i)%beta," gamma=",r(i)%gamma
+        PRINT *, "rate=",r(i)%rate, " exothermicity =",r(i)%exothermicity
         PRINT *, r(i)%ir1,r(i)%ir2,r(i)%ip1,r(i)%ip2,r(i)%ip3,r(i)%ip4
-        IF ( prodatoms .NE. reactatoms ) THEN
-          PRINT *, "Atoms not equal for reaction involving",r(i)%r1," + ",r(i)%r2
-          CALL EXIT()
+        IF (prodatoms .NE. reactatoms) THEN
+          IF  ( r(i)%r1(2:2) .NE. "e" ) THEN
+            PRINT *, "Atoms not equal"
+            CALL EXIT()
+          ENDIF
         ENDIF
+        IF ( ISNAN(r(i)%alpha) ) THEN
+          PRINT *, "Alpha = NaN"
+        ENDIF
+
+        IF ( ISNAN(r(i)%beta) ) THEN
+          PRINT *, "Beta = NaN"
+        ENDIF
+
+        IF ( ISNAN(r(i)%gamma) ) THEN
+          PRINT *, "Gamma = NaN"
+        ENDIF
+
+        IF ( ISNAN(r(i)%rate) ) THEN
+          PRINT *, "Rate = NaN"
+        ENDIF
+
+        IF ( ISNAN(r(i)%exothermicity) ) THEN
+          PRINT *, "Exothermicity = NaN"
+        ENDIF
+
+
       ENDIF
     ENDDO
 END IF
+
+
 
 OPEN (1,FILE='species.out', STATUS='REPLACE')
 write(1,*)'Species, Weight, Number of Atoms, Index, Gas twin index, Desorption energy'

@@ -546,6 +546,17 @@ DO i = 1, nreactions
             ! Compute their vibrational frequencies:
             anu0 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir1)%edes/PI/PI/s(r(i)%ir1)%weight)
             anu1 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir2)%edes/PI/PI/s(r(i)%ir2)%weight)
+            
+            IF ( ISNAN(anu0) ) THEN
+              PRINT *, "anu0 = NaN"
+              anu0 = 1.0e14 ! For electrons. Set characteristic vibration to 1e14 s-1
+            ENDIF
+ 
+            IF ( ISNAN(anu1) ) THEN
+              PRINT *, "anu1 = NaN"
+              anu1 = 1.0e14
+            ENDIF
+          
 
             ! Compute reaction rates - no diffusion - of the reactants (Shingledecker et al. 2018):
             IF ( r(i)%r1(1:1) .EQ. 'g' ) THEN
@@ -560,6 +571,17 @@ DO i = 1, nreactions
             ! Compute their vibrational frequencies:
             anu0 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir1)%edes/PI/PI/s(r(i)%ir1)%weight)
             anu1 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir2)%edes/PI/PI/s(r(i)%ir2)%weight)
+
+            IF ( ISNAN(anu0) ) THEN
+              PRINT *, "anu0 = NaN"
+              anu0 = 1.0e14
+            ENDIF
+ 
+            IF ( ISNAN(anu1) ) THEN
+              PRINT *, "anu1 = NaN"
+              anu1 = 1.0e14
+            ENDIF
+
 
             ! Compute reaction rates - no diffusion - of the reactants (Shingledecker et al. 2018):
             Rdiff0 = anu0
@@ -586,17 +608,32 @@ DO i = 1, nreactions
         CASE (18) ! Quenching of suprathermal species
           ! Compute their vibrational (trial) frequencies:
           anu0 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir1)%edes/PI/PI/s(r(i)%ir1)%weight)
+
+            IF ( ISNAN(anu0) ) THEN
+              PRINT *, "anu0 = NaN"
+              anu0 = 1.0e14
+            ENDIF
+ 
           r(i)%rate = r(i)%alpha*anu0
         CASE(19) ! Photoionization
           ! alpha -> branching fractiona
           ! beta  -> σ, the photoionization cross section
           ! gamma -> δ, the fitting value
           ! PHI_EXP -> ϕ, the photon flux
+          ! EXTFAC -> accounts for extinction of photons in the bulk
           ! k = fbr*σ*ϕ*δ
           IF ( FIXED_DVAL .EQ. 1 ) THEN
-            r(i)%rate = PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
+            IF (s(r(i)%ir1)%name(1:1) =='b') THEN
+              r(i)%rate = EXTFAC*PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
+            ELSE
+              r(i)%rate = PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
+            ENDIF
           ElSE
-            r(i)%rate = PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
+            IF (s(r(i)%ir1)%name(1:1) =='b') THEN
+              r(i)%rate = EXTFAC*PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
+            ELSE
+              r(i)%rate = PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
+            ENDIF
           ENDIF
         CASE(20) ! Photoexcitation
           ! alpha -> branching fractiona
@@ -605,9 +642,17 @@ DO i = 1, nreactions
           ! PHI_EXP -> ϕ, the photon flux
           ! k = fbr*σ*ϕ*δ
           IF ( FIXED_DVAL .EQ. 1 ) THEN
-            r(i)%rate = PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
+            IF (s(r(i)%ir1)%name(1:1) =='b') THEN
+              r(i)%rate = EXTFAC*PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
+            ELSE
+              r(i)%rate = PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
+            ENDIF
           ElSE
-            r(i)%rate = PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
+            IF (s(r(i)%ir1)%name(1:1) =='b') THEN
+              r(i)%rate = EXTFAC*PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
+            ELSE
+              r(i)%rate = PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
+            ENDIF
           ENDIF
         CASE DEFAULT
         END SELECT
