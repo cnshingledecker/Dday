@@ -10,6 +10,13 @@ reactions = [] # Will hold the reactions for which the fitting factors are being
 all_vector_args = [] # Holds a series of lists (with each list containing the values in each of the linspaces that is created for a reaction)
 base_dir_name = "baragiola_files_processor" # The partial name for each directory of the files for a processor
 
+num_processors = 0
+with open("num_processors.csv", "r") as num_processors_csv:
+    reader = csv.reader(num_processors_csv, delimiter=",")
+    for line in reader:
+        for number in line:
+            num_processors = number
+
 # Note: the below code is ran on every processor because each processor needs the reaction, and reading it on each processor means the data from the file doesn't have to be sent to each processor
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
@@ -40,7 +47,6 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
 #        the fitting factor combinations are generated and distributed to each processor (including itself (processor 0)),         
 if rank == 0: 
     fitting_factors = [] # Holds lists (there will be 3; each list is a numpy linspace (converted to a list) that was created using the arguments read in from the csv input file above)
-    num_processors = 4
     for vector_args in all_vector_args: # Create numpy linspace out using the parameters in vector_args (read from an input file)
         single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
         single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
