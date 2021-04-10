@@ -31,7 +31,7 @@ READ(1,*)nspecies
 DO i = 1, nspecies
   READ(1,'(a10)')s_name
   IF (s_name(1:1) == 'g') n_surf_spec = n_surf_spec + 1
-  PRINT *, "The species is ",s_name
+!  PRINT *, "The species is ",s_name
 ENDDO
 
 

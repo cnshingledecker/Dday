@@ -111,7 +111,7 @@ ENDDO
 DO j = 1, nspecies
   IF ( ( ( s(j)%name(1:1) .EQ. 'b' ) .OR. ( s(j)%name(1:1) .EQ. 'b' ) ) .AND. &
     ( s(j)%frac_abundance .GT. 1.0e-30 ) ) THEN
-    PRINT *, s(j)%name, s(j)%frac_abundance
+!    PRINT *, s(j)%name, s(j)%frac_abundance
   ENDIF
 ENDDO
 
@@ -131,7 +131,7 @@ write(41,*)'time, dtran'
 DO i =1, init_non_zero
   s(species_idx(s_init(i)%name))%abundance = s_init(i)%abundance*gdens/ddens
   IF (s(species_idx(s_init(i)%name))%name == 'G0'.OR.s(species_idx(s_init(i)%name))%name == 'G-'.OR.s(species_idx(s_init(i)%name))%name == 'G+') s(species_idx(s_init(i)%name))%abundance = s(species_idx(s_init(i)%name))%abundance*ddens/gdens
-  print*,s(species_idx(s_init(i)%name))%name,s(species_idx(s_init(i)%name))%abundance
+!  print*,s(species_idx(s_init(i)%name))%name,s(species_idx(s_init(i)%name))%abundance
   IF (s(species_idx(s_init(i)%name))%name(1:1) == 'g') nml = nml + s(species_idx(s_init(i)%name))%abundance
 ENDDO
 
@@ -594,7 +594,7 @@ DO j = first_surf_spec, first_surf_spec + n_surf_spec - 1
     ! counterpart of the species at j+n_surf_spec
     ydot(j+n_surf_spec) = ydot(j+n_surf_spec) + transit
     IF ( s(j)%name(2:LEN_TRIM(s(j)%name)).NE.s(j+n_surf_spec)%name(2:LEN_TRIM(s(j)%name)) ) THEN
-      PRINT *, s(j)%name(2:LEN_TRIM(s(j)%name)), " ≠ ",s(j+n_surf_spec)%name(2:LEN_TRIM(s(j)%name))
+!      PRINT *, s(j)%name(2:LEN_TRIM(s(j)%name)), " ≠ ",s(j+n_surf_spec)%name(2:LEN_TRIM(s(j)%name))
       CALL EXIT()
     ENDIF
     dtran_tmp = dtran_tmp + transit
@@ -665,16 +665,16 @@ if (t/=told) then
 !    write(*,'(7(1pe15.7))')t/3.155d7, dtran, diff_m2s_tot, sum(y(first_surf_spec:first_surf_spec+n_surf_spec-1)), dtran_fd, sum(y(first_surf_spec+n_surf_spec:first_surf_spec+n_surf_spec+n_surf_spec-1)), cov
 !    write(*,*)"t/3.155d7, dtran, dtran_tmp, -diff_s2m_tot, diff_m2s_tot, dtran-dtran_tmp-diff_s2m_tot+diff_m2s_tot, d3, d4, dtran_chb"
 !    write(*,'(10(1pe12.4,2x))')t/3.155d7, dtran, dtran_tmp, -diff_s2m_tot, diff_m2s_tot, dtran-dtran_tmp-diff_s2m_tot+diff_m2s_tot, d3, d4, dtran_chb
-    PRINT *, "smol=",smol," and tot_surf_ab=",tot_surf_ab
-    PRINT *, "bmol=",bmol," and tot_bulk_ab=",tot_bulk_ab
+!    PRINT *, "smol=",smol," and tot_surf_ab=",tot_surf_ab
+!    PRINT *, "bmol=",bmol," and tot_bulk_ab=",tot_bulk_ab
     IF ( ABS(smol-tot_surf_ab) .GT. EPSILON(smol) ) PRINT *, "!!!!!ERROR: bmol≠tot_bulk_ab, diff=",ABS(smol-tot_surf_ab)
     IF ( ABS(bmol-tot_bulk_ab) .GT. EPSILON(bmol) ) PRINT *, "!!!!!ERROR: bmol≠tot_bulk_ab, diff=",ABS(bmol-tot_bulk_ab)
-    PRINT *, "dtran_freeze=",dtran_freeze
-    PRINT *, "dtran_desorb=",dtran_desorb
-    PRINT *, "dtran_chemdes=",dtran_chemdes
-    PRINT *, "dtran=",dtran
-    PRINT *, "diff_s2m_tot=",diff_s2m_tot
-    PRINT *, "diff_m2s_tot=",diff_m2s_tot
+!    PRINT *, "dtran_freeze=",dtran_freeze
+!    PRINT *, "dtran_desorb=",dtran_desorb
+!    PRINT *, "dtran_chemdes=",dtran_chemdes
+!    PRINT *, "dtran=",dtran
+!    PRINT *, "diff_s2m_tot=",diff_s2m_tot
+!    PRINT *, "diff_m2s_tot=",diff_m2s_tot
 !    write(*,*) "**********************************"
   ELSE
     1010 FORMAT(1X,A9,1X,ES12.4,A21,F12.4,A21)
@@ -946,7 +946,7 @@ DO i = 1,nreactions
 ENDDO
 
 if (t/=told) then
-  print*, 't (yrs.) = ',t/3.155e7
+!  print*, 't (yrs.) = ',t/3.155e7
   told=t
 endif
 END SUBROUTINE mre
