@@ -17,7 +17,7 @@ for number in num_fitting_factor_combinations:
     index += 1
     print("Running original script with input size " + str(number))
     startTime = int(round(time.time() * 1000))
-    os.system("python3 baragiola_optimization_generalization_rmsd_generalization.py")
+    os.system("python3 runtime_test_baragiola_optimization_generalization_rmsd_generalization.py")
     endTime = int(round(time.time() * 1000))
     startTimesOriginal[index] = (endTime - startTime)/60000
 
@@ -38,7 +38,7 @@ for num in num_processors:
 
         print("Running tests with " + str(num) + " processors (this is the parallel version)." + ", with " + str(number) + " fitting factor combinations.")
         startTime = int(round(time.time() * 1000))
-        os.system("mpiexec -n " + str(num) + " python3 baragiola_generalized_parallel.py")
+        os.system("mpiexec -n " + str(num) + " python3 runtime_test_baragiola_generalized_parallel.py")
         endTime = int(round(time.time() * 1000))
         os.system("rm -r baragiola_files_processor*")
         startTimesParallel[num-1][index] = (endTime - startTime)/60000
