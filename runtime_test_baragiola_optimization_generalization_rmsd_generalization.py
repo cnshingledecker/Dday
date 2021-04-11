@@ -13,13 +13,6 @@ all_vector_args = [] # Holds a series of arrays (one for each of the linspaces t
 num_modified_fitting_factors = 0
 fitting_factors = [] # Holds arrays containing the fitting_factors for the reactions (each element of the array is a list with the various fitting factors for a reaction)
 
-num_processors = 0
-with open("num_processors.csv", "r") as num_processors_csv:
-    reader = csv.reader(num_processors_csv, delimiter=",")
-    for line in reader:
-        for number in line:
-            num_processors = number
-
 # Note: the below code is ran on every processor because each processor needs the reaction, and reading it on each processor means the data from the file doesn't have to be sent to each processor
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
