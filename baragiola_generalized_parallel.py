@@ -47,13 +47,9 @@ if rank == 0:
                                                                                               # Note: Sending a mini-chunk on my (Daniel's) machine does not arrive at the destination (the program just sits and the mini-chunk
                                                                                               #       never gets to its destination). Feel free to change this if desired and if your machine can handle a smaller or bigger mini-chunk size.
     # These file are copied into a directory for each processor
-    files_to_copy_to_new_dir = ["clean.sh", "run.sh", "save_results.mod", "run_dvode.mod", "read_rate06.mod", "read_model.mod", 
-                                "rd_eff.txt", "radiolysis.dat", "photo_processes.dat", "parameter_inputs_template.dat",
-                                "network.dat", "monaco", "model.inp", "mod_save_results.f90", "mod_run_dvode.f90", 
-                                "mod_read_rate06.f90", "mod_read_model.f90", "mod_global_variables.f90", "mod_global_functions.f90",
-                                "mod_calculate_rates.f90", "Lee_ea_17.txt", "init_surf_ab.inp", "init_gas_ab.inp", "init_bulk_ab.inp",
-                                "global_variables.mod", "global_functions.mod", "enthalpias.txt", "dvode_f90_m.mod",
-                                "dvode_f90_m.f90", "class_2_suprathermal.dat", "chem_rate06_dvode.f90", "calculate_rates.mod"] 
+    files_to_copy_to_new_dir = ["clean.sh", "run.sh", "rd_eff.txt", "radiolysis.dat", "photo_processes.dat", "parameter_inputs_template.dat",
+                                "network.dat", "monaco", "model.inp", "Lee_ea_17.txt", "init_surf_ab.inp", "init_gas_ab.inp", 
+                                "init_bulk_ab.inp", "enthalpias.txt", "class_2_suprathermal.dat"] 
 
     for i in range(0, num_processors): # Create directory for the files for each processor, copy into it the files specified in the above array, copy the experimental_data directory into it, and create the results file in each array
         new_dir_name = base_dir_name + str(i)
