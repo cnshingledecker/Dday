@@ -11,11 +11,11 @@ all_vector_args = [] # Holds a series of lists (with each list containing the va
 base_dir_name = "baragiola_files_processor" # The partial name for each directory of the files for a processor
 
 num_processors = 0
-with open("num_processors.csv", "r") as num_processors_csv:
+with open("experimental_data/num_processors.csv", "r") as num_processors_csv:
     reader = csv.reader(num_processors_csv, delimiter=",")
     for line in reader:
         for number in line:
-            num_processors = number
+            num_processors = int(number)
 
 # Note: the below code is ran on every processor because each processor needs the reaction, and reading it on each processor means the data from the file doesn't have to be sent to each processor
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
