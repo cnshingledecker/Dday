@@ -16,6 +16,9 @@ index = -1
 for number in num_fitting_factor_combinations:
     index += 1
     print("Running original script with input size " + str(number))
+    file = open("experimental_data/num_fitting_factor_combinations.csv", "w")
+    file.write(str(number))
+    file.close()
     startTime = int(round(time.time() * 1000))
     os.system("python3 runtime_test_baragiola_optimization_generalization_rmsd_generalization.py")
     endTime = int(round(time.time() * 1000))
