@@ -156,8 +156,9 @@ if rank == 0:
     # print(least_rmsds_and_fitting_factors[least_rmsd_index])
     results_file = open("results_generalized_parallel", 'w')
     output_string = ""
-    for i in range(1, len(reactions)): 
-        output_string = output_string + str(least_rmsds_and_fitting_factors[least_rmsd_index][i]) + "".join(" "*(23 - len(str(least_rmsds_and_fitting_factors[least_rmsd_index][i])))) + reactions[i] + " delta values \n"
+    # print(least_rmsds_and_fitting_factors[least_rmsd_index])
+    for i in range(1, len(reactions) + 1): 
+        output_string = output_string + str(least_rmsds_and_fitting_factors[least_rmsd_index][i]) + "".join(" "*(23 - len(str(least_rmsds_and_fitting_factors[least_rmsd_index][i])))) + reactions[i-1] + " delta values \n"
     output_string += str(least_rmsds_and_fitting_factors[least_rmsd_index][0]) + "".join(" "*(23 - len(str(least_rmsds_and_fitting_factors[least_rmsd_index][0])))) + "RMSD" + "\n\n"
     results_file.write(output_string)
     results_file.close()
