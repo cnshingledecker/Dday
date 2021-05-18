@@ -69,10 +69,6 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     outfile = open("photo_processes.dat",'w')
     for line in infile:
         line_as_list = line.split()  # Convert the DAT file line into an array
-        # Need to find the first index in the line (as a list) where there is a delta value (it is the first number besides the first element of the list, hence why i (below) is set to 1)
-        index_first_float_value_in_line = 1  # Skips the first value because it is an integer and would thus be counted as a float. 
-        while(index_first_float_value_in_line < len(line_as_list) and not(isFloat(line_as_list[index_first_float_value_in_line]))):
-            index_first_float_value_in_line += 1
         possible_fitting_factor_index = line_as_list[len(line_as_list) - 1] # See below comment for the meaning of this variable
         if(isInt(possible_fitting_factor_index)): # If the last value of the line is an integer, which means it is one of the reactions for which we are modifying the fitting factors
             fitting_factor_index = int(possible_fitting_factor_index)            

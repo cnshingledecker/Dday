@@ -89,11 +89,6 @@ if rank >= 0:
             outfile = open(new_dir_name + "/photo_processes_2.dat",'w')
             for line in infile:
                 line_as_list = line.split()  # Convert the DAT file line into a list
-                # We need to find the first index in the line (as a list) where there is a fitting factor value (it is the first number besides the first element of the list, hence why i (below) is set to 1)
-                index_first_float_value_in_line = 1  # The first entry in the line is a float, but we are looking for the first fitting factor (the 2nd float value in the line); starting at 1 therefore makes the implementation of the below while loop easier
-                # The while loop below skips the first value because it is an integer and would thus be counted as a float. 
-                while(index_first_float_value_in_line < len(line_as_list) and not(is_float(line_as_list[index_first_float_value_in_line]))):  # Increments the index value until the first float value (fitting factor value) is found
-                    index_first_float_value_in_line += 1
                 possible_fitting_factor_index = line_as_list[len(line_as_list) - 1] # See below comment for the meaning of this variable
                 if(is_int(possible_fitting_factor_index)): # If the last value of the line is an integer, which means it is one of the reactions for which we are modifying the fitting factors
                     new_fitting_factor_val = fitting_factor_combination[int(possible_fitting_factor_index)] # Convert the possible fitting factor index to an int and get the correct fitting factor (where fitting_factor_index tells the computer which fitting factor to get)
