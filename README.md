@@ -75,7 +75,7 @@ How to run this: mpiexec -n (num_processors) (how you would run any other python
 If you want to run this with different input and output files, you need to overwrite the contents of the following files:
 1. photo_processes.dat, with the same conditions specified in (7) under the 'Generalization' header above.
 2. A new experimental data csv file, put in the directory 'experimental_data' (note that the python script must reference this file).
-You must also change the numpy linspacae arguments in the file 'reaction_fitting_factor_vector_arguments.csv' in the 'reaction_fitting_factor_linspace_args' directory, and change the reactions in each of those lines.
+You must also change the numpy linspace arguments in the file 'reaction_fitting_factor_vector_arguments.csv' in the 'reaction_fitting_factor_linspace_args' directory, and change the reactions in each of those lines.
 
 Why write a parallel version of the generalized script? The parallelized version has one significant benefit: multiple models can be ran at once, which can decrease runtime. However, the parallelized script has some drawbacks and possible risks:
 
