@@ -18,7 +18,7 @@ Note that monaco reads from certain input files (including reading fitting facto
 #### Development Machine and Environment Specifications
 - Machine specifications:
     * Development Machine (Link to specs): [Dell Inspiron 7586](https://www.dell.com/support/manuals/en-us/inspiron-15-7586-2-in-1-laptop/inspiron_7586_setupandspecs/specifications-of-inspiron-7586?guid=guid-7c9f07ce-626e-44ca-be3a-a1fb036413f9&lang=en-us)
-        - General Information: Intel i7 8th Generation processor (4 cores, speed: Up to 1.60/1.80 GHz (Boost - 3.90/4.60 GHz), 512 GB SSD, 16 GB RAM)
+        - General Information: Intel i7 8th Generation core (4 cores, speed: Up to 1.60/1.80 GHz (Boost - 3.90/4.60 GHz), 512 GB SSD, 16 GB RAM)
 - Environment Specifications
     * Code ran using the Ubuntu (version 20.04) terminal (Ubuntu 20.04.1 LTS)
     * **Note: The code (for this project) has developed to run in an environment that accepts Linux shell commands.**
@@ -70,7 +70,7 @@ The following changes were made in the generalization the script (see baragiola_
 
 #### Parallelization
 
-How to run this: mpiexec -n (num_processors) (how you would run any other python file). Example: `mpiexec -n 4 python3 baragiola_generalized_parallel.py`. Make sure the value you use for num_processors in the command line has the same value as the same-named variable in baragiola_generalized_parallel.py, and if you run compareOptimizations.py, which runs the original, generalized, and parallel/generalized scripts, you must change num_processors in the command line argument that runs the generalized/parallel baragiola script. 
+How to run this: mpiexec -n (num_cores) (how you would run any other python file). Example: `mpiexec -n 4 python3 baragiola_generalized_parallel.py`. Make sure the value you use for num_cores in the command line has the same value as the same-named variable in baragiola_generalized_parallel.py, and if you run compareOptimizations.py, which runs the original, generalized, and parallel/generalized scripts, you must change num_cores in the command line argument that runs the generalized/parallel baragiola script. 
 
 If you want to run this with different input and output files, you need to overwrite the contents of the following files:
 1. photo_processes.dat, with the same conditions specified in (7) under the 'Generalization' header above.
@@ -80,22 +80,22 @@ You must also change the numpy linspace arguments in the file 'reaction_fitting_
 Why write a parallel version of the generalized script? The parallelized version has one significant benefit: multiple models can be ran at once, which can decrease runtime. However, the parallelized script has some drawbacks and possible risks:
 
 Drawbacks:
-- There is an overhead time associated with dividing up the fitting factor combinations, sending them to the different processors, and each processor sending the lowest RMSD (and the fitting factors that produced it) back to the root node. For example, if the number of models to be run (the number of fitting factor combinations) is low enough, the improvement in runtime between the original version and the parallel version can be small, nonexistent, or the runtime could even increase.
+- There is an overhead time associated with dividing up the fitting factor combinations, sending them to the different cores, and each core sending the lowest RMSD (and the fitting factors that produced it) back to the root node. For example, if the number of models to be run (the number of fitting factor combinations) is low enough, the improvement in runtime between the original version and the parallel version can be small, nonexistent, or the runtime could even increase.
 
 Possible Risks:
 - Loss of precision in sending and receiving data, although significant examples of this have not been observed.
 
 Benefits:
 - Possible Decreased Overall Runtime
-- Each processor can find the lowest RMSD that was produced from the fitting factors it was sent and send back to the root processor that RMSD and the fitting factors that produced it. This simplifies the process of finding the fitting factors that produce the least RMSD.
+- Each core can find the lowest RMSD that was produced from the fitting factors it was sent and send back to the root core that RMSD and the fitting factors that produced it. This simplifies the process of finding the fitting factors that produce the least RMSD.
 
 Below is an overview of the changes from the parallelized version of the script to the generalized version: 
-1. For each processor, a directory is created, and a file is created in it where the fitting factors and RMSD that they produced is written for each fitting factor combination. The files that monaco uses (and many others; don't copy files if they don't need to be (for monaco)).
-2. Once the fitting factor combinations are created (a list of them), that list is split into n chunks (where n is the number of processors used).
-3. Once step 2 is completed, each chunk (there is 1 for each processor) is split up into mini-chunks, starting with size 15 (the last mini-chunk created is of size chunk-size mod 15). This function was written because on the machine this code was developed on, the processors did not receive chunks of size 16 or greater. The mini-chunk size is specified in the function call, and the for loops that send the fitting factor combinations to each processor are set up to send these mini-chunks (the for loops will send all the mini-chunks, regardless of the mini-chunk size).
-3. Steps 8 and 9 from the generalization additions above are not in place for this version, because for each processor, the files used with the original monaco are copied to the directory for each processor. Therefore, there is no need to change the files that monaco reads from.
-4. Instead of all of the processors writing to 1 common results file, each processor writes to its own results file.
-5. Each processor finds the lowest RMSD and the fitting factors that produced it, and sends that back to the root processor (processor 0). The root processor finds the lowest RMSD (and fittign factors that produced it) from among those returned and writes the one with the lowest RMSD and writes it to a results file.
+1. For each core, a directory is created, and a file is created in it where the fitting factors and RMSD that they produced is written for each fitting factor combination. The files that monaco uses (and many others; don't copy files if they don't need to be (for monaco)).
+2. Once the fitting factor combinations are created (a list of them), that list is split into n chunks (where n is the number of cores used).
+3. Once step 2 is completed, each chunk (there is 1 for each core) is split up into mini-chunks, starting with size 15 (the last mini-chunk created is of size chunk-size mod 15). This function was written because on the machine this code was developed on, the cores did not receive chunks of size 16 or greater. The mini-chunk size is specified in the function call, and the for loops that send the fitting factor combinations to each core are set up to send these mini-chunks (the for loops will send all the mini-chunks, regardless of the mini-chunk size).
+3. Steps 8 and 9 from the generalization additions above are not in place for this version, because for each core, the files used with the original monaco are copied to the directory for each core. Therefore, there is no need to change the files that monaco reads from.
+4. Instead of all of the cores writing to 1 common results file, each core writes to its own results file.
+5. Each core finds the lowest RMSD and the fitting factors that produced it, and sends that back to the root core (core 0). The root core finds the lowest RMSD (and fittign factors that produced it) from among those returned and writes the one with the lowest RMSD and writes it to a results file.
 6. **Note: the [OpenMPI library](https://www.open-mpi.org/) and the python package [mpi4py](https://mpi4py.readthedocs.io/en/stable/index.html) (version 3.0.3) were used in this parallelization. Click on the links to learn more about them.**  
 
 #### Comparison Script

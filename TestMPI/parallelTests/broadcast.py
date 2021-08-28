@@ -1,4 +1,4 @@
-# This file tests: creation of fitting factor combinations, using the bcast function to broadcast data to all processors
+# This file tests: creation of fitting factor combinations, using the bcast function to broadcast data to all cores
 
 from mpi4py import MPI
 import numpy as np

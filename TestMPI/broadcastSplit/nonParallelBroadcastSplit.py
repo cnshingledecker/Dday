@@ -3,7 +3,7 @@ import csv, itertools, time, os
 from customFunctions import *
 
 
-num_processors = 4
+num_cores = 4
 data = [list(np.linspace(1.7,2.7,23)), list(np.linspace(1,2,15)), list(np.linspace(0.3,0.35,1))]
 data = itertools.product(*data)
 data = [list(fitting_factor_combination) for fitting_factor_combination in data]

@@ -43,4 +43,4 @@ Also, this code works for sure with Python version 3.8.5.
 - (File) reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv
 - (File) Make the csv_model_data file in the parallel baragiola script reference the correct model csv file.
 
-3. Once you are sure the program is reading from and writing to the correct files, you can run the model. The file baragiola_generalized_parallel.py can be ran using the command "mpiexec -n [num_procesors_used] [command to run the file]"; an example is "mpiexec -n 4 python3 baragiola_generalized_parallel.py". Be sure to change the num_processors variable in baragiola_generalized_parallel.py to match num_processors_used.
+3. Once you are sure the program is reading from and writing to the correct files, you can run the model. The file baragiola_generalized_parallel.py can be ran using the command "mpiexec -n [num_procesors_used] [command to run the file]"; an example is "mpiexec -n 4 python3 baragiola_generalized_parallel.py". Be sure to change the num_cores variable in baragiola_generalized_parallel.py to match num_cores_used.

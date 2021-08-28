@@ -1,4 +1,4 @@
-# This file tests: Using the send function to send data to individual processors
+# This file tests: Using the send function to send data to individual cores
 
 from mpi4py import MPI
 

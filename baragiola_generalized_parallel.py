@@ -8,9 +8,9 @@ rank = comm.Get_rank()
 
 reactions = [] # Will hold the reactions for which the fitting factors are being modified
 all_vector_args = [] # Holds a series of lists (with each list containing the values in each of the linspaces that is created for a reaction)
-base_dir_name = "baragiola_files_processor" # The partial name for each directory of the files for a processor
+base_dir_name = "baragiola_files_core" # The partial name for each directory of the files for a core
 
-# Note: the below code is ran on every processor because each processor needs the reaction, and reading it on each processor means the data from the file doesn't have to be sent to each processor
+# Note: the below code is ran on every core because each core needs the reaction, and reading it on each core means the data from the file doesn't have to be sent to each core
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
     for i in range(0, 4): # Skips the first 4 lines of the csv file (lines which are comments)
@@ -27,12 +27,12 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
                 reactions.append(argument) # Note that for each fitting factor combination; fitting_factor_combination[i] is the fitting factor associated with reaction[i]
         all_vector_args.append(args_for_single_linspace)
 
-# Notes: Processor is the one that handles the generation and distribution of fitting factors and the collection of data.
-#        In this if statement, a directory is created for each processor with the files necessary for it to run monaco as well as find the rmsd and write to output files,
-#        the fitting factor combinations are generated and distributed to each processor (including itself (processor 0)),         
+# Notes: The core is the one that handles the generation and distribution of fitting factors and the collection of data.
+#        In this if statement, a directory is created for each core with the files necessary for it to run monaco as well as find the rmsd and write to output files,
+#        the fitting factor combinations are generated and distributed to each core (including itself (core 0)),         
 if rank == 0: 
     fitting_factors = [] # Holds lists (there will be 3; each list is a numpy linspace (converted to a list) that was created using the arguments read in from the csv input file above)
-    num_processors = 4
+    num_cores = 4
     for vector_args in all_vector_args: # Create numpy linspace out using the parameters in vector_args (read from an input file)
         single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
         single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
@@ -42,29 +42,29 @@ if rank == 0:
                                                                          #    Note that this creates a list of n lists (where n is the product of the number of values for each list of fitting factors), and each of these 
                                                                          #    n lists has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
     all_fitting_factor_combinations = [list(fitting_factor_combination) for fitting_factor_combination in all_fitting_factor_combinations]
-    all_fitting_factor_combinations = split_list(all_fitting_factor_combinations, num_processors) # Splits the list into 'num_processors' chunks
+    all_fitting_factor_combinations = split_list(all_fitting_factor_combinations, num_cores) # Splits the list into 'num_cores' chunks
     all_fitting_factor_combinations = split_list_chunks(all_fitting_factor_combinations, 15) # Splits each of the list chunks into mini-chunks of up to size 15 (creates as many with size 15 as possible)
                                                                                               # Note: Sending a mini-chunk on my (Daniel's) machine does not arrive at the destination (the program just sits and the mini-chunk
                                                                                               #       never gets to its destination). Feel free to change this if desired and if your machine can handle a smaller or bigger mini-chunk size.
-    # These file are copied into a directory for each processor
+    # These file are copied into a directory for each core
     files_to_copy_to_new_dir = ["clean.sh", "run.sh", "rd_eff.txt", "radiolysis.dat", "photo_processes.dat", "parameter_inputs_template.dat",
                                 "network.dat", "monaco", "model.inp", "Lee_ea_17.txt", "init_surf_ab.inp", "init_gas_ab.inp", 
                                 "init_bulk_ab.inp", "enthalpias.txt", "class_2_suprathermal.dat"] 
 
-    for i in range(0, num_processors): # Create directory for the files for each processor, copy into it the files specified in the above array, copy the experimental_data directory into it, and create the results file in each array
+    for i in range(0, num_cores): # Create directory for the files for each core, copy into it the files specified in the above array, copy the experimental_data directory into it, and create the results file in each array
         new_dir_name = base_dir_name + str(i)
         os.system("mkdir " + new_dir_name)
-        os.system("touch " + new_dir_name + "/output_file_results") # Create file that each processor will write to (will write fitting factors and associated rmsds)
+        os.system("touch " + new_dir_name + "/output_file_results") # Create file that each core will write to (will write fitting factors and associated rmsds)
         for file_name in files_to_copy_to_new_dir:
             os.system("cp " + file_name + " " + new_dir_name)
         os.system("cp -R experimental_data " + new_dir_name)
     
-    for i in range(0, len(all_fitting_factor_combinations)): # Tell each processor how many mini-chunks it is going to be receiving
+    for i in range(0, len(all_fitting_factor_combinations)): # Tell each core how many mini-chunks it is going to be receiving
         comm.send(len(all_fitting_factor_combinations[i]), dest=i)
     
-    # Send all of the mini_-chunks to the different processors
-    mini_chunk_to_send = [0 for i in range(num_processors)] # Tells comm.send which mini-chunk to send (tells the index) to a certain processor
-    chunks_left_to_send = [True for i in range(num_processors)] # List of boolean variables that says whether there are mini-chunks left to send to each processor
+    # Send all of the mini_-chunks to the different cores
+    mini_chunk_to_send = [0 for i in range(num_cores)] # Tells comm.send which mini-chunk to send (tells the index) to a certain core
+    chunks_left_to_send = [True for i in range(num_cores)] # List of boolean variables that says whether there are mini-chunks left to send to each core
     while(sum(chunks_left_to_send) > 0):
         for j in range(0, len(all_fitting_factor_combinations)):
             if mini_chunk_to_send[j] < len(all_fitting_factor_combinations[j]): # If the possible index (of a mini-chunk to send) is a valid one (less than the number of mini-chunks)
@@ -74,16 +74,16 @@ if rank == 0:
                 chunks_left_to_send[j] = False
 
 if rank >= 0:
-    new_dir_name = base_dir_name + str(rank) # The name of the directory conaining the files for this processor
+    new_dir_name = base_dir_name + str(rank) # The name of the directory conaining the files for this core
     num_mini_chunks_to_recv = comm.recv(source=0) # Receive the number of mini-chunks it is going to receive
-    processor_fitting_factor_combinations = []
+    core_fitting_factor_combinations = []
     fitting_factors_and_least_rmsd = [1e80, 0,0,0] # Holds the least rmsd and the fitting factors that produced it; fitting_factors_and_least_rmsd[0] is the rmsd, indices 1-3 are the fitting factors that led to that rmsd value
 
     results = open(new_dir_name + "/output_file_results",'w')
     for i in range(0, num_mini_chunks_to_recv): # Receive all the mini-chunks
         data = comm.recv(source=0)
-        processor_fitting_factor_combinations.append(data)
-    for mini_chunk in processor_fitting_factor_combinations:
+        core_fitting_factor_combinations.append(data)
+    for mini_chunk in core_fitting_factor_combinations:
         for fitting_factor_combination in mini_chunk:
             infile = open(new_dir_name + "/parameter_inputs_template.dat",'r')
             outfile = open(new_dir_name + "/photo_processes_2.dat",'w')
@@ -98,8 +98,8 @@ if rank >= 0:
                 outfile.write(line)
             infile.close()
             outfile.close()
-            print("Running model...processor " + str(rank))
-            os.system('cd ' + new_dir_name + '; ./run.sh') # Includes a run of monaco (note that what these commands do is temporarily dipping down into the directory of the files for this processor and running run.sh); after runnign these commands, the current directory is the same as it was before these commands were run
+            print("Running model...core " + str(rank))
+            os.system('cd ' + new_dir_name + '; ./run.sh') # Includes a run of monaco (note that what these commands do is temporarily dipping down into the directory of the files for this core and running run.sh); after runnign these commands, the current directory is the same as it was before these commands were run
             print("Finding RMSD...")  # RMSD is root-mean square deviation
 
             num_experimental_data_points = 0
@@ -140,12 +140,12 @@ if rank >= 0:
                 csv_file.close()
     results.close()
 
-least_rmsds_and_fitting_factors = comm.gather(fitting_factors_and_least_rmsd, root=0) # Gather the least fake performance metric value and associated fitting factors from each processor back to the root processor (0)
+least_rmsds_and_fitting_factors = comm.gather(fitting_factors_and_least_rmsd, root=0) # Gather the least fake performance metric value and associated fitting factors from each core back to the root core (0)
 
 if rank == 0:
     least_rmsd_index = 0
     for i in range(1, len(least_rmsds_and_fitting_factors)): # Loop through the least fake performance metric value and associated fitting factors 
-                                                             # from each processor and find the ones with the least value for the fake performance metrix
+                                                             # from each core and find the ones with the least value for the fake performance metrix
         if least_rmsds_and_fitting_factors[i][0] < least_rmsds_and_fitting_factors[least_rmsd_index][0]:
             least_rmsd_index = i
     # print("The smallest performance metric value and fitting factors that produced it: ")
