@@ -65,6 +65,7 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
         csv_model_data = open('csv/total_ice_o3.csv')
         csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
         csv_model_data_list = list(csv_model_data_reader)
+        csv_model_data.close()
         for row in csv_reader: # This assumes that row[0] is the time, row[1] is the y-value (I'm not sure what this is),
             closest_model_values = csv_model_data_list[find_nearest_index(row[0], 0, csv_model_data_list)]
             deviation = float(closest_model_values[1])*1e7 - float(row[1]) # Deviation of the model value from the actual (experimental) value
