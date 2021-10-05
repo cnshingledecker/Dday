@@ -53,7 +53,7 @@ The fitting factors that produced the least RMSD are thus the ones that produced
 
 
 
-The following changes were made in the generalization the script (see baragiola_optimization_generalization_rmsd_generalization) (note: this list may not be all changes):
+The following changes were made in the generalization of the script (see baragiola_optimization_generalization_rmsd_generalization) (note: this list may not be all changes):
 
 1. Place the arguments for the 3 numpy linspaces (and the associated reaction) in a csv file, to be read in when the program runs.
     1. This data is in the file 'reaction_fitting_factor_vector_arguments.csv', which is in the directory 'reaction_fitting_factor_linspace_args'. This is done because otherwise, the file is deleted when clean.sh is run.
@@ -67,6 +67,7 @@ The following changes were made in the generalization the script (see baragiola_
 7. A version of photo_processes.dat was created (photo_processes_2.dat) that if it has an integer in the last column for each row, that integer indicates the reaction for which the third fitting factor (from left to right) is being modified **(note: this integer (n) must correspond to the linspace created using the (n+4)th line of the file 'reaction_fitting_factor_vector_arguments.csv').**
 8. A different version of monaco was created that runs using the copies of the input files that are specific to the generalization.
 9. Also, certain FORTRAN files had to be changed to read from the files that the generalized python script writes to.
+10. Wrote lowest RMSD (and the fitting factors that produced it) to a results file.
 
 #### Parallelization
 
@@ -95,7 +96,7 @@ Below is an overview of the changes from the parallelized version of the script 
 3. Once step 2 is completed, each chunk (there is 1 for each core) is split up into mini-chunks, starting with size 15 (the last mini-chunk created is of size chunk-size mod 15). This function was written because on the machine this code was developed on, the cores did not receive chunks of size 16 or greater. The mini-chunk size is specified in the function call, and the for loops that send the fitting factor combinations to each core are set up to send these mini-chunks (the for loops will send all the mini-chunks, regardless of the mini-chunk size).
 3. Steps 8 and 9 from the generalization additions above are not in place for this version, because for each core, the files used with the original monaco are copied to the directory for each core. Therefore, there is no need to change the files that monaco reads from.
 4. Instead of all of the cores writing to 1 common results file, each core writes to its own results file.
-5. Each core finds the lowest RMSD and the fitting factors that produced it, and sends that back to the root core (core 0). The root core finds the lowest RMSD (and fittign factors that produced it) from among those returned and writes the one with the lowest RMSD and writes it to a results file.
+5. Each core finds the lowest RMSD and the fitting factors that produced it, and sends that back to the root core (core 0). The root core finds the lowest RMSD (and fitting factors that produced it) from among those returned and writes the one with the lowest RMSD and writes it to a results file.
 6. **Note: the [OpenMPI library](https://www.open-mpi.org/) and the python package [mpi4py](https://mpi4py.readthedocs.io/en/stable/index.html) (version 3.0.3) were used in this parallelization. Click on the links to learn more about them.**  
 
 #### Comparison Script
