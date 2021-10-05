@@ -31,8 +31,8 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
 #        In this if statement, a directory is created for each core with the files necessary for it to run monaco as well as find the rmsd and write to output files,
 #        the fitting factor combinations are generated and distributed to each core (including itself (core 0)),         
 if rank == 0: 
-    fitting_factors = [] # Holds lists (there will be 3; each list is a numpy linspace (converted to a list) that was created using the arguments read in from the csv input file above)
-    num_cores = 4
+    fitting_factors = [] # Holds lists (each list is a numpy linspace (converted to a list) that was created using the arguments read in from the csv input file above)
+    num_cores = 4 # IMPORTANT: Need to adjust if running on a different number of cores
     for vector_args in all_vector_args: # Create numpy linspace out using the parameters in vector_args (read from an input file)
         single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
         single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
@@ -77,7 +77,11 @@ if rank >= 0:
     new_dir_name = base_dir_name + str(rank) # The name of the directory conaining the files for this core
     num_mini_chunks_to_recv = comm.recv(source=0) # Receive the number of mini-chunks it is going to receive
     core_fitting_factor_combinations = []
-    fitting_factors_and_least_rmsd = [1e80, 0,0,0] # Holds the least rmsd and the fitting factors that produced it; fitting_factors_and_least_rmsd[0] is the rmsd, indices 1-3 are the fitting factors that led to that rmsd value
+
+    # Holds the least rmsd and the fitting factors that produced it; fitting_factors_and_least_rmsd[0] is the rmsd, 
+    #    indices 1 to len(fitting_factors_and_least_rmsd) (inclusive) are the fitting factors that led to that rmsd value
+    fitting_factors_and_least_rmsd = [0] * (len(reactions) + 1) # there needs to be 1 spot for the rmsd and len(reactions) spots for the fitting factor for each set of reactions 
+    fitting_factors_and_least_rmsd[0] = 1e80 # Initialize the RMSD to a high value so during testing a lower RMSD will likely be found and be saved in the array (along with the fitting factors that produced it)
 
     results = open(new_dir_name + "/output_file_results",'w')
     for i in range(0, num_mini_chunks_to_recv): # Receive all the mini-chunks
@@ -134,27 +138,25 @@ if rank >= 0:
 
                 if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
                     fitting_factors_and_least_rmsd[0] = rmsd
-                    fitting_factors_and_least_rmsd[1] = fitting_factor_combination[0]
-                    fitting_factors_and_least_rmsd[2] = fitting_factor_combination[1]
-                    fitting_factors_and_least_rmsd[3] = fitting_factor_combination[2]
+                    for i in range(1, len(reactions) + 1):
+                        fitting_factors_and_least_rmsd[i] = fitting_factor_combination[i-1]
                 csv_file.close()
     results.close()
 
-least_rmsds_and_fitting_factors = comm.gather(fitting_factors_and_least_rmsd, root=0) # Gather the least fake performance metric value and associated fitting factors from each core back to the root core (0)
+fitting_factors_and_least_rmsd = comm.gather(fitting_factors_and_least_rmsd, root=0) # Gather the least fake performance metric value and associated fitting factors from each core back to the root core (0)
 
 if rank == 0:
     least_rmsd_index = 0
-    for i in range(1, len(least_rmsds_and_fitting_factors)): # Loop through the least fake performance metric value and associated fitting factors 
+    for i in range(1, len(fitting_factors_and_least_rmsd)): # Loop through the least fake performance metric value and associated fitting factors 
                                                              # from each core and find the ones with the least value for the fake performance metrix
-        if least_rmsds_and_fitting_factors[i][0] < least_rmsds_and_fitting_factors[least_rmsd_index][0]:
+        if fitting_factors_and_least_rmsd[i][0] < fitting_factors_and_least_rmsd[least_rmsd_index][0]:
             least_rmsd_index = i
-    # print("The smallest performance metric value and fitting factors that produced it: ")
-    # print(least_rmsds_and_fitting_factors[least_rmsd_index])
-    results_file = open("results_generalized_parallel", 'w')
+    print("The smallest performance metric value and fitting factors that produced it: ")
+    print(fitting_factors_and_least_rmsd[least_rmsd_index])
+    results_file = open("resultsGeneralizedParallel", 'w')
     output_string = ""
-    # print(least_rmsds_and_fitting_factors[least_rmsd_index])
-    for i in range(1, len(reactions) + 1): 
-        output_string = output_string + str(least_rmsds_and_fitting_factors[least_rmsd_index][i]) + "".join(" "*(23 - len(str(least_rmsds_and_fitting_factors[least_rmsd_index][i])))) + reactions[i-1] + " delta values \n"
-    output_string += str(least_rmsds_and_fitting_factors[least_rmsd_index][0]) + "".join(" "*(23 - len(str(least_rmsds_and_fitting_factors[least_rmsd_index][0])))) + "RMSD" + "\n\n"
+    for i in range(0, len(reactions)): 
+        output_string = output_string + str(fitting_factors_and_least_rmsd[least_rmsd_index][i+1]) + "".join(" "*(23 - len(str(fitting_factors_and_least_rmsd[least_rmsd_index][i+1])))) + reactions[i] + " delta values \n"
+    output_string += str(fitting_factors_and_least_rmsd[least_rmsd_index][0]) + "".join(" "*(23 - len(str(fitting_factors_and_least_rmsd[least_rmsd_index][0])))) + "RMSD" + "\n\n"
     results_file.write(output_string)
     results_file.close()

@@ -31,6 +31,11 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
                 reactions.append(argument) # Note that for each fitting factor combination; fitting_factor_combination[i] is the fitting factor associated with reaction[i]
         all_vector_args.append(args_for_single_linspace)
 
+# Holds the least rmsd and the fitting factors that produced it; fitting_factors_and_least_rmsd[0] is the rmsd, 
+#    indices 1 to len(fitting_factors_and_least_rmsd) (inclusive) are the fitting factors that led to that rmsd value
+fitting_factors_and_least_rmsd = [0] * (len(reactions) + 1) # there needs to be 1 spot for the rmsd and len(reactions) spots for the fitting factor for each set of reactions 
+fitting_factors_and_least_rmsd[0] = 1e80 # Initialize the RMSD to a high value so during testing a lower RMSD will likely be found and be saved in the array (along with the fitting factors that produced it)
+
 for vector_args in all_vector_args:
     single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
     single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
@@ -88,6 +93,22 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
             output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reactions[i] + " delta values \n"
         output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"
         results.write(output_string)
+
+        if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
+            fitting_factors_and_least_rmsd[0] = rmsd
+            for i in range(1, len(fitting_factors_and_least_rmsd)):
+                fitting_factors_and_least_rmsd[i] = fitting_factor_combination[i-1]
         csv_file.close()
 results.close()
+
+print("The smallest performance metric value and fitting factors that produced it: ")
+print(fitting_factors_and_least_rmsd)
+results_file = open("resultsRMSDGeneralization", 'w')
+output_string = ""
+for i in range(0, len(reactions)): 
+    output_string = output_string + str(fitting_factors_and_least_rmsd[i+1]) + "".join(" "*(23 - len(str(fitting_factors_and_least_rmsd[i+1])))) + reactions[i] + " delta values \n"
+output_string += str(fitting_factors_and_least_rmsd[0]) + "".join(" "*(23 - len(str(fitting_factors_and_least_rmsd[0])))) + "RMSD" + "\n\n"
+results_file.write(output_string)
+results_file.close()
+
 print("Done!")
