@@ -4,9 +4,18 @@ import os
 import csv
 import numpy as np
 import itertools
-from exportable_custom_functions import find_nearest_index,is_float, is_int
+from exportable_custom_functions import find_nearest_index,is_float, is_int, modify_modelInp_values
 
 results = open("resultsFile_2", 'w')
+
+to_modify_modelInp_values = False # Set this to True if you want to modify model.inp values using the below array 
+lines_to_modify_modelInp = [] 
+                                # If the user wants to modify model.inp values, the user should insert lists of the form [lineNumber, variableVal, variableName] into this list,
+                                #     where lineNumber is an integer that is the 0-indexed line number of the line in model.inp of the variable the user wants to change,
+                                #     variableVal is of a real number data type (the value that the user wants to set the variable in lineNumber to), and
+                                #     and variableName is a string that is the exact case of the variable name in the line in model.inp
+if(to_modify_modelInp_values):
+    modify_modelInp_values(lines_to_modify_modelInp)
 
 reactions = [] # Will hold the reactions for which the fitting factors are being modified
 all_vector_args = [] # Holds a series of arrays (one for each of the linspaces that is created for a reaction)

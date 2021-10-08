@@ -30,7 +30,15 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
 # Notes: The core is the one that handles the generation and distribution of fitting factors and the collection of data.
 #        In this if statement, a directory is created for each core with the files necessary for it to run monaco as well as find the rmsd and write to output files,
 #        the fitting factor combinations are generated and distributed to each core (including itself (core 0)),         
-if rank == 0: 
+if rank == 0:
+    to_modify_modelInp_values = False # Set this to True if you want to modify model.inp values using the below array 
+    lines_to_modify_modelInp = [] 
+                                   # If the user wants to modify model.inp values, the user should insert lists of the form [lineNumber, variableVal, variableName] into this list,
+                                   #     where lineNumber is an integer that is the 0-indexed line number of the line in model.inp of the variable the user wants to change,
+                                   #     variableVal is of a real number data type (the value that the user wants to set the variable in lineNumber to), and
+                                   #     and variableName is a string that is the exact case of the variable name in the line in model.inp
+    if(to_modify_modelInp_values):
+        modify_modelInp_values(lines_to_modify_modelInp)
     fitting_factors = [] # Holds lists (each list is a numpy linspace (converted to a list) that was created using the arguments read in from the csv input file above)
     num_cores = 4 # IMPORTANT: Need to adjust if running on a different number of cores
     for vector_args in all_vector_args: # Create numpy linspace out using the parameters in vector_args (read from an input file)
