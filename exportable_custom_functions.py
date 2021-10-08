@@ -85,7 +85,6 @@ def modify_modelInp_values(linesToModify): # required format of linesToModify is
         linesToModifyIndex += 1 # Skip over negative line numbers (only should happen due to user error)
 
     outputModelFile = open("modelTemp.inp", "w") # A temp file whose contents will be written into model.inp upon completion of the below 'with' block
-
     with open("model.inp", "r", newline='') as inpFile:
         for line in inpFile:
             lineIndex += 1
@@ -97,7 +96,15 @@ def modify_modelInp_values(linesToModify): # required format of linesToModify is
                         userVarName = linesToModify[linesToModifyIndex][2].strip() # What the user said the variable name was
 
                         if(lineText == userVarName): # If the line is the one with the variable name specified in the second spot in the array and the line number is the one specified during the array
-                            lineToWrite = line[0:24] + np.format_float_scientific(float(linesToModify[linesToModifyIndex][1]), precision = 4, unique=False) + line[34:len(line)] # Replace the variable value with the user-specified value
+
+                            if(linesToModify[linesToModifyIndex][1] < 0):
+                                valToWrite = np.format_float_scientific(float(linesToModify[linesToModifyIndex][1]), precision = 3, unique=False) 
+                                    # To keep alignment of semicolon after the number (in model.inp) with the others in the other lines (the line contents after the variable value are pushed one if there is a negative sign 
+                                    #     with the scientifically formatted number, so the precision must be lowered by 1 to keep the spacing in model.inp the same)
+                            else:
+                                valToWrite = np.format_float_scientific(float(linesToModify[linesToModifyIndex][1]), precision = 4, unique=False) 
+                                    # Number is greater than 0, so no need to change the precision (see the above comments for why this would be the case)
+                            lineToWrite = line[0:24] + valToWrite + line[34:len(line)] # Replace the variable value with the user-specified value
                         linesToModifyIndex += 1
                         while(linesToModifyIndex < len(linesToModify) - 1 and linesToModify[linesToModifyIndex][0] == linesToModify[linesToModifyIndex - 1][0]): # While there are more line arrays with the same line index as the one just processed
                             linesToModifyIndex += 1
