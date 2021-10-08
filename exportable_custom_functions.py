@@ -61,7 +61,7 @@ def split_list(list_var, num_chunks): # list_var is a list of n items that is sp
         start = end+1 # Start is updated for the next iteration of the loop
     return data_to_return
 
-def modifyModelInpValues(linesToModify): # required format of linesToModify is specified below
+def modify_modelInp_values(linesToModify): # required format of linesToModify is specified below
     # linesToModify is a list.
     # Format of the lists that go into the above list: [lineNumber, variableValue, variableName], where
                                                        #     - lineNumber is an integer that is the line number (0-indexed) of the line that the user wants to replace the variable's value,
