@@ -99,6 +99,8 @@ Below is an overview of the changes from the parallelized version of the script 
 5. Each core finds the lowest RMSD and the fitting factors that produced it, and sends that back to the root core (core 0). The root core finds the lowest RMSD (and fitting factors that produced it) from among those returned and writes the one with the lowest RMSD and writes it to a results file.
 6. **Note: the [OpenMPI library](https://www.open-mpi.org/) and the python package [mpi4py](https://mpi4py.readthedocs.io/en/stable/index.html) (version 3.0.3) were used in this parallelization. Click on the links to learn more about them.**  
 
+The following was done for both the generalized and parallel scripts: a custom function (in exportable_custom_functions.py) was written to allow the user to change values of variables in model.inp.
+
 #### Comparison Script
 
 The python script compareOptimizations.py runs the original, generalized and (parallel and generalized) versions of the baragiola script, one after another, in that order, prints out the runtimes for each, and compares the results files for the original and generalized versions. Note that this script will only work as expected if all 3 scripts have (a) the same numpy linspace arguments and thus are dealing with the same reactions, (b) the same experimental data files, and (c) the same photo_processes.dat files. 
