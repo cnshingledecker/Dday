@@ -542,11 +542,14 @@ DO i = 1, nreactions
               r(i)%rate = 0.0
             ENDIF
 
-        CASE (15) !Suprathermal surface or bulk reactions
+        CASE (15) !Suprathermal surface reactions
             ! Compute their vibrational frequencies:
-            anu0 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir1)%edes/PI/PI/s(r(i)%ir1)%weight)
-            anu1 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir2)%edes/PI/PI/s(r(i)%ir2)%weight)
+!            anu0 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir1)%edes/PI/PI/s(r(i)%ir1)%weight)
+!            anu1 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir2)%edes/PI/PI/s(r(i)%ir2)%weight)
             
+            anu0 = TRIAL_NU !DSQRT(sitedens*ak_B/aMp*s(r(i)%ir1)%edes/PI/PI/s(r(i)%ir1)%weight)
+            anu1 = TRIAL_NU !DSQRT(sitedens*ak_B/aMp*s(r(i)%ir2)%edes/PI/PI/s(r(i)%ir2)%weight)
+
             IF ( ISNAN(anu0) ) THEN
               PRINT *, "anu0 = NaN"
               anu0 = 1.0e14 ! For electrons. Set characteristic vibration to 1e14 s-1
@@ -567,7 +570,7 @@ DO i = 1, nreactions
             r(i)%rate = r(i)%alpha*(Rdiff0 + Rdiff1)
 
             IF (r(i)%r1 == r(i)%r2) r(i)%rate = r(i)%rate/2.d0
-        CASE (16) !Suprathermal surface or bulk reactions
+        CASE (16) !Suprathermal bulk reactions
             ! Compute their vibrational frequencies:
             anu0 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir1)%edes/PI/PI/s(r(i)%ir1)%weight)
             anu1 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir2)%edes/PI/PI/s(r(i)%ir2)%weight)
@@ -600,9 +603,9 @@ DO i = 1, nreactions
             r(i)%rate = suprathermal*radiolysis*r(i)%alpha*(r(i)%gamma/1.0d2)*PHI_EXP*Se_EXP
 !            r(i)%rate = suprathermal*radiolysis*r(i)%alpha*(r(i)%gamma/1.0d2)*PHI_EXP*Se_EXP*(1.0)*RHO_ICE*(1.0/0.7071067)
             IF ( r(i)%rate .GT. 0.0d0 ) THEN
-!              PRINT *, r(i)%r1," + IONRAD -> ",r(i)%p1," + ",r(i)%p2," + ",r(i)%p3
-!              PRINT *, "k_rad=",r(i)%rate
-!              PRINT *, "************************"
+              PRINT *, r(i)%r1," + IONRAD -> ",r(i)%p1," + ",r(i)%p2," + ",r(i)%p3
+              PRINT *, "k_rad=",r(i)%rate
+              PRINT *, "************************"
             ENDIF
           ENDIF
         CASE (18) ! Quenching of suprathermal species
@@ -614,7 +617,8 @@ DO i = 1, nreactions
               anu0 = 1.0e14
             ENDIF
  
-          r(i)%rate = r(i)%alpha*anu0
+!          r(i)%rate = r(i)%alpha*anu0
+          r(i)%rate = r(i)%alpha*1e14
         CASE(19) ! Photoionization
           ! alpha -> branching fractiona
           ! beta  -> σ, the photoionization cross section
@@ -654,6 +658,42 @@ DO i = 1, nreactions
               r(i)%rate = PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
             ENDIF
           ENDIF
+        CASE (21) !Surface ion-neutral reaction
+            ! Compute their vibrational frequencies:
+!            anu0 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir1)%edes/PI/PI/s(r(i)%ir1)%weight)
+!            anu1 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir2)%edes/PI/PI/s(r(i)%ir2)%weight)
+            anu0 = ION_NU
+            anu1 = ION_NU
+
+
+            ! Compute reaction rates - no diffusion - of the reactants (Shingledecker et al. 2018):
+            Rdiff0 = anu0
+            Rdiff1 = anu1
+
+            r(i)%rate = r(i)%alpha*(Rdiff0 + Rdiff1)
+
+            IF (r(i)%r1 == r(i)%r2) r(i)%rate = r(i)%rate/2.d0
+!            PRINT *, r(i)%r1," + ",r(i)%r2," -> ",r(i)%p1," + ",r(i)%p2," + ",r(i)%p3
+!            PRINT *,"rate= ",r(i)%rate
+!            PRINT *,"********************************************************"
+        CASE (22) !Bulk ion-neutral reaction
+            ! Compute their vibrational frequencies:
+!            anu0 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir1)%edes/PI/PI/s(r(i)%ir1)%weight)
+!            anu1 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir2)%edes/PI/PI/s(r(i)%ir2)%weight)
+            anu0 = ION_NU
+            anu1 = ION_NU
+
+            ! Compute reaction rates - no diffusion - of the reactants (Shingledecker et al. 2018):
+            Rdiff0 = anu0
+            Rdiff1 = anu1
+
+            r(i)%rate = r(i)%alpha*(Rdiff0 + Rdiff1)
+
+            IF (r(i)%r1 == r(i)%r2) r(i)%rate = r(i)%rate/2.d0
+!            PRINT *, r(i)%r1," + ",r(i)%r2," -> ",r(i)%p1," + ",r(i)%p2," + ",r(i)%p3
+!            PRINT *,"rate= ",r(i)%rate
+!            PRINT *,"********************************************************"
+
         CASE DEFAULT
         END SELECT
 
