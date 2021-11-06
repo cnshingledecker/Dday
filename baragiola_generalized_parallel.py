@@ -10,6 +10,9 @@ reactions = [] # Will hold the reactions for which the fitting factors are being
 all_vector_args = [] # Holds a series of lists (with each list containing the values in each of the linspaces that is created for a reaction)
 base_dir_name = "baragiola_files_core" # The partial name for each directory of the files for a core
 
+reset_model_inp = False # If this is true, model.inp will be reset to default values 
+                        #     (specified in modelCopy.inp,; model.inp will be overwritten with the contents of this file)
+
 # Note: the below code is ran on every core because each core needs the reaction, and reading it on each core means the data from the file doesn't have to be sent to each core
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
@@ -31,6 +34,9 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
 #        In this if statement, a directory is created for each core with the files necessary for it to run monaco as well as find the rmsd and write to output files,
 #        the fitting factor combinations are generated and distributed to each core (including itself (core 0)),         
 if rank == 0:
+    if(reset_model_inp == True):
+        os.system("cat modelCopy.inp > model.inp") # Reset model.inp to the default values in modelCopy.inp only if the user wants to (if reset_model_inp is true)
+    
     to_modify_modelInp_values = False # Set this to True if you want to modify model.inp values using the below array 
     lines_to_modify_modelInp = [] 
                                    # If the user wants to modify model.inp values, the user should insert lists of the form [lineNumber, variableVal, variableName] into this list,

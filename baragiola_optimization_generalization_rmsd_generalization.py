@@ -8,6 +8,11 @@ from exportable_custom_functions import find_nearest_index,is_float, is_int, mod
 
 results = open("resultsFile_2", 'w')
 
+reset_model_inp = False # If this is true, model.inp will be reset to default values 
+                        #     (specified in modelCopy.inp,; model.inp will be overwritten with the contents of this file)
+if(reset_model_inp == True):
+        os.system("cat modelCopy.inp > model.inp") # Reset model.inp to the default values in modelCopy.inp only if the user wants to (if reset_model_inp is true)
+
 to_modify_modelInp_values = False # Set this to True if you want to modify model.inp values using the below array 
 lines_to_modify_modelInp = [] 
                                 # If the user wants to modify model.inp values, the user should insert lists of the form [lineNumber, variableVal, variableName] into this list,
