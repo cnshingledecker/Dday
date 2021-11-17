@@ -1,0 +1,68 @@
+Nml=   7709.4355182730151
+Time (s) =   7.9211E+02
+Fluence =   7.9211E+17
+ In the normal species print-out location
+ge-       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  9.57E-10 (  0.0% init. O)
+gO        has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.59E-07 (  0.0% init. O)
+gO-       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.39E-06 (  0.0% init. O)
+gO+       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.74E-06 (  0.0% init. O)
+gO2       has an s-array abundance of  1.14E-05(  0.0% init. O) and a y-array abundance of  1.87E-09 (  0.0% init. O)
+gO2+      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.71E-06 (  0.0% init. O)
+gO2-      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.84E-06 (  0.0% init. O)
+gO3       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  5.09E-09 (  0.0% init. O)
+gO3+      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  7.62E-08 (  0.0% init. O)
+gO3-      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.55E-07 (  0.0% init. O)
+gO*       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  4.80E-06 (  0.0% init. O)
+gO2*      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  2.28E-07 (  0.0% init. O)
+gO3*      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  5.82E-07 (  0.0% init. O)
+be-       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.02E-08 (  0.0% init. O)
+bO        has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  5.85E-08 (  0.0% init. O)
+bO-       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  2.29E-05 (  0.0% init. O)
+bO+       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  2.89E-04 (  0.3% init. O)
+bO2       has an s-array abundance of  5.70E-02(100.0% init. O) and a y-array abundance of  3.61E-02 ( 63.3% init. O)
+bO2+      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  6.85E-04 (  1.2% init. O)
+bO2-      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.13E-04 (  0.2% init. O)
+bO3       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.14E-02 ( 29.9% init. O)
+bO3+      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  5.39E-04 (  1.4% init. O)
+bO3-      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.38E-03 (  3.6% init. O)
+bO*       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.06E-17 (  0.0% init. O)
+bO2*      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.75E-17 (  0.0% init. O)
+bO3*      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.31E-17 (  0.0% init. O)
+There are 100.0% of the initial atoms left in the s-array
+There are 100.0% of the initial atoms left in the y-array
+ **********************************
+ **********************************
+ Nml=   7709.4131365815074
+Time (s) =   7.9874E+02
+Fluence =   7.9874E+17
+ In the normal species print-out location
+ge-       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  9.39E-10 (  0.0% init. O)
+gO        has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.54E-07 (  0.0% init. O)
+gO-       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.39E-06 (  0.0% init. O)
+gO+       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.73E-06 (  0.0% init. O)
+gO2       has an s-array abundance of  1.14E-05(  0.0% init. O) and a y-array abundance of  1.85E-09 (  0.0% init. O)
+gO2+      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.70E-06 (  0.0% init. O)
+gO2-      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.83E-06 (  0.0% init. O)
+gO3       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  5.04E-09 (  0.0% init. O)
+gO3+      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  7.56E-08 (  0.0% init. O)
+gO3-      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.51E-07 (  0.0% init. O)
+gO*       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  4.83E-06 (  0.0% init. O)
+gO2*      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  2.29E-07 (  0.0% init. O)
+gO3*      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  5.85E-07 (  0.0% init. O)
+be-       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.02E-08 (  0.0% init. O)
+bO        has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  5.85E-08 (  0.0% init. O)
+bO-       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  2.29E-05 (  0.0% init. O)
+bO+       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  2.89E-04 (  0.3% init. O)
+bO2       has an s-array abundance of  5.70E-02(100.0% init. O) and a y-array abundance of  3.61E-02 ( 63.3% init. O)
+bO2+      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  6.85E-04 (  1.2% init. O)
+bO2-      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.13E-04 (  0.2% init. O)
+bO3       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.14E-02 ( 29.9% init. O)
+bO3+      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  5.39E-04 (  1.4% init. O)
+bO3-      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.38E-03 (  3.6% init. O)
+bO*       has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.06E-17 (  0.0% init. O)
+bO2*      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.75E-17 (  0.0% init. O)
+bO3*      has an s-array abundance of  0.00E+00(  0.0% init. O) and a y-array abundance of  1.31E-17 (  0.0% init. O)
+There are 100.0% of the initial atoms left in the s-array
+There are  99.9% of the initial atoms left in the y-array
+ **********************************
+ **********************************
