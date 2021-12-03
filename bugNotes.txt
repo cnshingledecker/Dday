@@ -1,0 +1,28 @@
+Problem seems to be happening in surface high energy molecules (marked g), not andything below (marked b - bulk/below), this is how it was previously slightly fixed
+
+Line 406 in mod_run_dvode has some yabundace alculations 
+
+Line 762 - Location of 'Time (s) = ', t
+
+Line 792 - Location of write % of initial atoms in y-array.
+         - changed to have 4 decimal places for more precision
+
+Line 794 to line - Adding a tracker to find the abundances over time (only records y-array abundance and time)
+
+baragiola_generalized_parallel.py change - line 66 added y-array_over_time.csv to list so it can be opened and edited.
+
+
+
+
+OPEN(53066, file='y-array_over_time.csv', status='old', position='append') ! , iostat = err_status, iomsg=err_iomsg
+
+! IF(err_status /= 0) THEN
+!   WRITE (*,*) 'Error ', TRIM(err_iomsg)
+!   STOP
+! END IF
+
+WRITE(53066, '(1pES12.4,A,F8.4)') t, ", ", (temp_atoms_y/total_atoms)*100.0000
+CLOSE(53066)
+
+INTEGER                             :: err_status
+CHARACTER(256)                      :: err_iomsg

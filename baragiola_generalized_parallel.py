@@ -46,7 +46,7 @@ if rank == 0:
     if(to_modify_modelInp_values):
         modify_modelInp_values(lines_to_modify_modelInp)
     fitting_factors = [] # Holds lists (each list is a numpy linspace (converted to a list) that was created using the arguments read in from the csv input file above)
-    num_cores = 4 # IMPORTANT: Need to adjust if running on a different number of cores
+    num_cores = 1 # IMPORTANT: Need to adjust if running on a different number of cores
     for vector_args in all_vector_args: # Create numpy linspace out using the parameters in vector_args (read from an input file)
         single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
         single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
@@ -62,8 +62,8 @@ if rank == 0:
                                                                                               #       never gets to its destination). Feel free to change this if desired and if your machine can handle a smaller or bigger mini-chunk size.
     # These file are copied into a directory for each core
     files_to_copy_to_new_dir = ["clean.sh", "run.sh", "rd_eff.txt", "radiolysis.dat", "photo_processes.dat", "parameter_inputs_template.dat",
-                                "network.dat", "monaco", "model.inp", "Lee_ea_17.txt", "init_surf_ab.inp", "init_gas_ab.inp", 
-                                "init_bulk_ab.inp", "enthalpias.txt", "class_2_suprathermal.dat"] 
+                                "network.dat", "monaco", "model.inp", "Lee_ea_17.txt", "init_surf_ab.inp", "init_gas_ab.inp",
+                                "init_bulk_ab.inp", "enthalpias.txt", "class_2_suprathermal.dat", "y-array_over_time.csv"]
 
     for i in range(0, num_cores): # Create directory for the files for each core, copy into it the files specified in the above array, copy the experimental_data directory into it, and create the results file in each array
         new_dir_name = base_dir_name + str(i)
