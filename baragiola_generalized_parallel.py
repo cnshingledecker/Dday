@@ -6,6 +6,8 @@ from mpi4py import MPI
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
+testing = True # Any code for testing (should be in if statements with this variable as the condition of the if statement) will run if and only if this is True
+
 reactions = [] # Will hold the reactions for which the fitting factors are being modified
 all_vector_args = [] # Holds a series of lists (with each list containing the values in each of the linspaces that is created for a reaction)
 base_dir_name = "baragiola_files_core" # The partial name for each directory of the files for a core
@@ -34,6 +36,8 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
 #        In this if statement, a directory is created for each core with the files necessary for it to run monaco as well as find the rmsd and write to output files,
 #        the fitting factor combinations are generated and distributed to each core (including itself (core 0)),         
 if rank == 0:
+    if(testing is True):
+        os.system("touch y-array_over_time.csv")
     if(reset_model_inp == True):
         os.system("cat modelCopy.inp > model.inp") # Reset model.inp to the default values in modelCopy.inp only if the user wants to (if reset_model_inp is true)
     
