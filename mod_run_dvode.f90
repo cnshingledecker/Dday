@@ -791,7 +791,7 @@ if (t/=told) then
     ENDDO
 
     WRITE( *,'(A,F5.1,A)') "There are ", (temp_atoms/total_atoms)*100.0, "% of the initial atoms left in the s-array"
-    WRITE( *,'(A,F8.4,A)') "There are ", (temp_atoms_y/total_atoms)*100.0000, "% of the initial atoms left in the y-array"
+    WRITE( *,'(A,F10.4,A)') "There are ", (temp_atoms_y/total_atoms)*100.0000, "% of the initial atoms left in the y-array"
 
     OPEN(53066, file='y-array_over_time.csv', status='old', position='append') ! , iostat = err_status, iomsg=err_iomsg
 
@@ -800,7 +800,7 @@ if (t/=told) then
     !   STOP
     ! END IF
 
-    WRITE(53066, '(1ES12.4,A,F8.4)') t, ", ", (temp_atoms_y/total_atoms)*100.0000
+    WRITE(53066, '(1ES12.4,A,F10.4)') t, ", ", (temp_atoms_y/total_atoms)*100.0000
     CLOSE(53066)    
 
 !    write(*,1010) "n(O2)grain     =",100*(y(species_idx('gO2       ')) + y(species_idx('bO2       ')))/wrt,"% wrt. initial O2 : " ,100.0*(y(species_idx('bO2       '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
