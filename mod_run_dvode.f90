@@ -412,15 +412,6 @@ DO j = 1, nreactions
   IF (r(j)%ip4/=0) ydot(r(j)%ip4) = ydot(r(j)%ip4) + rr
   IF (r(j)%ip5/=0) ydot(r(j)%ip5) = ydot(r(j)%ip5) + rr
 
-  ! Very temporary zeroing out of surface suprathermal
-  ! species changes in abundance
-  ! C. N. Shingledecker
-  ! REMOVE ASAP: This is a temporary fix to a subtle bug that 
-  ! results in an increasing number of atoms over the course of the simulation
-  ydot(species_idx('gO*       ')) = 0.0
-  ydot(species_idx('gO2*      ')) = 0.0
-  ydot(species_idx('gO3*      ')) = 0.0
-
   !REACTIVE DESORPTION ACCORDING TO MINISSALE&DULIEU:
   IF (des_reactive_type == 2) THEN
       IF (((r(j)%rtype == 13) .OR. (r(j)%rtype == 15)) .AND. r(j)%p1(1:1) == 'g') THEN
