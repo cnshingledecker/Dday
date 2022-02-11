@@ -20,7 +20,7 @@ for number in num_fitting_factor_combinations:
     file.write(str(number))
     file.close()
     startTime = int(round(time.time() * 1000))
-    os.system("python3 runtime_test_baragiola_optimization_generalization_rmsd_generalization.py")
+    os.system("python3 runtime_test_baragiola_generalized_serial.py")
     endTime = int(round(time.time() * 1000))
     startTimesOriginal[index] = (endTime - startTime)/60000
 

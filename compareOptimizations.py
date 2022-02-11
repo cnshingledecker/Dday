@@ -7,7 +7,7 @@ from exportable_custom_functions import is_float, is_int
 # endTime1 = int(round(time.time() * 1000))
 
 startTime2 = int(round(time.time() * 1000))
-os.system("python3 baragiola_optimization_generalization_rmsd_generalization.py") # Run the generalized baragiola optimization
+os.system("python3 baragiola_generalized_serial.py") # Run the generalized baragiola optimization
 endTime2 = int(round(time.time() * 1000))
 
 startTime3 = int(round(time.time() * 1000))
@@ -20,7 +20,7 @@ endTime4 = int(round(time.time() * 1000))
 
 
 # print("Original (baragiola_optimization.py) took " + str((endTime1 - startTime1) / 1000) + " seconds")
-print("Generalization (baragiola_optimization_generalization_rmsd_generalization.py) took " + str((endTime2 - startTime2) / 1000) + " seconds")
+print("Generalization (baragiola_generalized_serial.py) took " + str((endTime2 - startTime2) / 1000) + " seconds")
 print("Modified original (baragiola_optimization_test.py) took " + str((endTime3 - startTime3) / 1000) + " seconds")
 print("Generalized and parallel version (baragiola_generalized_parallel.py) took " + str((endTime4 - startTime4) / 1000) + " seconds")
 

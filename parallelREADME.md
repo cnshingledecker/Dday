@@ -34,7 +34,7 @@ If the above doesn't work, reach out for support.
 
 Also, this code works for sure with Python version 3.8.5.
 
-1. The original (non-parallel, non-generalized) version of the script is baragiola_optimization.py. There is a generalized version of the script (baragiola_optimization_generalization_rmsd_generalization.py) which produces the same results as the original version of the script. The parallel version of the script is a base MPI program that had the generalized script integrated into it (the parallel version produces the same results using the same code as the generalized, non-parallel version).
+1. The original (non-parallel, non-generalized) version of the script is baragiola_optimization.py. There is a generalized version of the script (baragiola_generalized_serial.py) which produces the same results as the original version of the script. The parallel version of the script is a base MPI program that had the generalized script integrated into it (the parallel version produces the same results using the same code as the generalized, non-parallel version).
 
 2. The original version of the script is built to run with certain files, written-in deviation values, etc. The generalized version of the script (and thus the parallel version as well) are built to handle a wide variety of input files, with the following files needing to be changed (that the baragiola script directly interacts with) if you desire to have the program generate different results:
 

@@ -35,7 +35,7 @@ Note that monaco reads from certain input files (including reading fitting facto
 
 ##### Generalization
 
-How to run this: (how you would run a python script). Example "python3 baragiola_optimization_generalization_rmsd_generalization.py".
+How to run this: (how you would run a python script). Example "python3 baragiola_generalized_serial.py".
 
 As previously described, one of the goals of this project is to write the code in such a way that it can be ran with various input files to produce different models.
 
@@ -53,7 +53,7 @@ The fitting factors that produced the least RMSD are thus the ones that produced
 
 
 
-The following changes were made in the generalization of the script (see baragiola_optimization_generalization_rmsd_generalization) (note: this list may not be all changes):
+The following changes were made in the generalization of the script (see baragiola_generalized_serial) (note: this list may not be all changes):
 
 1. Place the arguments for the 3 numpy linspaces (and the associated reaction) in a csv file, to be read in when the program runs.
     1. This data is in the file 'reaction_fitting_factor_vector_arguments.csv', which is in the directory 'reaction_fitting_factor_linspace_args'. This is done because otherwise, the file is deleted when clean.sh is run.
