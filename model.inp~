@@ -23,8 +23,8 @@ FIXED_NU              = 1          ; 1 - Fixed ν value, the "trial frequency" u
 DISABLE_DESORB        = 1          ; 1 - No desorption. Used when modeling some experiments. NB: must also set DES_REACTIVE=0
 
 CHEM_FILE             = network.dat
-RTOL                  = 1.0000E-10 ; Relative tolerance
-ATOL                  = 1.0000E-14 ; Absolute tolerance
+RTOL                  = 1.0000E-08 ; Relative tolerance
+ATOL                  = 1.0000E-08 ; Absolute tolerance
 
 N_S_ML                = 4.0000E+00 ; Number of `surface` monolayers (to mimic model 4-4 in VH13)
 

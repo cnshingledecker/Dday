@@ -124,7 +124,8 @@ if rank >= 0:
             with open(new_dir_name + '/experimental_data/experimental_o3.csv') as csv_file: # Experimental data
                 deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
                 csv_reader = csv.reader(csv_file, delimiter=',')
-                csv_model_data = open(new_dir_name + '/csv/total_ice_o3.csv')
+
+                csv_model_data = open(new_dir_name + '/csv/total_ice_O3.csv')
                 csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
                 csv_model_data_list = list(csv_model_data_reader)
                 for row in csv_reader: # This assumes that row[0] is the time, row[1] is the y-value (I'm not sure what this is),

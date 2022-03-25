@@ -6,7 +6,7 @@ mkdir ab
 mkdir csv
 
 # Run the program
-./monacoGeneralization
+./monaco
 # Copy the output files to the appropriate folders, if needed
 if [ -f "H2.ab" ]; then
   mv *.ab ab/ 

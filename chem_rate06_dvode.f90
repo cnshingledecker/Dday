@@ -19,7 +19,7 @@ CALL read_rate06database
 IF (MODEL_EXPERIMENT.EQ.0) THEN
   nsites = sitedens*2.0d0*pi*agr**2.0d0
 ELSE
-  nsites = sitedens*ICE_AREA ! number of sites on 1um^2
+  nsites = sitedens*1.0e-8 ! number of sites on 1um^2
 ENDIF
 
 ALLOCATE (reaction_importance(n_det_spec,nreactions,timesteps))

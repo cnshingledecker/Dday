@@ -1,0 +1,15 @@
+ 1491 gO        PHOION              gO*                                               1.00E+00  0.00E-00  1.00E-00
+ 1491 gO        PHOEXC              gO*                                               1.00E+00  0.00E-00  1.00E-00
+ 1467 gO2       PHOION              gO*       gO*                                     1.00E+00  3.86E-20  1.00E+00
+ 1468 gO2       PHOEXC              gO        gO                                      1.00E+00  2.13E-18  2.30E+00
+ 1469 gO2       PHOEXC              gO2*                                              1.00E+00  2.13E-18  1.00E-00
+ 1467 bO2       PHOION              bO*       bO*                                     1.00E+00  3.86E-20  1.00E+00
+ 1468 bO2       PHOEXC              bO        bO                                      1.00E+00  2.13E-18  2.30E+00
+ 1469 bO2       PHOEXC              bO2*                                              1.00E+00  2.10E-18  1.00E-00
+ 1473 gO3       PHOION              gO2*      gO*                                     1.00E+00  0.00E-00  1.00E-00
+ 1474 gO3       PHOEXC              gO2       gO                                      1.00E+00  5.60E-18  1.00E-00
+ 1474 gO3       PHOEXC              gO3*                                              1.00E+00  5.60E-18  1.00E-00
+ 1473 bO3       PHOION              bO2*      bO*                                     1.00E+00  0.00E-00  1.00E-00
+ 1474 bO3       PHOEXC              bO2       bO                                      1.00E+00  5.60E-18  1.00E-00
+ 1474 bO3       PHOEXC              bO3*                                              1.00E+00  5.60E-18  1.00E-00
+10

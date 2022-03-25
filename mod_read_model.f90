@@ -52,7 +52,6 @@ READ(1,*)
 READ(1,1001)keyname, EXTFAC, keycomment
 READ(1,1001)keyname, DVAL, keycomment
 READ(1,1001)keyname, ICE_THICK, keycomment
-READ(1,1001)keyname, ICE_AREA, keycomment
 READ(1,1001)keyname, RHO_ICE, keycomment
 READ(1,1001)keyname, gdens, keycomment
 READ(1,1001)keyname, t, keycomment
@@ -69,7 +68,6 @@ IF (is_disk_model == 0) ZetaX = 0.0d0
 READ(1,1001)keyname, PHI_EXP, keycomment
 READ(1,1001)keyname, SE_EXP, keycomment
 READ(1,1001)keyname, TRIAL_NU, keycomment
-READ(1,1001)keyname, ION_NU, keycomment
 READ(1,1000)keyname, des_t, keycomment
 READ(1,1000)keyname, des_crp, keycomment
 READ(1,1000)keyname, des_photon, keycomment
