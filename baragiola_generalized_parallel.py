@@ -3,6 +3,7 @@ import csv, itertools, math, os, time
 from exportable_custom_functions import *
 from mpi4py import MPI
 
+startTime = time.time()
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
@@ -175,3 +176,6 @@ if rank == 0:
     output_string += str(fitting_factors_and_least_rmsd[least_rmsd_index][0]) + "".join(" "*(23 - len(str(fitting_factors_and_least_rmsd[least_rmsd_index][0])))) + "RMSD" + "\n\n"
     results_file.write(output_string)
     results_file.close()
+    endTime = time.time()
+    timeTaken = endTime - startTime
+    print("Time taken: " + str(timeTaken / 60) + " minutes.")

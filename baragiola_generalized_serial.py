@@ -4,7 +4,10 @@ import os
 import csv
 import numpy as np
 import itertools
+import time
 from exportable_custom_functions import find_nearest_index,is_float, is_int, modify_modelInp_values
+
+startTime = time.time()
 
 results = open("resultsFile_2", 'w')
 
@@ -125,4 +128,7 @@ output_string += str(fitting_factors_and_least_rmsd[0]) + "".join(" "*(23 - len(
 results_file.write(output_string)
 results_file.close()
 
+endTime = time.time()
+timeTaken = endTime - startTime
+print("Time taken: " + str(timeTaken / 60) + " minutes.")
 print("Done!")

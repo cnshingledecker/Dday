@@ -2,8 +2,8 @@
  8287 bO        PHOEXC              bO*                                               1.00E+00  0.00E+00  1.00E+00
  8288 gO        PHOION              gO+       ge-                                     1.00E+00  0.00E+00  1.00E+00
  8289 bO        PHOION              bO+       be-                                     1.00E+00  0.00E+00  1.00E+00
- 8296 gO2       PHOEXC              gO        gO                                      3.33E-01  2.13E-18  2.70e+00 0
- 8297 bO2       PHOEXC              bO        bO                                      3.33E-01  2.13E-18  2.70e+00 0
+ 8296 gO2       PHOEXC              gO        gO                                      3.33E-01  2.13E-18  1.81e+00 0
+ 8297 bO2       PHOEXC              bO        bO                                      3.33E-01  2.13E-18  1.81e+00 0
  8298 gO2       PHOEXC              gO+       gO-                                     3.33E-01  2.13E-18  1.00E+01  
  8299 bO2       PHOEXC              bO+       bO-                                     3.33E-01  2.13E-18  1.00E+01
  8300 gO2       PHOEXC              gO2*                                              3.33E-01  2.13E-18  3.00e-01 2
