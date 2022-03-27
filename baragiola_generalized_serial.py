@@ -61,7 +61,7 @@ all_fitting_factor_combinations = itertools.product(*fitting_factors)    # Creat
 
 for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_factor_combinations[n] is a value from the (n + 1)th np.linspace created 
     infile = open("parameter_inputs_template.dat",'r')
-    outfile = open("photo_processes_2.dat",'w')
+    outfile = open("photo_processes.dat",'w')
     for line in infile:
         line_as_list = line.split()  # Convert the DAT file line into a list
         possible_fitting_factor_index = line_as_list[len(line_as_list) - 1] # See below comment for the meaning of this variable
