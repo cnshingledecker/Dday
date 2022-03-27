@@ -46,7 +46,7 @@ if rank == 0:
     if(to_modify_modelInp_values):
         modify_modelInp_values(lines_to_modify_modelInp)
     fitting_factors = [] # Holds lists (each list is a numpy linspace (converted to a list) that was created using the arguments read in from the csv input file above)
-    num_cores = 4 # IMPORTANT: Need to adjust if running on a different number of cores
+    num_processors = 4 # IMPORTANT: Need to adjust if running on a different number of processors
     for vector_args in all_vector_args: # Create numpy linspace out using the parameters in vector_args (read from an input file)
         single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
         single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
@@ -56,7 +56,7 @@ if rank == 0:
                                                                          #    Note that this creates a list of n lists (where n is the product of the number of values for each list of fitting factors), and each of these 
                                                                          #    n lists has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
     all_fitting_factor_combinations = [list(fitting_factor_combination) for fitting_factor_combination in all_fitting_factor_combinations]
-    all_fitting_factor_combinations = split_list(all_fitting_factor_combinations, num_cores) # Splits the list into 'num_cores' chunks
+    all_fitting_factor_combinations = split_list(all_fitting_factor_combinations, num_processors) # Splits the list into 'num_processors' chunks
     all_fitting_factor_combinations = split_list_chunks(all_fitting_factor_combinations, 15) # Splits each of the list chunks into mini-chunks of up to size 15 (creates as many with size 15 as possible)
                                                                                               # Note: Sending a mini-chunk on my (Daniel's) machine does not arrive at the destination (the program just sits and the mini-chunk
                                                                                               #       never gets to its destination). Feel free to change this if desired and if your machine can handle a smaller or bigger mini-chunk size.
@@ -65,7 +65,7 @@ if rank == 0:
                                 "network.dat", "monaco", "model.inp", "Lee_ea_17.txt", "init_surf_ab.inp", "init_gas_ab.inp", 
                                 "init_bulk_ab.inp", "enthalpias.txt", "class_2_suprathermal.dat"] 
 
-    for i in range(0, num_cores): # Create directory for the files for each core, copy into it the files specified in the above array, copy the experimental_data directory into it, and create the results file in each array
+    for i in range(0, num_processors): # Create directory for the files for each core, copy into it the files specified in the above array, copy the experimental_data directory into it, and create the results file in each array
         new_dir_name = base_dir_name + str(i)
         os.system("mkdir " + new_dir_name)
         os.system("touch " + new_dir_name + "/output_file_results") # Create file that each core will write to (will write fitting factors and associated rmsds)
@@ -77,8 +77,8 @@ if rank == 0:
         comm.send(len(all_fitting_factor_combinations[i]), dest=i)
     
     # Send all of the mini_-chunks to the different cores
-    mini_chunk_to_send = [0 for i in range(num_cores)] # Tells comm.send which mini-chunk to send (tells the index) to a certain core
-    chunks_left_to_send = [True for i in range(num_cores)] # List of boolean variables that says whether there are mini-chunks left to send to each core
+    mini_chunk_to_send = [0 for i in range(num_processors)] # Tells comm.send which mini-chunk to send (tells the index) to a certain core
+    chunks_left_to_send = [True for i in range(num_processors)] # List of boolean variables that says whether there are mini-chunks left to send to each core
     while(sum(chunks_left_to_send) > 0):
         for j in range(0, len(all_fitting_factor_combinations)):
             if mini_chunk_to_send[j] < len(all_fitting_factor_combinations[j]): # If the possible index (of a mini-chunk to send) is a valid one (less than the number of mini-chunks)
