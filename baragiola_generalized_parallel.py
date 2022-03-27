@@ -104,7 +104,7 @@ if rank >= 0:
     for mini_chunk in core_fitting_factor_combinations:
         for fitting_factor_combination in mini_chunk:
             infile = open(new_dir_name + "/parameter_inputs_template.dat",'r')
-            outfile = open(new_dir_name + "/photo_processes_2.dat",'w')
+            outfile = open(new_dir_name + "/photo_processes.dat",'w')
             for line in infile:
                 line_as_list = line.split()  # Convert the DAT file line into a list
                 possible_fitting_factor_index = line_as_list[len(line_as_list) - 1] # See below comment for the meaning of this variable
