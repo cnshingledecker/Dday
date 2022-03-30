@@ -90,4 +90,4 @@ plt.ylabel(r'$[O_3]/[O_2]_{initial} \times 100 \%$')
 # plt.savefig(w_ions_version + '/figures/f2.pgf')
 # plt.savefig(w_ions_version + '/figures/f2.eps')
 # plt.show() # Because not displaying it in a ipynb file
-plt.savefig('plot.jpg')
+plt.savefig('plot.jpg', bbox_inches='tight')
