@@ -1,0 +1,12 @@
+  103 17 gO2       IONRAD              gO*       gO*                                        0.00000E+00 0    6.81000E+00
+  104 17 gO2       IONRAD              gO        gO                                         0.00000E+00 0    5.81000E+00
+  105 17 gO2       IONRAD              gO2*                                                 0.00000E+00 0    5.81000E+00
+  106 17 gO3       IONRAD              gO2*      gO*                                        0.00000E+00 0    5.57000E+01
+  107 17 gO3       IONRAD              gO2       gO                                         0.00000E+00 0    3.60000E+01
+  108 17 gO3       IONRAD              gO3*                                                 0.00000E+00 0    3.60000E+01
+  109 17 bO2       IONRAD              bO*       bO*                                        0.00000E+00 0    6.81000E+00
+  110 17 bO2       IONRAD              bO        bO                                         0.00000E+00 0    5.81000E+00
+  111 17 bO2       IONRAD              bO2*                                                 0.00000E+00 0    5.81000E+00
+  112 17 bO3       IONRAD              bO2*      bO*                                        0.00000E+00 0    5.57000E+01
+  113 17 bO3       IONRAD              bO2       bO                                         0.00000E+00 0    3.60000E+01
+  114 17 bO3       IONRAD              bO3*                                                 0.00000E+00 0    3.60000E+01

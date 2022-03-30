@@ -131,4 +131,28 @@ results_file.close()
 endTime = time.time()
 timeTaken = endTime - startTime
 print("Time taken: " + str(timeTaken / 60) + " minutes.")
+
+# Put in best fitting factor combination found (before generating a plot for it)
+
+infile = open("parameter_inputs_template.dat",'r')
+outfile = open("photo_processes.dat",'w')
+for line in infile:
+    line_as_list = line.split()  # Convert the DAT file line into a list
+    possible_fitting_factor_index = line_as_list[len(line_as_list) - 1] # See below comment for the meaning of this variable
+    if(is_int(possible_fitting_factor_index)): # If the last value of the line is an integer, which means it is one of the reactions for which we are modifying the fitting factors
+        if(float(line_as_list[len(line_as_list) - 3]) > 0):
+            new_fitting_factor_val = fitting_factors_and_least_rmsd[int(possible_fitting_factor_index) + 1] # Convert the possible fitting factor index to an int and get the correct fitting factor (where fitting_factor_index tells the computer which fitting factor to get)
+            new_fitting_factor_val = np.format_float_scientific(new_fitting_factor_val, precision=2,unique=False)  # Convert the new fitting factor value into a string of a number in scientific notation rounded to 2 places after the decimal point
+            line = line[0:106] + new_fitting_factor_val + line[114:len(line)] # In the line, replace the old fitting factor with the new value             
+    outfile.write(line)
+infile.close()
+outfile.close()
+
+print("Running model with best fit parameters...")
+os.system('./runGeneralization.sh')
+
+# Do stuff to create plot
+os.system("python3 dataFrameCreation.py")
+os.system("python3 plotting.py")
+
 print("Done!")

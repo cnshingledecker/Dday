@@ -1,0 +1,90 @@
+
+
+
+                     ***************************************
+                     **  CIRCUMSTELLAR ENVELOPE CHEMISTRY **
+                     **           38 SPECIES SET          **
+                     **            F77 VERSION            **
+                     **             31/03/2007            **
+                     ***************************************
+
+
+
+ G-         G0         e-         O          O+         O-         O2         O2+       
+ O2-        O3         O3+        O3-        ge-        gO         gO-        gO+       
+ gO2        gO2+       gO2-       gO3        gO3+       gO3-       gO*        gO2*      
+ gO3*       be-        bO         bO-        bO+        bO2        bO2+       bO2-      
+ bO3        bO3+       bO3-       bO*        bO2*       bO3*      
+
+
+  NUMBER OF VALID SPECIES USED =   38
+  NUMBER OF VALID REACTIONS USED =    189
+
+
+    INITIAL VALUES: 
+
+    Grid point  =     0
+    Radius      =   0.000E+00 AU
+    Height      =   0.000E+00 AU
+    n(H+2H2)    =   2.000E+02 cm^(-3)
+    Tg          =     22.0K
+    rho_g       =   0.000E+00 g/cm^3
+    Td          =     22.0K
+    rho_d       =   3.000E+00 g/cm^3
+    Mdust/Mgas  =   1.000E-02
+    grain size  =   1.000E-04 cm
+    Av(stellar) =   0.000E+00 mag.
+    Av(IS)      =   0.000E+00 mag.
+    G0(stellar) =   0.000E+00 G0(IS)
+    Zeta        =   6.500E-19
+    albedo(UV)  =   5.000E-01
+    Start time  =        0. years
+    Finish time =        0. years
+    Diff. coeff.=   0.000E+00
+
+
+
+    CALCULATED ABUNDANCES: 
+
+      time      G-         G0         e-         O          O+         O-        
+ --------------------------------------------------------------------------------
+      time      G-         G0         e-         O          O+         O-        
+
+
+
+      time      O2         O2+        O2-        O3         O3+        O3-       
+ --------------------------------------------------------------------------------
+      time      O2         O2+        O2-        O3         O3+        O3-       
+
+
+
+      time      ge-        gO         gO-        gO+        gO2        gO2+      
+ --------------------------------------------------------------------------------
+      time      ge-        gO         gO-        gO+        gO2        gO2+      
+
+
+
+      time      gO2-       gO3        gO3+       gO3-       gO*        gO2*      
+ --------------------------------------------------------------------------------
+      time      gO2-       gO3        gO3+       gO3-       gO*        gO2*      
+
+
+
+      time      gO3*       be-        bO         bO-        bO+        bO2       
+ --------------------------------------------------------------------------------
+      time      gO3*       be-        bO         bO-        bO+        bO2       
+
+
+
+      time      bO2+       bO2-       bO3        bO3+       bO3-       bO*       
+ --------------------------------------------------------------------------------
+      time      bO2+       bO2-       bO3        bO3+       bO3-       bO*       
+
+
+
+      time      bO2*       bO3*      
+ --------------------------------------------------------------------------------
+      time      bO2*       bO3*      
+
+
+

@@ -1,0 +1,7 @@
+Enthalpias of formation for gas-phase species (kJ/mol) from webbook.nist.gov
+O              59.0  1
+O+                   0
+O-                   0
+O2                   0
+O2+                  0
+O3             34.1  1
