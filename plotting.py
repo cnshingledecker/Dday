@@ -82,8 +82,7 @@ plt.ylim([0.7,30])
 
 plt.xlabel(r'Fluence $\left( \frac{particles}{cm^2} \right)$')
 plt.ylabel(r'$[O_3]/[O_2]_{initial} \times 100 \%$')
-# plt.title(r'$O_3$ Production During $O_2$ Irradiation',
-#           fontsize=16)
+plt.title(r'$O_3$ Production During $O_2$ Irradiation', fontsize=16)
 
 # Show plot
 # plt.savefig(w_ions_version + '/figures/f2.png')

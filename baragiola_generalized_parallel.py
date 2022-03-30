@@ -182,18 +182,24 @@ if rank == 0:
 
     # Put in best fitting factor combination found (before generating a plot for it)
 
-    infile = open("parameter_inputs_template.dat",'r')
-    outfile = open("photo_processes.dat",'w')
+    # FIX BUG (Test Current Fix)
+    new_dir_name = "."
+    fitting_factor_combination = [0]*(len(fitting_factors_and_least_rmsd)-1)
+    for i in range(1, len(fitting_factors_and_least_rmsd)):
+        fitting_factor_combination[i-1] = fitting_factors_and_least_rmsd[least_rmsd_index][i]
+
+    print("fitting_factor_combination is " + str(fitting_factor_combination))
+
+    infile = open(new_dir_name + "/parameter_inputs_template.dat",'r')
+    outfile = open(new_dir_name + "/photo_processes.dat",'w')
     for line in infile:
         line_as_list = line.split()  # Convert the DAT file line into a list
         possible_fitting_factor_index = line_as_list[len(line_as_list) - 1] # See below comment for the meaning of this variable
         if(is_int(possible_fitting_factor_index)): # If the last value of the line is an integer, which means it is one of the reactions for which we are modifying the fitting factors
             if(float(line_as_list[len(line_as_list) - 3]) > 0):
-                pass
-                # new_fitting_factor_val_float = fitting_factors_and_least_rmsd[int(possible_fitting_factor_index) + 1] # Convert the possible fitting factor index to an int and get the correct fitting factor (where fitting_factor_index tells the computer which fitting factor to get)
-                # print("Val is " + str(new_fitting_factor_val_float) + " of type " + str(type(new_fitting_factor_val_float)))
-                # new_fitting_factor_val_float = np.format_float_scientific(new_fitting_factor_val_float, precision=2,unique=False)  # Convert the new fitting factor value into a string of a number in scientific notation rounded to 2 places after the decimal point
-                # line = line[0:106] + new_fitting_factor_val + line[114:len(line)] # In the line, replace the old fitting factor with the new value             
+                new_fitting_factor_val = fitting_factor_combination[int(possible_fitting_factor_index)] # Convert the possible fitting factor index to an int and get the correct fitting factor (where fitting_factor_index tells the computer which fitting factor to get)
+                new_fitting_factor_val = np.format_float_scientific(new_fitting_factor_val, precision=2,unique=False)  # Convert the new fitting factor value into a string of a number in scientific notation rounded to 2 places after the decimal point
+                line = line[0:106] + new_fitting_factor_val + line[114:len(line)] # In the line, replace the old fitting factor with the new value             
         outfile.write(line)
     infile.close()
     outfile.close()
