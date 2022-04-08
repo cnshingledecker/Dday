@@ -159,7 +159,7 @@ if rank >= 0:
                 csv_file.close()
     results.close()
 
-fitting_factors_and_least_rmsd = comm.gather(fitting_factors_and_least_rmsd, root=0) # Gather the least fake performance metric value and associated fitting factors from each core back to the root core (0)
+fitting_factors_and_least_rmsd = comm.gather(fitting_factors_and_least_rmsd, root=0) # Gather the least performance metric value and associated fitting factors from each core back to the root core (0)
 
 if rank == 0:
     least_rmsd_index = 0
