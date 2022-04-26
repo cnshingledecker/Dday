@@ -29,7 +29,7 @@ plt.rcParams['axes.prop_cycle'] = custom_cycler # Sets plot color cycler to the 
 
 # Define filepath
 wo_ions_version = 'wo_ions/old_output' # Mullikin results
-w_ions_version = 'w_ions/22_01_07_fit'
+w_ions_version = '.'
 
 # Load in data
 woions_df = pd.read_pickle(wo_ions_version + '/pickle_dataframes/csv_dataframe.pkl')
