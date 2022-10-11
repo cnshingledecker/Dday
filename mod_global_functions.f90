@@ -371,6 +371,25 @@ GOTO 10
 RETURN
 END FUNCTION numatoms
 
+! This function returns the bulk species idx of a given surface species
+INTEGER FUNCTION get_bulk_idx(species)
+IMPLICIT NONE
+CHARACTER*10 species,bulkname
+INTEGER i
+
+bulkname = "b" // species(2:LEN_TRIM(species))
+
+DO i = 1,nspecies
+  IF ( TRIM(bulkname) .EQ. TRIM(s(i)%name) ) THEN
+    get_bulk_idx = i
+    RETURN 
+  ENDIF
+ENDDO
+
+END FUNCTION get_bulk_idx
+
+! This function returns the surface species idx of a given bulk species
+
 !This function returns the number of species by its name
 INTEGER FUNCTION species_idx(ss)
 IMPLICIT NONE
@@ -432,5 +451,7 @@ else
 EOF = .false. ; backspace( unit )
 endif
 end function EOF
+
+
 
 END MODULE global_functions

@@ -10,14 +10,13 @@ SUBROUTINE read_rate06database
 IMPLICIT NONE
 INTEGER :: i, ii, j, jj, idx, ir1, ir2, ip1, ip2, ip3, ip4, ip5, dummy, s_r_counter
 INTEGER :: first_suprathermal_react,first_suprathermal_species
-INTEGER :: Nsup_g,Nlines,NGRIONS
+INTEGER :: Nsup_g,Nlines
 INTEGER :: io
 INTEGER :: prodatoms,reactatoms
-INTEGER :: NTOTALSPECIES,NSUPRATHERMAL
-INTEGER :: first_surface_suprathermal
 REAL*8  :: a, b, c
 REAL*8  :: apriori_nml
 CHARACTER*10 :: groundstate,s_name, r1, r2, p1, p2, p3, p4, p5
+CHARACTER*50 :: printStatementValue
 TYPE (reaction), DIMENSION(:), ALLOCATABLE :: rtemp
 
 ! Set a priori number of monolayers
@@ -30,30 +29,11 @@ n_surf_react = 0
 OPEN(1, FILE=chem_file, STATUS='OLD', ERR=100)
 READ(1,*)nspecies
 
-NGRIONS = 0
 DO i = 1, nspecies
   READ(1,'(a10)')s_name
   IF (s_name(1:1) == 'g') n_surf_spec = n_surf_spec + 1
-
-  IF ( s_name(1:1)=='g' ) THEN
-    IF ( s_name(LEN_TRIM(s_name):LEN_TRIM(s_name)) .EQ. '+' .OR. s_name(LEN_TRIM(s_name):LEN_TRIM(s_name)) .EQ. '-') THEN
-      NGRIONS = NGRIONS + 1
-    ENDIF
-  ENDIF
-
-
   PRINT *, "The species is ",s_name
 ENDDO
-
-! Calculate number of suprathermal surface species
-NSUPRATHERMAL = n_surf_spec - NGRIONS
-PRINT *, "The number of suprathermal species is ", NSUPRATHERMAL
-
-!Find the number of charged grain species
-DO i = 1, nspecies
-ENDDO
-
-PRINT *, 'NGRIONS =',NGRIONS
 
 
 READ(1,*)nreactions
@@ -71,38 +51,31 @@ OPEN(1, FILE=chem_file, STATUS='OLD', ERR=100)
 
 
 ! C. N. Shingledecker
-IF ( SUPRATHERMAL .EQ. 1) THEN
-! 1x for the suprathermal surface species - Number of charged species
-! 1x for the suprathermal bulk species - Number of charged species
-! In total: n_grain_species + 2*(n_grain_species - NGRIONS)
-  NTOTALSPECIES = nspecies + 3*n_surf_spec - 2*NGRIONS
-ELSE
+! When radiolysis is on we add 3*n_sur_spec
 ! 1x for the bulk species
-  NTOTALSPECIES = nspecies + n_surf_spec
-ENDIF
-
-
+! 1x for the suprathermal surface species
+! 1x for the suprathermal bulk species
 
 READ(1,*)dummy
 IF ( suprathermal .EQ. 1 ) THEN
-  ALLOCATE ( s(NTOTALSPECIES) )
+  ALLOCATE (s(nspecies+(3*n_surf_spec)))
   IF ( MODEL_EXPERIMENT .EQ. 0 ) THEN
-    ALLOCATE (abundances_bulk(NTOTALSPECIES,10000)) !Up to 10000 monolayers
+    ALLOCATE (abundances_bulk(nspecies+(3*n_surf_spec),10000)) !Up to 10000 monolayers
   ELSE
-    ALLOCATE (abundances_bulk(NTOTALSPECIES,INT(apriori_nml))) !Arbitrarily many monolayers
+    ALLOCATE (abundances_bulk(nspecies+(3*n_surf_spec),INT(apriori_nml))) !Arbitrarily many monolayers
   ENDIF
-  DO i = 1,NTOTALSPECIES 
+  DO i = 1, nspecies+(3*n_surf_spec)
      ALLOCATE (s(i)%abundance_out(timesteps))
      s(i)%abundance_out(:) = 0.0d0
   ENDDO
 ELSE
-  ALLOCATE (s(NTOTALSPECIES))
+  ALLOCATE (s(nspecies+n_surf_spec))
   IF ( MODEL_EXPERIMENT .EQ. 0 ) THEN
-    ALLOCATE (abundances_bulk(NTOTALSPECIES,500)) !Up to 300 monolayers
+    ALLOCATE (abundances_bulk(nspecies+n_surf_spec,500)) !Up to 300 monolayers
   ELSE
-    ALLOCATE (abundances_bulk(NTOTALSPECIES,INT(apriori_nml))) !Arbitrarily many monolayers
+    ALLOCATE (abundances_bulk(nspecies+n_surf_spec,INT(apriori_nml))) !Arbitrarily many monolayers
   ENDIF
-  DO i = 1,NTOTALSPECIES
+  DO i = 1, nspecies+n_surf_spec
      ALLOCATE (s(i)%abundance_out(timesteps))
      s(i)%abundance_out(:) = 0.0d0
   ENDDO
@@ -117,6 +90,7 @@ s(:)%racc           = 0.0d0
 s(:)%rdes           = 0.0d0
 s(:)%abundance      = 0.0d0
 s(:)%frac_abundance = 0.0d0
+
 
 
 first_surf_spec = 0
@@ -146,52 +120,22 @@ DO i = 1, nspecies
   ENDIF
 ENDDO
 
-DO i = 1, nspecies
-  IF (s(i)%name(1:1)=='g') THEN
-    PRINT *, s(i)%name, " has gas counterpart ", s(s(i)%gas_idx)%name
-  ENDIF
-ENDDO
-
-
-
-
 IF ( suprathermal .EQ. 1 ) THEN
-  j = 1
-  PRINT *, "Now adding surface suprathermal species"
-  PRINT *, "first_surf_spec =", s(first_surf_spec)%name, " at idx ", first_surf_spec
-  PRINT *, "There are currently nspecies= ",nspecies," with the last being ", s(nspecies)%name
-  PRINT *, "The size of the s-array is ",SIZE(s)
   !Adding suprathermal surface species
-  DO i = first_surf_spec, nspecies
-    PRINT *, "In loop"
-    PRINT *, s(i)%name, " at idx = ",i
-    IF ( s(i)%name(LEN_TRIM(s(i)%name):LEN_TRIM(s(i)%name)) .NE. '+' .AND. &
-         s(i)%name(LEN_TRIM(s(i)%name):LEN_TRIM(s(i)%name)) .NE. '-') THEN
-      PRINT *, "Should be made suprathermal"
-      PRINT *, "j =",j," nspecies+j=",nspecies+j," and should be GE ",nspecies+1
-      s(nspecies+j)%name = s(i)%name(1:LEN_TRIM(s(i)%name))//'*'
-      s(nspecies+j)%idx = nspecies + j
-      s(nspecies+j)%gas_idx = s(i)%gas_idx
-      s(nspecies+j)%weight = s(i)%weight
-      s(nspecies+j)%natoms = s(i)%natoms
-      s(nspecies+j)%enthalpia_known = s(i)%enthalpia_known
-      s(nspecies+j)%enthalpia = s(i)%enthalpia
-      s(nspecies+j)%edes = s(i)%edes
-      s(nspecies+j)%racc = s(i)%racc
-      PRINT *, TRIM(s(nspecies+j)%name), " with idx ", s(nspecies+j)%idx, " is the suprathermal counterpart of ",s(i)%name, " at idx ", i
-      j = j + 1
-    ELSE
-      PRINT *, "Should not be made suprathermal"
-    ENDIF 
-    PRINT *, "*************************************"
+  DO i = 1, n_surf_spec
+      s(nspecies+i)%name = s(first_surf_spec+i-1)%name(1:LEN_TRIM(s(first_surf_spec+i-1)%name))//'*'
+      s(nspecies+i)%idx = nspecies + i
+      s(nspecies+i)%gas_idx = s(first_surf_spec+i-1)%gas_idx
+      s(nspecies+i)%weight = s(first_surf_spec+i-1)%weight
+      s(nspecies+i)%natoms = s(first_surf_spec+i-1)%natoms
+      s(nspecies+i)%enthalpia_known = s(first_surf_spec+i-1)%enthalpia_known
+      s(nspecies+i)%enthalpia = s(first_surf_spec+i-1)%enthalpia
+      s(nspecies+i)%edes = s(first_surf_spec+i-1)%edes
+      s(nspecies+i)%racc = s(first_surf_spec+i-1)%racc
   ENDDO
-  first_surface_suprathermal = nspecies + 1
-  nspecies = nspecies + n_surf_spec - NGRIONS
+  nspecies = nspecies + n_surf_spec
 END IF
 
-
-PRINT *, "End of adding surface suprathermal species"
-PRINT *, s(first_surface_suprathermal)%name
 
 
 CALL read_enthalpias
@@ -212,6 +156,7 @@ Nsup_g          = 0
 
 DO i = 1, nreactions
   READ(1,1000)r(ii)%idx, r(ii)%r1, r(ii)%r2, r(ii)%p1, r(ii)%p2, r(ii)%p3, r(ii)%p4, r(ii)%p5, r(ii)%alpha, r(ii)%beta, r(ii)%gamma
+  PRINT*,"r(ii) is: ",r(ii)
   r(ii)%ir1 = species_idx(r(ii)%r1)
   r(ii)%ir2 = species_idx(r(ii)%r2)
   r(ii)%ip1 = species_idx(r(ii)%p1)
@@ -281,7 +226,6 @@ CLOSE (1)
 
 
 !Adding bulk species
-first_bulk_spec = nspecies + 1
 DO i = 1, n_surf_spec
     s(nspecies+i)%name = 'b'//s(first_surf_spec+i-1)%name(2:LEN_TRIM(s(first_surf_spec+i-1)%name))
     s(nspecies+i)%idx = nspecies + i
@@ -297,48 +241,28 @@ nspecies = nspecies + n_surf_spec
 
 first_suprathermal_species = nspecies+1
 
-PRINT *, "First bulk species at ",first_bulk_spec," = ",TRIM(s(first_bulk_spec)%name)
-
 ! C. N. Shingledecker
 IF ( suprathermal .EQ. 1 ) THEN
   !Adding suprathermal bulk species
-  j = 1
   DO i = 1, n_surf_spec
-    IF ( s(first_surf_spec+i-1)%name(LEN_TRIM(s(first_surf_spec+i-1)%name):LEN_TRIM(s(first_surf_spec+i-1)%name)) .NE. '+' .AND. &
-         s(first_surf_spec+i-1)%name(LEN_TRIM(s(first_surf_spec+i-1)%name):LEN_TRIM(s(first_surf_spec+i-1)%name)) .NE. '-') THEN
-      s(nspecies+j)%name = 'b'//s(first_surf_spec+i-1)%name(2:LEN_TRIM(s(first_surf_spec+i-1)%name))//'*'
-      s(nspecies+j)%idx = nspecies + i
-      s(nspecies+j)%gas_idx = s(first_surf_spec+i-1)%gas_idx
-      s(nspecies+j)%weight = s(first_surf_spec+i-1)%weight
-      s(nspecies+j)%natoms = s(first_surf_spec+i-1)%natoms
-      s(nspecies+j)%enthalpia_known = s(first_surf_spec+i-1)%enthalpia_known
-      s(nspecies+j)%enthalpia = s(first_surf_spec+i-1)%enthalpia
-      s(nspecies+j)%edes = s(first_surf_spec+i-1)%edes
-      s(nspecies+j)%racc = s(first_surf_spec+i-1)%racc
-      PRINT *, s(nspecies+j)%name, "j = ",j, "nspecies+j=",nspecies+j
-      j = j + 1
-    ELSE
-      PRINT *, s(first_surf_spec+i-1)%name, " at ", first_surf_spec+i-1, " should not be made suprathermal"
-    ENDIF 
+      s(nspecies+i)%name = 'b'//s(first_surf_spec+i-1)%name(2:LEN_TRIM(s(first_surf_spec+i-1)%name))//'*'
+      s(nspecies+i)%idx = nspecies + i
+      s(nspecies+i)%gas_idx = s(first_surf_spec+i-1)%gas_idx
+      s(nspecies+i)%weight = s(first_surf_spec+i-1)%weight
+      s(nspecies+i)%natoms = s(first_surf_spec+i-1)%natoms
+      s(nspecies+i)%enthalpia_known = s(first_surf_spec+i-1)%enthalpia_known
+      s(nspecies+i)%enthalpia = s(first_surf_spec+i-1)%enthalpia
+      s(nspecies+i)%edes = s(first_surf_spec+i-1)%edes
+      s(nspecies+i)%racc = s(first_surf_spec+i-1)%racc
   ENDDO
-  nspecies = nspecies + n_surf_spec - NGRIONS
-
-  DO i = 1, nspecies
-    PRINT *, s(i)%name, " at i = ", i
-  END DO
+  nspecies = nspecies + n_surf_spec
 
 
-
+!  DO i = 1, nspecies
+!    PRINT *, s(i)%name
+!  END DO
+!  CALL EXIT()
 END IF
-
-DO i = 1, nspecies
-  IF (s(i)%name(1:1)=='g') THEN
-    PRINT *, s(i)%name, " has gas counterpart ", s(s(i)%gas_idx)%name
-    PRINT *, "And bulk counterpart ",s(get_bulk_idx(s(i)%name))%name
-    PRINT *, "******************************************"
-  ENDIF
-ENDDO
-
 
 
 !Adding bulk reactions
@@ -366,6 +290,7 @@ IF (bulk_chemistry>0) THEN
             IF (r(i)%p4(1:1)=='g') r(nreactions+s_r_counter)%p4 = 'b'//r(i)%p4(2:LEN_TRIM(r(i)%p4))
             IF (r(i)%p5(1:1)=='g') r(nreactions+s_r_counter)%p5 = 'b'//r(i)%p5(2:LEN_TRIM(r(i)%p5))
 
+            PRINT*,"r(nreactions+s_r_counter) is: ",r(nreactions+s_r_counter)
             r(nreactions+s_r_counter)%ir1 = species_idx(r(nreactions+s_r_counter)%r1)
             r(nreactions+s_r_counter)%ir2 = species_idx(r(nreactions+s_r_counter)%r2)
             r(nreactions+s_r_counter)%ip1 = species_idx(r(nreactions+s_r_counter)%p1)
@@ -420,6 +345,7 @@ DEALLOCATE( rtemp )
 PRINT *, "Nsup_g = ",Nsup_g
 PRINT *, "next size(r)= ",size(r)
 
+
 ! C. N. Shingledecker
 ! Add suprathermal versions of thermal surface and bulk reactions involving 1 suprathermal reactant
 IF ( suprathermal .EQ. 1 ) THEN
@@ -444,6 +370,7 @@ IF ( suprathermal .EQ. 1 ) THEN
             ! Make the first reactant suprathermal
             r(nreactions+s_r_counter)%r1 = r(i)%r1(1:LEN_TRIM(r(i)%r1))//'*'
 
+            PRINT*,"r(nreactions+s_r_counter) is: ",r(nreactions+s_r_counter)
             r(nreactions+s_r_counter)%ir1 = species_idx(r(nreactions+s_r_counter)%r1)
             r(nreactions+s_r_counter)%ir2 = species_idx(r(nreactions+s_r_counter)%r2)
             r(nreactions+s_r_counter)%ip1 = species_idx(r(nreactions+s_r_counter)%p1)
@@ -486,6 +413,7 @@ IF ( suprathermal .EQ. 1 ) THEN
               IF (ii .EQ. 1) r(nreactions+s_r_counter)%r1 = r(i)%r1(1:LEN_TRIM(r(i)%r1))//'*'
               IF (ii .EQ. 2) r(nreactions+s_r_counter)%r2 = r(i)%r2(1:LEN_TRIM(r(i)%r2))//'*'
 
+              PRINT*,"r(nreactions+s_r_counter) is: ",r(nreactions+s_r_counter)
               r(nreactions+s_r_counter)%ir1 = species_idx(r(nreactions+s_r_counter)%r1)
               r(nreactions+s_r_counter)%ir2 = species_idx(r(nreactions+s_r_counter)%r2)
               r(nreactions+s_r_counter)%ip1 = species_idx(r(nreactions+s_r_counter)%p1)
@@ -537,6 +465,9 @@ IF ( suprathermal .EQ. 1 ) THEN
     DO ii=nreactions+1,nreactions + Nlines
       READ(3,1000)rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
       rtemp(ii)%idx = ii
+
+
+      PRINT*,"rtemp(ii) is: ",rtemp(ii)
       rtemp(ii)%ir1 = species_idx(rtemp(ii)%r1)
       rtemp(ii)%ir2 = species_idx(rtemp(ii)%r2)
       rtemp(ii)%ip1 = species_idx(rtemp(ii)%p1)
@@ -592,6 +523,8 @@ IF ( suprathermal .EQ. 1 ) THEN
     DO ii=nreactions+1,nreactions+Nlines
       READ(3,1000)rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
       rtemp(ii)%idx = ii
+
+      PRINT*,"rtemp(ii) is: ",rtemp(ii)
       rtemp(ii)%ir1 = species_idx(rtemp(ii)%r1)
       rtemp(ii)%ir2 = species_idx(rtemp(ii)%r2)
       rtemp(ii)%ip1 = species_idx(rtemp(ii)%p1)
@@ -629,21 +562,21 @@ IF ( suprathermal .EQ. 1 ) THEN
     ! Update the number of reactions
     nreactions = nreactions + Nlines
 
-    ! Add quenching reactions for bulk
+    ! Add quenching reactions
     ! 1) Allocate temp reactions object to hold the quenching reactions
     !    NB: There should be nspecies - first_suprathermal_species - 1 new
     !    quenching reactions
-    ALLOCATE( rtemp(nreactions + (nspecies - first_suprathermal_species + 1) ) )
+    ALLOCATE( rtemp(nreactions + (nspecies - first_suprathermal_species - 1) ) )
     rtemp(1:SIZE(r)) = r
 
     ! Add the new quenching reactions to the temp reactions object
-    OPEN(3,FILE='quenching_bulk.out',STATUS='REPLACE',IOSTAT=io)
+    OPEN(3,FILE='quenching.out',STATUS='REPLACE',IOSTAT=io)
     jj = first_suprathermal_species
     PRINT *, "First suprathermal_species =",jj
-    PRINT *, "nspecies - first_suprathermal_species + 1 = ", nspecies - first_suprathermal_species + 1
-    PRINT *, "Species before first suprathermal species =",s(jj-1)%name
-    DO ii=nreactions+1,nreactions+(nspecies - first_suprathermal_species + 1)
+    DO ii=nreactions+1,nreactions+(nspecies - first_suprathermal_species - 1)
       groundstate = s(jj)%name(1:LEN_TRIM(s(jj)%name)-1)
+
+      PRINT*,"rtemp(ii) is: ",rtemp(ii)
       rtemp(ii)%r1  = s(jj)%name
       rtemp(ii)%r2  = "QUENCH"
       rtemp(ii)%p1  = s(jj)%name(1:LEN_TRIM(s(jj)%name)-1)
@@ -679,67 +612,7 @@ IF ( suprathermal .EQ. 1 ) THEN
     DEALLOCATE( rtemp )
 
     ! Update the number of reactions
-    nreactions = nreactions+ (nspecies - first_suprathermal_species + 1)
-
-    PRINT *, s(first_surface_suprathermal)%name
-    PRINT *, first_surface_suprathermal
-    PRINT *, s(first_suprathermal_species)%name
-    PRINT *, s(first_suprathermal_species-1)%name
-
-
-    ! Add quenching reactions for surface
-    ! 1) Allocate temp reactions object to hold the quenching reactions
-    !    NB: There should be nspecies - first_suprathermal_species - 1 new
-    !    quenching reactions
-    ALLOCATE( rtemp(nreactions + (nspecies - first_suprathermal_species + 1) ) )
-    rtemp(1:SIZE(r)) = r
-
-    ! Add the new quenching reactions to the temp reactions object
-    OPEN(3,FILE='quenching_surface.out',STATUS='replace',IOSTAT=io)
-    jj = first_suprathermal_species
-    PRINT *, "First suprathermal_species =",jj
-    PRINT *, "Species before first suprathermal species =",s(jj-1)%name
-    DO ii=nreactions+1,nreactions+(nspecies - first_suprathermal_species + 1)
-      groundstate = s(jj)%name(1:LEN_TRIM(s(jj)%name)-1)
-      rtemp(ii)%r1  = "g" // s(jj)%name(2:)
-      rtemp(ii)%r2  = "QUENCH"
-      rtemp(ii)%p1  = "g" // s(jj)%name(2:LEN_TRIM(s(jj)%name)-1)
-      rtemp(ii)%p2  = " "
-      rtemp(ii)%p3  = " "
-      rtemp(ii)%p4  = " "
-      rtemp(ii)%p5  = " "
-      rtemp(ii)%idx = ii
-      rtemp(ii)%ir1 = species_idx(s(jj)%name)
-      rtemp(ii)%ir2 = 0
-      rtemp(ii)%ip1 = species_idx(groundstate)
-      rtemp(ii)%ip2 = 0
-      rtemp(ii)%ip3 = 0
-      rtemp(ii)%ip4 = 0
-      rtemp(ii)%alpha = 1.00e0
-      rtemp(ii)%beta = 1.00e0
-      rtemp(ii)%gamma = 1.00e0
-      rtemp(ii)%rtype = get_rtype(rtemp(ii)%r1,rtemp(ii)%r2)
-      rtemp(ii)%exothermicity = 0.00e0
-      rtemp(ii)%exothermicity_known = 0
-      WRITE(3,1000)rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
-      PRINT *, "g" // s(jj)%name(2:)," -> g",s(jj)%name(2:LEN_TRIM(s(jj)%name)-1)
-      PRINT *, "************************"
-      jj = jj + 1
-    END DO
-    CLOSE(3)
-
-    ! Now resize the reactions array
-    DEALLOCATE( r )
-    ALLOCATE( r(SIZE(rtemp)) )
-    r = rtemp
-    DEALLOCATE( rtemp )
-
-    ! Update the number of reactions
-    nreactions = nreactions+ (nspecies - first_suprathermal_species + 1)
-
-    DO i=1,nreactions
-      PRINT *, r(i)
-    END DO
+    nreactions = nreactions+ (nspecies - first_suprathermal_species - 1)
 
     !***************************************************************************
     ! BEGIN ADD NEW PHOTOCHEMISTRY
@@ -768,6 +641,7 @@ IF ( suprathermal .EQ. 1 ) THEN
       READ(3,1002)rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
       WRITE(1001,1002)rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
       rtemp(ii)%idx = ii
+      PRINT*,"rtemp(ii) is: ",rtemp(ii)
       rtemp(ii)%ir1 = species_idx(rtemp(ii)%r1)
       rtemp(ii)%ir2 = species_idx(rtemp(ii)%r2)
       rtemp(ii)%ip1 = species_idx(rtemp(ii)%p1)
@@ -999,15 +873,13 @@ END SUBROUTINE get_rd_efficiency
 ! 16. Suprathermal bulk reaction
 ! 17. Solid-phase radiolysis (IONRAD)
 ! 18. Quenching of suprathermal species (QUENCH)
-! 19. Photoionization
-! 20. Photoexcitation
-! 21. Surface ion-neutral
-! 22. Bulk ion-neutral
 INTEGER FUNCTION get_rtype(r1,r2)
 IMPLICIT NONE
 CHARACTER*10 r1, r2
+LOGICAL :: r1IsIon, r2IsIon
 
 get_rtype = 1
+PRINT *,"r1: ", r1," + r2: ",r2
 
 IF (r2(1:LEN_TRIM(r2)) == 'CRP') get_rtype = 2
 IF (r2(1:LEN_TRIM(r2)) == 'PHOTON') get_rtype = 3
@@ -1022,23 +894,6 @@ IF (r2(1:LEN_TRIM(r2)) == 'FREEZE') get_rtype = 11
 IF (r2(1:LEN_TRIM(r2)) == 'DESORB') get_rtype = 12
 IF (r1(1:1) == 'g' .AND. r2(1:1) == 'g') get_rtype = 13
 IF (r1(1:1) == 'b' .AND. r2(1:1) == 'b') get_rtype = 14
-
-IF (r1(LEN_TRIM(r1):LEN_TRIM(r1)) .EQ. '+' .OR. r1(LEN_TRIM(r1):LEN_TRIM(r1)) .EQ. '-' ) THEN 
-  IF ( r1(1:1) .EQ. 'g' ) THEN
-    get_rtype = 21
-  ELSE IF (r1(1:1).EQ.'b' ) THEN
-    get_rtype = 22
-  ENDIF
-ENDIF
-
-IF (r2(LEN_TRIM(r2):LEN_TRIM(r2)) .EQ. '+' .OR. r2(LEN_TRIM(r2):LEN_TRIM(r2)) .EQ. '-' ) THEN
-  IF ( r1(1:1) .EQ. 'g' ) THEN
-    get_rtype = 21
-  ELSE IF (r1(1:1).EQ.'b' ) THEN
-    get_rtype = 22
-  ENDIF
-ENDIF
-
 IF (((r1(LEN_TRIM(r1):LEN_TRIM(r1)) .EQ. '*' .OR. r2(LEN_TRIM(r2):LEN_TRIM(r2)) .EQ. '*')) &
   .AND. ((r1(1:1) .EQ. 'g') .OR. (r2(1:1) .EQ. 'g'))) get_rtype = 15
 IF (((r1(LEN_TRIM(r1):LEN_TRIM(r1)) .EQ. '*' .OR. r2(LEN_TRIM(r2):LEN_TRIM(r2)) .EQ. '*')) &
@@ -1050,6 +905,33 @@ IF (r2(1:LEN_TRIM(r2)) == 'QUENCH') THEN
 ENDIF
 IF (r2(1:LEN_TRIM(r2)) == 'PHOION') get_rtype = 19
 IF (r2(1:LEN_TRIM(r2)) == 'PHOEXC') get_rtype = 20
+
+r1IsIon = ((r1(LEN_TRIM(r1):LEN_TRIM(r1)) == '+') .OR. (r1(LEN_TRIM(r1):LEN_TRIM(r1)) == '-'))
+r2IsIon = ((r2(LEN_TRIM(r2):LEN_TRIM(r2)) == '+') .OR. (r2(LEN_TRIM(r2):LEN_TRIM(r2)) == '-'))
+
+IF(((r1IsIon .eqv. .TRUE.) .AND. (r2IsIon .eqv. .FALSE.)) .OR. ((r1IsIon .eqv. .FALSE.) .AND. (r2IsIon .eqv. .TRUE.))) THEN
+  PRINT*,"First if (outer one) is ok"
+  IF(r1(1:1) .EQ. 'g') THEN
+    PRINT *, "r1 or r2 is an ion and they are both grain species"
+    get_rtype = 21
+  ENDIF
+  IF(r1(1:1) .EQ. 'b') THEN
+    PRINT *, "r1 or r2 is an ion and they are both bulk species"
+    get_rtype = 22
+  ENDIF
+ENDIF
+
+IF((r1IsIon .eqv. .TRUE.) .AND. (r2IsIon .eqv. .TRUE.)) THEN
+  PRINT*,"Second if (outer one) is ok"
+  IF(r1(1:1) .EQ. 'g') THEN
+    PRINT *, "r1 and r2 are ions and they are both grain species"
+    get_rtype = 23
+  ENDIF 
+  IF(r1(1:1) .EQ. 'b') THEN
+    PRINT *, "r1 and r2 are ions and they are both bulk species"
+    get_rtype = 24
+  ENDIF
+ENDIF
 
 END FUNCTION get_rtype
 

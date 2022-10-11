@@ -16,6 +16,7 @@ INTEGER :: prodatoms,reactatoms
 REAL*8  :: a, b, c
 REAL*8  :: apriori_nml
 CHARACTER*10 :: groundstate,s_name, r1, r2, p1, p2, p3, p4, p5
+CHARACTER*50 :: printStatementValue
 TYPE (reaction), DIMENSION(:), ALLOCATABLE :: rtemp
 
 ! Set a priori number of monolayers
@@ -155,6 +156,7 @@ Nsup_g          = 0
 
 DO i = 1, nreactions
   READ(1,1000)r(ii)%idx, r(ii)%r1, r(ii)%r2, r(ii)%p1, r(ii)%p2, r(ii)%p3, r(ii)%p4, r(ii)%p5, r(ii)%alpha, r(ii)%beta, r(ii)%gamma
+  PRINT*,"r(ii) is: ",r(ii)
   r(ii)%ir1 = species_idx(r(ii)%r1)
   r(ii)%ir2 = species_idx(r(ii)%r2)
   r(ii)%ip1 = species_idx(r(ii)%p1)
@@ -288,6 +290,7 @@ IF (bulk_chemistry>0) THEN
             IF (r(i)%p4(1:1)=='g') r(nreactions+s_r_counter)%p4 = 'b'//r(i)%p4(2:LEN_TRIM(r(i)%p4))
             IF (r(i)%p5(1:1)=='g') r(nreactions+s_r_counter)%p5 = 'b'//r(i)%p5(2:LEN_TRIM(r(i)%p5))
 
+            PRINT*,"r(nreactions+s_r_counter) is: ",r(nreactions+s_r_counter)
             r(nreactions+s_r_counter)%ir1 = species_idx(r(nreactions+s_r_counter)%r1)
             r(nreactions+s_r_counter)%ir2 = species_idx(r(nreactions+s_r_counter)%r2)
             r(nreactions+s_r_counter)%ip1 = species_idx(r(nreactions+s_r_counter)%p1)
@@ -367,6 +370,7 @@ IF ( suprathermal .EQ. 1 ) THEN
             ! Make the first reactant suprathermal
             r(nreactions+s_r_counter)%r1 = r(i)%r1(1:LEN_TRIM(r(i)%r1))//'*'
 
+            PRINT*,"r(nreactions+s_r_counter) is: ",r(nreactions+s_r_counter)
             r(nreactions+s_r_counter)%ir1 = species_idx(r(nreactions+s_r_counter)%r1)
             r(nreactions+s_r_counter)%ir2 = species_idx(r(nreactions+s_r_counter)%r2)
             r(nreactions+s_r_counter)%ip1 = species_idx(r(nreactions+s_r_counter)%p1)
@@ -409,6 +413,7 @@ IF ( suprathermal .EQ. 1 ) THEN
               IF (ii .EQ. 1) r(nreactions+s_r_counter)%r1 = r(i)%r1(1:LEN_TRIM(r(i)%r1))//'*'
               IF (ii .EQ. 2) r(nreactions+s_r_counter)%r2 = r(i)%r2(1:LEN_TRIM(r(i)%r2))//'*'
 
+              PRINT*,"r(nreactions+s_r_counter) is: ",r(nreactions+s_r_counter)
               r(nreactions+s_r_counter)%ir1 = species_idx(r(nreactions+s_r_counter)%r1)
               r(nreactions+s_r_counter)%ir2 = species_idx(r(nreactions+s_r_counter)%r2)
               r(nreactions+s_r_counter)%ip1 = species_idx(r(nreactions+s_r_counter)%p1)
@@ -460,6 +465,9 @@ IF ( suprathermal .EQ. 1 ) THEN
     DO ii=nreactions+1,nreactions + Nlines
       READ(3,1000)rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
       rtemp(ii)%idx = ii
+
+
+      PRINT*,"rtemp(ii) is: ",rtemp(ii)
       rtemp(ii)%ir1 = species_idx(rtemp(ii)%r1)
       rtemp(ii)%ir2 = species_idx(rtemp(ii)%r2)
       rtemp(ii)%ip1 = species_idx(rtemp(ii)%p1)
@@ -515,6 +523,8 @@ IF ( suprathermal .EQ. 1 ) THEN
     DO ii=nreactions+1,nreactions+Nlines
       READ(3,1000)rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
       rtemp(ii)%idx = ii
+
+      PRINT*,"rtemp(ii) is: ",rtemp(ii)
       rtemp(ii)%ir1 = species_idx(rtemp(ii)%r1)
       rtemp(ii)%ir2 = species_idx(rtemp(ii)%r2)
       rtemp(ii)%ip1 = species_idx(rtemp(ii)%p1)
@@ -565,6 +575,8 @@ IF ( suprathermal .EQ. 1 ) THEN
     PRINT *, "First suprathermal_species =",jj
     DO ii=nreactions+1,nreactions+(nspecies - first_suprathermal_species - 1)
       groundstate = s(jj)%name(1:LEN_TRIM(s(jj)%name)-1)
+
+      PRINT*,"rtemp(ii) is: ",rtemp(ii)
       rtemp(ii)%r1  = s(jj)%name
       rtemp(ii)%r2  = "QUENCH"
       rtemp(ii)%p1  = s(jj)%name(1:LEN_TRIM(s(jj)%name)-1)
@@ -629,6 +641,7 @@ IF ( suprathermal .EQ. 1 ) THEN
       READ(3,1002)rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
       WRITE(1001,1002)rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
       rtemp(ii)%idx = ii
+      PRINT*,"rtemp(ii) is: ",rtemp(ii)
       rtemp(ii)%ir1 = species_idx(rtemp(ii)%r1)
       rtemp(ii)%ir2 = species_idx(rtemp(ii)%r2)
       rtemp(ii)%ip1 = species_idx(rtemp(ii)%p1)
@@ -863,8 +876,10 @@ END SUBROUTINE get_rd_efficiency
 INTEGER FUNCTION get_rtype(r1,r2)
 IMPLICIT NONE
 CHARACTER*10 r1, r2
+LOGICAL :: r1IsIon, r2IsIon
 
 get_rtype = 1
+PRINT *,"r1: ", r1," + r2: ",r2
 
 IF (r2(1:LEN_TRIM(r2)) == 'CRP') get_rtype = 2
 IF (r2(1:LEN_TRIM(r2)) == 'PHOTON') get_rtype = 3
@@ -890,6 +905,33 @@ IF (r2(1:LEN_TRIM(r2)) == 'QUENCH') THEN
 ENDIF
 IF (r2(1:LEN_TRIM(r2)) == 'PHOION') get_rtype = 19
 IF (r2(1:LEN_TRIM(r2)) == 'PHOEXC') get_rtype = 20
+
+r1IsIon = ((r1(LEN_TRIM(r1):LEN_TRIM(r1)) == '+') .OR. (r1(LEN_TRIM(r1):LEN_TRIM(r1)) == '-'))
+r2IsIon = ((r2(LEN_TRIM(r2):LEN_TRIM(r2)) == '+') .OR. (r2(LEN_TRIM(r2):LEN_TRIM(r2)) == '-'))
+
+IF(((r1IsIon .eqv. .TRUE.) .AND. (r2IsIon .eqv. .FALSE.)) .OR. ((r1IsIon .eqv. .FALSE.) .AND. (r2IsIon .eqv. .TRUE.))) THEN
+  PRINT*,"First if (outer one) is ok"
+  IF(r1(1:1) .EQ. 'g') THEN
+    PRINT *, "r1 or r2 is an ion and they are both grain species"
+    get_rtype = 21
+  ENDIF
+  IF(r1(1:1) .EQ. 'b') THEN
+    PRINT *, "r1 or r2 is an ion and they are both bulk species"
+    get_rtype = 22
+  ENDIF
+ENDIF
+
+IF((r1IsIon .eqv. .TRUE.) .AND. (r2IsIon .eqv. .TRUE.)) THEN
+  PRINT*,"Second if (outer one) is ok"
+  IF(r1(1:1) .EQ. 'g') THEN
+    PRINT *, "r1 and r2 are ions and they are both grain species"
+    get_rtype = 23
+  ENDIF 
+  IF(r1(1:1) .EQ. 'b') THEN
+    PRINT *, "r1 and r2 are ions and they are both bulk species"
+    get_rtype = 24
+  ENDIF
+ENDIF
 
 END FUNCTION get_rtype
 
