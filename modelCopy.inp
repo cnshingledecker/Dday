@@ -45,6 +45,7 @@ PHI_EXP               = 1.0000E+15 ; Flux of particles/photons in experiment
 Se_EXP                = 3.3000E-14 ; ev cm^2; Electronic stopping cross-section in experiment
 TRIAL_NU              = 1.0000E+15 ; Trial Frequency, ν, for bulk-phase radical reactions
 ION_NU                = 7.0000E+02 ; Trial Frequency, ν, for surface and bulk ion-neutral reactions
+IONION_NU             = 7.0000E+02 ; Trial Frequency, ν, for surface and bulk ion-neutral reactions
 DES_T                 = 0          ; Thermal desorption 1-on/0-off
 DES_CRP               = 0          ; Cosmic ray desorption 1-on/0-off
 DES_PHOTON            = 0          ; Photodesorption 1-on/0-off
