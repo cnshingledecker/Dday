@@ -11,6 +11,7 @@ reactions = [] # Will hold the reactions for which the fitting factors are being
 all_vector_args = [] # Holds a series of lists (with each list containing the values in each of the linspaces that is created for a reaction)
 base_dir_name = "baragiola_files_core" # The partial name for each directory of the files for a core
 
+to_modify_modelInp_values = True # Set this to True if you want to modify model.inp values using the below array 
 reset_model_inp = True  # If this is true, model.inp will be reset to default values 
                         #     (specified in modelCopy.inp,; model.inp will be overwritten with the contents of this file)
 
@@ -32,8 +33,6 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
                 reactions.append(argument) # Note that for each fitting factor combination; fitting_factor_combination[i] is the fitting factor associated with reaction[i]
         all_vector_args.append(args_for_single_linspace)
  
-to_modify_modelInp_values = False # Set this to True if you want to modify model.inp values using the below array 
-
 modified_lines_to_modify_modelInp = [] # Needed by the core with rank 0 but we create it here so we only process the file once
 lines_to_modify_modelInp = get_data_to_modify_modelInp()
 # If the user wants to modify model.inp values, the user should insert lists of the form [lineNumber, variableVal, variableName] into this list,
@@ -172,7 +171,7 @@ if rank >= 0:
                 for i in range(0, len(reactions)): 
                     output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reactions[i] + " delta values \n"
                 for i in range(0, len(modified_lines_to_modify_modelInp)):
-                    output_string = output_string + str(fitting_factor_combination[i + 3]) + "".join(" "*(23 - len(str(fitting_factor_combination[i + 3])))) + "model.inp value\n" 
+                    output_string = output_string + str(fitting_factor_combination[i + 3]) + "".join(" "*(23 - len(str(fitting_factor_combination[i + 3])))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
                 output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"
                 results.write(output_string)
 
@@ -200,6 +199,8 @@ if rank == 0:
     output_string = ""
     for i in range(0, len(reactions)): 
         output_string = output_string + str(fitting_factors_and_least_rmsd[least_rmsd_index][i+1]) + "".join(" "*(23 - len(str(fitting_factors_and_least_rmsd[least_rmsd_index][i+1])))) + reactions[i] + " delta values \n"
+    for i in range(0, len(modified_lines_to_modify_modelInp)):
+        output_string = output_string + str(fitting_factor_combination[i + 3]) + "".join(" "*(23 - len(str(fitting_factor_combination[i + 3])))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
     output_string += str(fitting_factors_and_least_rmsd[least_rmsd_index][0]) + "".join(" "*(23 - len(str(fitting_factors_and_least_rmsd[least_rmsd_index][0])))) + "RMSD" + "\n\n"
     results_file.write(output_string)
     results_file.close()
@@ -208,8 +209,6 @@ if rank == 0:
     print("Time taken: " + str(timeTaken / 60) + " minutes.")
 
     # Put in best fitting factor combination found (before generating a plot for it)
-
-    # FIX BUG (Test Current Fix)
     new_dir_name = "."
     fitting_factor_combination = [0]*(len(fitting_factors_and_least_rmsd[least_rmsd_index])-1)
     for i in range(1, len(fitting_factors_and_least_rmsd)):
@@ -235,7 +234,6 @@ if rank == 0:
         lines_to_modify_modelInp_local = []
         fitting_factor_combination_modelInp_index = 3 # Because the fitting factors come first
         for line in lines_to_modify_modelInp:
-            print(line)
             lines_to_modify_modelInp_local.append([line[3], fitting_factor_combination[fitting_factor_combination_modelInp_index], line[4]])
             fitting_factor_combination_modelInp_index += 1
         modify_modelInp_values(lines_to_modify_modelInp_local, ".")

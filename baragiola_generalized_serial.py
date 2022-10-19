@@ -5,25 +5,30 @@ import csv
 import numpy as np
 import itertools
 import time
-from exportable_custom_functions import find_nearest_index,is_float, is_int, modify_modelInp_values
+from exportable_custom_functions import find_nearest_index,is_float, is_int, modify_modelInp_values, get_data_to_modify_modelInp
 
 startTime = time.time()
 
 results = open("resultsFile_2", 'w')
 
-reset_model_inp = False # If this is true, model.inp will be reset to default values 
+to_modify_modelInp_values = True # Set this to True if you want to modify model.inp values using the below array 
+reset_model_inp = True # If this is true, model.inp will be reset to default values 
                         #     (specified in modelCopy.inp,; model.inp will be overwritten with the contents of this file)
 if(reset_model_inp == True):
         os.system("cat modelCopy.inp > model.inp") # Reset model.inp to the default values in modelCopy.inp only if the user wants to (if reset_model_inp is true)
 
-to_modify_modelInp_values = False # Set this to True if you want to modify model.inp values using the below array 
-lines_to_modify_modelInp = [] 
-                                # If the user wants to modify model.inp values, the user should insert lists of the form [lineNumber, variableVal, variableName] into this list,
-                                #     where lineNumber is an integer that is the 0-indexed line number of the line in model.inp of the variable the user wants to change,
-                                #     variableVal is of a real number data type (the value that the user wants to set the variable in lineNumber to), and
-                                #     and variableName is a string that is the exact case of the variable name in the line in model.inp
+modified_lines_to_modify_modelInp = [] # Needed by the core with rank 0 but we create it here so we only process the file once
+lines_to_modify_modelInp = get_data_to_modify_modelInp()
+# If the user wants to modify model.inp values, the user should insert lists of the form [lineNumber, variableVal, variableName] into this list,
+#     where lineNumber is an integer that is the 0-indexed line number of the line in model.inp of the variable the user wants to change,
+#     variableVal is of a real number data type (the value that the user wants to set the variable in lineNumber to), and
+#     and variableName is a string that is the exact case of the variable name in the line in model.inp
+
 if(to_modify_modelInp_values):
-    modify_modelInp_values(lines_to_modify_modelInp)
+    for line in lines_to_modify_modelInp:
+        line_linspace = np.linspace(line[0], line[1], int(line[2])) # Range of values we want to try for that line's value
+        line_linspace_list = list(line_linspace)
+        modified_lines_to_modify_modelInp.append(line_linspace_list)
 
 reactions = [] # Will hold the reactions for which the fitting factors are being modified
 all_vector_args = [] # Holds a series of arrays (one for each of the linspaces that is created for a reaction)
@@ -50,7 +55,7 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
 
 # Holds the least rmsd and the fitting factors that produced it; fitting_factors_and_least_rmsd[0] is the rmsd, 
 #    indices 1 to len(fitting_factors_and_least_rmsd) (inclusive) are the fitting factors that led to that rmsd value
-fitting_factors_and_least_rmsd = [0] * (len(reactions) + 1) # there needs to be 1 spot for the rmsd and len(reactions) spots for the fitting factor for each set of reactions 
+fitting_factors_and_least_rmsd = [0] * (len(reactions) + 1 + len(modified_lines_to_modify_modelInp)) # there needs to be 1 spot for the rmsd and len(reactions) spots for the fitting factor for each set of reactions, plus those for the model.inp values that are modified 
 fitting_factors_and_least_rmsd[0] = 1e80 # Initialize the RMSD to a high value so during testing a lower RMSD will likely be found and be saved in the array (along with the fitting factors that produced it)
 
 for vector_args in all_vector_args:
@@ -58,11 +63,23 @@ for vector_args in all_vector_args:
     single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
     fitting_factors.append(single_vector_fitting_factors) 
 
+if(to_modify_modelInp_values == True):
+    for list_of_values in modified_lines_to_modify_modelInp:
+        fitting_factors.append(list_of_values)
+
 all_fitting_factor_combinations = itertools.product(*fitting_factors)    # Creates all possible combinations of fitting factor values from the previously created lists (created in the 'for vector args in all_vector_args' for loop)
                                                                          #    Note that this creates a list of n lists (where n is the product of the number of values for each list of fitting factors), and each of these 
-                                                                         #    n lists has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
+                                                                         #    n lists has k + d elements (where k is the number of fitting factors (num_modified_fitting_factors), and d is the number of values in model.inp that are modified)
 
 for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_factor_combinations[n] is a value from the (n + 1)th np.linspace created 
+    if(to_modify_modelInp_values == True):
+        lines_to_modify_modelInp_local = []
+        fitting_factor_combination_modelInp_index = 3 # Because the fitting factors come first
+        for line in lines_to_modify_modelInp:
+            lines_to_modify_modelInp_local.append([line[3], fitting_factor_combination[fitting_factor_combination_modelInp_index], line[4]])
+            fitting_factor_combination_modelInp_index += 1
+        modify_modelInp_values(lines_to_modify_modelInp_local, ".")
+    
     infile = open("parameter_inputs_template.dat",'r')
     outfile = open("photo_processes.dat",'w')
     for line in infile:
@@ -108,13 +125,20 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
         output_string = "" 
         for i in range(0, len(reactions)): 
             output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reactions[i] + " delta values \n"
+        for i in range(0, len(modified_lines_to_modify_modelInp)):
+            output_string = output_string + str(fitting_factor_combination[i + 3]) + "".join(" "*(23 - len(str(fitting_factor_combination[i + 3])))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
         output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"
         results.write(output_string)
 
         if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
             fitting_factors_and_least_rmsd[0] = rmsd
             for i in range(1, len(fitting_factors_and_least_rmsd)):
+                print(len(fitting_factors_and_least_rmsd))
+                print(len(fitting_factor_combination))
+                print(i)
                 fitting_factors_and_least_rmsd[i] = fitting_factor_combination[i-1]
+            for i in range(1, len(modified_lines_to_modify_modelInp) + 1):
+                fitting_factors_and_least_rmsd[i + 3] = fitting_factor_combination[i + 2]
         csv_file.close()
 results.close()
 
@@ -124,6 +148,8 @@ results_file = open("resultsRMSDGeneralization", 'w')
 output_string = ""
 for i in range(0, len(reactions)): 
     output_string = output_string + str(fitting_factors_and_least_rmsd[i+1]) + "".join(" "*(23 - len(str(fitting_factors_and_least_rmsd[i+1])))) + reactions[i] + " delta values \n"
+for i in range(0, len(modified_lines_to_modify_modelInp)):
+    output_string = output_string + str(fitting_factor_combination[i + 3]) + "".join(" "*(23 - len(str(fitting_factor_combination[i + 3])))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
 output_string += str(fitting_factors_and_least_rmsd[0]) + "".join(" "*(23 - len(str(fitting_factors_and_least_rmsd[0])))) + "RMSD" + "\n\n"
 results_file.write(output_string)
 results_file.close()
@@ -132,8 +158,7 @@ endTime = time.time()
 timeTaken = endTime - startTime
 print("Time taken: " + str(timeTaken / 60) + " minutes.")
 
-# Put in best fitting factor combination found (before generating a plot for it)
-
+# Put in best fitting factor combination found (with model.inp values if they were reset) (before generating a plot for it)
 infile = open("parameter_inputs_template.dat",'r')
 outfile = open("photo_processes.dat",'w')
 for line in infile:
@@ -148,6 +173,15 @@ for line in infile:
 infile.close()
 outfile.close()
 
+if(to_modify_modelInp_values == True):
+    lines_to_modify_modelInp_local = []
+    fitting_factor_combination_modelInp_index = 4 # Because the fitting factors and RMSD come first
+    for line in lines_to_modify_modelInp:
+        lines_to_modify_modelInp_local.append([line[3], fitting_factors_and_least_rmsd[fitting_factor_combination_modelInp_index], line[4]])
+        fitting_factor_combination_modelInp_index += 1
+    modify_modelInp_values(lines_to_modify_modelInp_local, ".")
+
+print(fitting_factors_and_least_rmsd)
 print("Running model with best fit parameters...")
 os.system('./runGeneralization.sh')
 
