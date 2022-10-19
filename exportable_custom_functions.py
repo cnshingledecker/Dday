@@ -1,4 +1,4 @@
-import math, os
+import math, os, csv
 import numpy as np
 
 def is_int(val):
@@ -61,7 +61,27 @@ def split_list(list_var, num_chunks): # list_var is a list of n items that is sp
         start = end+1 # Start is updated for the next iteration of the loop
     return data_to_return
 
-def modify_modelInp_values(linesToModify): # required format of linesToModify is specified below
+def get_data_to_modify_modelInp():
+    lines_to_modify_modelInp = []
+    with open('model_inp_values/model_inp_values.csv', newline='') as model_inp_args_csv:  # Read in the parameters from the csv file for the modifying of model.inp values
+        reader = csv.reader(model_inp_args_csv, delimiter=',')
+        for i in range(0, 1): # Skips the first line of the csv file (which is a comment)
+            fields = next(reader)
+        
+        i = 0
+        for row in reader:  # Each row is a set of arguments to be used to create the linspace for fitting factors for a reaction
+            i += 1
+            args_for_single_line= []  # A vector to hold the set of arguments to be used to create the linspace for the model.inp value
+            for argument in row:
+                if is_float(argument): # It is one of the arguments to be used to make a numpy linspace
+                    args_for_single_line.append(float(argument)) # Adds the arguments to the previously created vector (3 lines above)
+                else:  # It is text (it is not a number to be used in the creation of the linspace; because it is text, it must be the name of the model.inp value
+                    args_for_single_line.append(argument)
+            lines_to_modify_modelInp.append(args_for_single_line)
+
+    return lines_to_modify_modelInp
+
+def modify_modelInp_values(linesToModify, directory): # required format of linesToModify is specified below
     # linesToModify is a list.
     # Format of the lists that go into the above list: [lineNumber, variableValue, variableName], where
                                                        #     - lineNumber is an integer that is the line number (0-indexed) of the line that the user wants to replace the variable's value,
@@ -85,7 +105,7 @@ def modify_modelInp_values(linesToModify): # required format of linesToModify is
         linesToModifyIndex += 1 # Skip over negative line numbers (only should happen due to user error)
 
     outputModelFile = open("modelTemp.inp", "w") # A temp file whose contents will be written into model.inp upon completion of the below 'with' block
-    with open("model.inp", "r", newline='') as inpFile:
+    with open(os.path.join(directory, "model.inp"), "r", newline='') as inpFile:
         for line in inpFile:
             lineIndex += 1
             lineToWrite = line # The value of this variable will be written (may be modified if the user wants to change the value for that line)

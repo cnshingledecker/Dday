@@ -1,0 +1,4 @@
+The general structure of a line is: linspace argument, linspace argument, linspace argument, line number in model.inp (indexing starting at 1), the name of the value you wish to overwrite
+1.0000E+15,1.0000E+15,4,45,TRIAL_NU 
+7.0000E+02,7.0000E+02,1,46,ION_NU   
+7.0000E+02,7.0000E+02,1,47,IONION_NU

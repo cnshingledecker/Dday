@@ -11,7 +11,7 @@ reactions = [] # Will hold the reactions for which the fitting factors are being
 all_vector_args = [] # Holds a series of lists (with each list containing the values in each of the linspaces that is created for a reaction)
 base_dir_name = "baragiola_files_core" # The partial name for each directory of the files for a core
 
-reset_model_inp = False # If this is true, model.inp will be reset to default values 
+reset_model_inp = True  # If this is true, model.inp will be reset to default values 
                         #     (specified in modelCopy.inp,; model.inp will be overwritten with the contents of this file)
 
 # Note: the below code is ran on every core because each core needs the reaction, and reading it on each core means the data from the file doesn't have to be sent to each core
@@ -25,11 +25,27 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
         i += 1
         args_for_single_linspace = []  # A vector to hold the set of arguments to be used to create the linspace for the fitting factors for a reaction
         for argument in row:
+            argument = argument.strip() # Not working for some reason
             if is_float(argument): # It is one of the arguments to be used to make a numpy linspace
                 args_for_single_linspace.append(float(argument)) # Adds the arguments to the previously created vector (3 lines above)
             else:  # It is text (it is not an index specifying a delta value to choose; because it is text, it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
                 reactions.append(argument) # Note that for each fitting factor combination; fitting_factor_combination[i] is the fitting factor associated with reaction[i]
         all_vector_args.append(args_for_single_linspace)
+ 
+to_modify_modelInp_values = False # Set this to True if you want to modify model.inp values using the below array 
+
+modified_lines_to_modify_modelInp = [] # Needed by the core with rank 0 but we create it here so we only process the file once
+lines_to_modify_modelInp = get_data_to_modify_modelInp()
+# If the user wants to modify model.inp values, the user should insert lists of the form [lineNumber, variableVal, variableName] into this list,
+#     where lineNumber is an integer that is the 0-indexed line number of the line in model.inp of the variable the user wants to change,
+#     variableVal is of a real number data type (the value that the user wants to set the variable in lineNumber to), and
+#     and variableName is a string that is the exact case of the variable name in the line in model.inp
+
+if(to_modify_modelInp_values):
+    for line in lines_to_modify_modelInp:
+        line_linspace = np.linspace(line[0], line[1], int(line[2])) # Range of values we want to try for that line's value
+        line_linspace_list = list(line_linspace)
+        modified_lines_to_modify_modelInp.append(line_linspace_list)
 
 # Notes: The core is the one that handles the generation and distribution of fitting factors and the collection of data.
 #        In this if statement, a directory is created for each core with the files necessary for it to run monaco as well as find the rmsd and write to output files,
@@ -38,24 +54,22 @@ if rank == 0:
     if(reset_model_inp == True):
         os.system("cat modelCopy.inp > model.inp") # Reset model.inp to the default values in modelCopy.inp only if the user wants to (if reset_model_inp is true)
     
-    to_modify_modelInp_values = False # Set this to True if you want to modify model.inp values using the below array 
-    lines_to_modify_modelInp = [] 
-                                   # If the user wants to modify model.inp values, the user should insert lists of the form [lineNumber, variableVal, variableName] into this list,
-                                   #     where lineNumber is an integer that is the 0-indexed line number of the line in model.inp of the variable the user wants to change,
-                                   #     variableVal is of a real number data type (the value that the user wants to set the variable in lineNumber to), and
-                                   #     and variableName is a string that is the exact case of the variable name in the line in model.inp
-    if(to_modify_modelInp_values):
-        modify_modelInp_values(lines_to_modify_modelInp)
-    fitting_factors = [] # Holds lists (each list is a numpy linspace (converted to a list) that was created using the arguments read in from the csv input file above)
+    fitting_factors = [] # Holds lists (each list is a numpy linspace (converted to a list) that was created using the arguments read in from the csv input file above) 
+                         #     and lists for modifying model.inp values  
     num_processors = 4 # IMPORTANT: Need to adjust if running on a different number of processors
     for vector_args in all_vector_args: # Create numpy linspace out using the parameters in vector_args (read from an input file)
         single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
         single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
-        fitting_factors.append(single_vector_fitting_factors)  
+        fitting_factors.append(single_vector_fitting_factors)
+
+    if(to_modify_modelInp_values == True):
+        for list_of_values in modified_lines_to_modify_modelInp:
+            fitting_factors.append(list_of_values)
     
     all_fitting_factor_combinations = itertools.product(*fitting_factors)    # Creates all possible combinations of fitting factor values from the previously created lists (created in the 'for vector args in all_vector_args' for loop)
                                                                          #    Note that this creates a list of n lists (where n is the product of the number of values for each list of fitting factors), and each of these 
-                                                                         #    n lists has k elements (where k is the number of fitting factors (num_modified_fitting_factors))
+                                                                         #    n lists has k elements (where k is the number of fitting factors (num_modified_fitting_factors) plus the number of model.inp values we want to modify)
+
     all_fitting_factor_combinations = [list(fitting_factor_combination) for fitting_factor_combination in all_fitting_factor_combinations]
     all_fitting_factor_combinations = split_list(all_fitting_factor_combinations, num_processors) # Splits the list into 'num_processors' chunks
     all_fitting_factor_combinations = split_list_chunks(all_fitting_factor_combinations, 15) # Splits each of the list chunks into mini-chunks of up to size 15 (creates as many with size 15 as possible)
@@ -95,7 +109,7 @@ if rank >= 0:
 
     # Holds the least rmsd and the fitting factors that produced it; fitting_factors_and_least_rmsd[0] is the rmsd, 
     #    indices 1 to len(fitting_factors_and_least_rmsd) (inclusive) are the fitting factors that led to that rmsd value
-    fitting_factors_and_least_rmsd = [0] * (len(reactions) + 1) # there needs to be 1 spot for the rmsd and len(reactions) spots for the fitting factor for each set of reactions 
+    fitting_factors_and_least_rmsd = [0] * (len(reactions) + 1 + len(modified_lines_to_modify_modelInp)) # there needs to be 1 spot for the rmsd and len(reactions) spots for the fitting factor for each set of reactions, plus a spot for each of the model.inp lines to modify
     fitting_factors_and_least_rmsd[0] = 1e80 # Initialize the RMSD to a high value so during testing a lower RMSD will likely be found and be saved in the array (along with the fitting factors that produced it)
 
     results = open(new_dir_name + "/output_file_results",'w')
@@ -104,6 +118,14 @@ if rank >= 0:
         core_fitting_factor_combinations.append(data)
     for mini_chunk in core_fitting_factor_combinations:
         for fitting_factor_combination in mini_chunk:
+            if(to_modify_modelInp_values == True):
+                lines_to_modify_modelInp_local = []
+                fitting_factor_combination_modelInp_index = 3 # Because the fitting factors come first
+                for line in lines_to_modify_modelInp:
+                    lines_to_modify_modelInp_local.append([line[3], fitting_factor_combination[fitting_factor_combination_modelInp_index], line[4]])
+                    fitting_factor_combination_modelInp_index += 1
+                modify_modelInp_values(lines_to_modify_modelInp_local, new_dir_name)
+
             infile = open(new_dir_name + "/parameter_inputs_template.dat",'r')
             outfile = open(new_dir_name + "/photo_processes.dat",'w')
             for line in infile:
@@ -149,6 +171,8 @@ if rank >= 0:
                 output_string = ""
                 for i in range(0, len(reactions)): 
                     output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reactions[i] + " delta values \n"
+                for i in range(0, len(modified_lines_to_modify_modelInp)):
+                    output_string = output_string + str(fitting_factor_combination[i + 3]) + "".join(" "*(23 - len(str(fitting_factor_combination[i + 3])))) + "model.inp value\n" 
                 output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"
                 results.write(output_string)
 
@@ -156,8 +180,11 @@ if rank >= 0:
                     fitting_factors_and_least_rmsd[0] = rmsd
                     for i in range(1, len(reactions) + 1):
                         fitting_factors_and_least_rmsd[i] = fitting_factor_combination[i-1]
+                    for i in range(1, len(modified_lines_to_modify_modelInp) + 1):
+                        fitting_factors_and_least_rmsd[i + 3] = fitting_factor_combination[i + 2]
                 csv_file.close()
     results.close()
+    print(fitting_factors_and_least_rmsd)
 
 fitting_factors_and_least_rmsd = comm.gather(fitting_factors_and_least_rmsd, root=0) # Gather the least performance metric value and associated fitting factors from each core back to the root core (0)
 
@@ -184,7 +211,7 @@ if rank == 0:
 
     # FIX BUG (Test Current Fix)
     new_dir_name = "."
-    fitting_factor_combination = [0]*(len(fitting_factors_and_least_rmsd)-1)
+    fitting_factor_combination = [0]*(len(fitting_factors_and_least_rmsd[least_rmsd_index])-1)
     for i in range(1, len(fitting_factors_and_least_rmsd)):
         fitting_factor_combination[i-1] = fitting_factors_and_least_rmsd[least_rmsd_index][i]
 
@@ -203,6 +230,15 @@ if rank == 0:
         outfile.write(line)
     infile.close()
     outfile.close()
+
+    if(to_modify_modelInp_values == True):
+        lines_to_modify_modelInp_local = []
+        fitting_factor_combination_modelInp_index = 3 # Because the fitting factors come first
+        for line in lines_to_modify_modelInp:
+            print(line)
+            lines_to_modify_modelInp_local.append([line[3], fitting_factor_combination[fitting_factor_combination_modelInp_index], line[4]])
+            fitting_factor_combination_modelInp_index += 1
+        modify_modelInp_values(lines_to_modify_modelInp_local, ".")
 
     print("Running model with best fit parameters...")
     os.system('./run.sh')
