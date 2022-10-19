@@ -12,7 +12,7 @@ all_vector_args = [] # Holds a series of lists (with each list containing the va
 base_dir_name = "baragiola_files_core" # The partial name for each directory of the files for a core
 
 to_modify_modelInp_values = True # Set this to True if you want to modify model.inp values using the below array 
-reset_model_inp = True  # If this is true, model.inp will be reset to default values 
+reset_modelInp = True  # If this is true, model.inp will be reset to default values 
                         #     (specified in modelCopy.inp,; model.inp will be overwritten with the contents of this file)
 
 # Note: the below code is ran on every core because each core needs the reaction, and reading it on each core means the data from the file doesn't have to be sent to each core
@@ -50,8 +50,8 @@ if(to_modify_modelInp_values):
 #        In this if statement, a directory is created for each core with the files necessary for it to run monaco as well as find the rmsd and write to output files,
 #        the fitting factor combinations are generated and distributed to each core (including itself (core 0)),         
 if rank == 0:
-    if(reset_model_inp == True):
-        os.system("cat modelCopy.inp > model.inp") # Reset model.inp to the default values in modelCopy.inp only if the user wants to (if reset_model_inp is true)
+    if(reset_modelInp == True):
+        os.system("cat modelCopy.inp > model.inp") # Reset model.inp to the default values in modelCopy.inp only if the user wants to (if reset_modelInp is true)
     
     fitting_factors = [] # Holds lists (each list is a numpy linspace (converted to a list) that was created using the arguments read in from the csv input file above) 
                          #     and lists for modifying model.inp values  

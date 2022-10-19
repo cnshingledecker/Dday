@@ -104,6 +104,14 @@ Below is an overview of the changes from the parallelized version of the script 
 
 The following was done for both the generalized and parallel scripts: a custom function (in exportable_custom_functions.py) was written to allow the user to change values of variables in model.inp.
 
+### Modifying`model.inp` Values or Resetting `model.inp`
+If you wish to modify values in `model.inp` to optimize them (by trying out ranges of values, similar to modifying the delta values for the reaction rates), edit the file `model_inp_values\model_inp_values.csv` according to the content in there, and make sure to set the variable `to_modify_modelInp_values` to `True` if you want to test out the different `model.inp` values specified in the file. If you don't want the contents of that file to be read (whether it contains data for modifying lines or not), set `to_modify_modelInp_values` to `False`. 
+
+If you wish to reset the values of `model.inp`, set the variable `reset_modelInp` to `True`. If not, set it to `False`.
+
 #### Comparison Script
 
 The python script compareOptimizations.py runs the original, generalized and (parallel and generalized) versions of the baragiola script, one after another, in that order, prints out the runtimes for each, and compares the results files for the original and generalized versions. Note that this script will only work as expected if all 3 scripts have (a) the same numpy linspace arguments and thus are dealing with the same reactions, (b) the same experimental data files, and (c) the same photo_processes.dat files. 
+
+### Troubleshooting
+If the plot.jpg doesn't generate the plot correctly if the the process is killed, for which you will receive a message in the command line, run the following two Python scripts (in this order) to try it again: `dataFrameCreation.py` and `plotting.py`. If that doesn't work, debugging of the code may be necessary.

@@ -12,10 +12,10 @@ startTime = time.time()
 results = open("resultsFile_2", 'w')
 
 to_modify_modelInp_values = True # Set this to True if you want to modify model.inp values using the below array 
-reset_model_inp = True # If this is true, model.inp will be reset to default values 
+reset_modelInp = True # If this is true, model.inp will be reset to default values 
                         #     (specified in modelCopy.inp,; model.inp will be overwritten with the contents of this file)
-if(reset_model_inp == True):
-        os.system("cat modelCopy.inp > model.inp") # Reset model.inp to the default values in modelCopy.inp only if the user wants to (if reset_model_inp is true)
+if(reset_modelInp == True):
+        os.system("cat modelCopy.inp > model.inp") # Reset model.inp to the default values in modelCopy.inp only if the user wants to (if reset_modelInp is true)
 
 modified_lines_to_modify_modelInp = [] # Needed by the core with rank 0 but we create it here so we only process the file once
 lines_to_modify_modelInp = get_data_to_modify_modelInp()
