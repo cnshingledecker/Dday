@@ -94,6 +94,10 @@ def logic2(index):
 
 i=0
 while i < len(ana_list) :
+    print("\n")
+    print(i)
+    print(ana_list[i])
+    print(len(ana_list))
     filename = version + "/analytics_" + ana_list[i]
     flu_row = num_rxn[i] + 1
     
