@@ -24,10 +24,9 @@ for i in range(0, 4):
         fileLines = resultsFile.readlines()
         fileLinesSplit = split_list(fileLines, int((len(fileLines) + 1) / 8))
         for resultSet in fileLinesSplit:
-            print(resultSet[6])
             rmsd = float(resultSet[6][0:resultSet[6].find(" ")])
-            print(rmsd)
             if(rmsd < bestRMSD):
+                bestRMSD = rmsd
                 for i in range(0, 7):
                     bestRMSDLines[i] = resultSet[i]
 
