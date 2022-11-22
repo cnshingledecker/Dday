@@ -35,18 +35,19 @@ w_ions_version = '.'
 woions_df = pd.read_pickle(wo_ions_version + '/pickle_dataframes/csv_dataframe.pkl')
 wions_df = pd.read_pickle(w_ions_version + '/pickle_dataframes/csv_dataframe.pkl')
 
-initialO2 = 2*5.7E22
+initialO2 = 5.7E22
+flux = 2.33e14
 
 # Isolate data of interest
 model_data_woions = woions_df[['Fluence', 'total_O3', 'total_O2']]
 model_data_wions = wions_df[['Fluence', 'bO3']]
 
 exp_data = pd.DataFrame({'expX': [4.709604,
-                                      13.496563,
-                                      50.07993,
-                                      146.55681,
-                                      465.09692,
-                                      2581.1648],
+                                13.496563,
+                                50.07993,
+                                146.55681,
+                                465.09692,
+                                2581.1648],
                              'expY': [0.055385794,
                                       0.15238622,
                                       0.52023816,
@@ -54,9 +55,12 @@ exp_data = pd.DataFrame({'expX': [4.709604,
                                       1.4836915,
                                       1.6182984]})
 
+
+
 # Scale modifications
-exp_data["expY"] = exp_data["expY"] * (24.0 / 1.6182984) # Scaling factor used in figure_2_DO_NOT_MODIFY.pro
-exp_data["expX"] = exp_data["expX"] * 2.2E14 # Scaling factor used in figure_2_DO_NOT_MODIFY.pro
+exp_data["expY"] = exp_data["expY"] * (24 / 1.6182984) # Scaling factor used in figure_2_DO_NOT_MODIFY.pro.
+exp_data["expX"] = exp_data["expX"] * flux # (Old comment: Scaling factor used in figure_2_DO_NOT_MODIFY.pro.) Scaling factor now is different (flux value, which is different) 
+                                                                                                                # as of 22 November 2022.
 
 model_data_woions["Fluence"] = model_data_woions["Fluence"]
 model_data_woions["bO3"] = (model_data_woions['total_O3'] / model_data_woions.at[0,'total_O2']) * 100
