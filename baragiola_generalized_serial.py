@@ -185,8 +185,7 @@ print(fitting_factors_and_least_rmsd)
 print("Running model with best fit parameters...")
 os.system('./runGeneralization.sh')
 
-# Do stuff to create plot
-os.system("python3 dataFrameCreation.py")
+# Create the plot
 os.system("python3 plotting.py")
 
 print("Done!")

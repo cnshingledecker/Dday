@@ -241,6 +241,5 @@ if rank == 0:
     print("Running model with best fit parameters...")
     os.system('./run.sh')
 
-    # Do stuff to create plot
-    os.system("python3 dataFrameCreation.py")
+    # Create the plot
     os.system("python3 plotting.py")
