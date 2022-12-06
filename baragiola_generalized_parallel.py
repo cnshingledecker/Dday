@@ -141,9 +141,15 @@ if rank >= 0:
             infile.close()
             outfile.close()
             print("Running model...core " + str(rank))
-            os.system('cd ' + new_dir_name + '; ./run.sh') # Includes a run of monaco (note that what these commands do is temporarily dipping down into the directory of the files for this core and running run.sh); after runnign these commands, the current directory is the same as it was before these commands were run
+            os.system('cd ' + new_dir_name + '; ./run.sh > /dev/null') # Includes a run of monaco (note that what these commands do is temporarily dipping down into the directory of the files for this core and running run.sh); after runnign these commands, the current directory is the same as it was before these commands were run
+            # Run model, deal with files, and silence output
+
             print("Finding RMSD...")  # RMSD is root-mean square deviation
 
+            # IMPORTANT:
+            #
+            # NEED TO CHANGE THE SERIAL VERSION (TRANSFORMING INPUTS AND CALCULATING RMSD)
+            #     ONCE IT IS IS WORKING HERE
             num_experimental_data_points = 0
             deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
 
@@ -153,7 +159,12 @@ if rank >= 0:
             for i in range(0, len(experimental_data['expX'])): 
                 experimentalY = experimental_data["expY"][i]
                 closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
-                deviation = float(closest_model_values[1])*1e7 - float(experimentalY) # Deviation of the model value from the actual (experimental) value
+                
+                modelY = float(closest_model_values[1])*1e7
+
+                print(f"\nModel Y: {modelY}")
+                print(f"Experimental Y: {experimentalY}")
+                deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
                 
                 # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
                 if 0.9 * float(experimentalY) <= deviation <= 1.1 * float(experimentalY): # 0.9 * float(experimentalY) is the allowed_lower_deviation, 1.1 * float(experimentalY) is the allowed_upper_deviation
@@ -239,7 +250,7 @@ if rank == 0:
         modify_modelInp_values(lines_to_modify_modelInp_local, ".")
 
     print("Running model with best fit parameters...")
-    os.system('./run.sh')
+    os.system('./run.sh > /dev/null') # Run model, deal with files, and silence output
 
     # Create the plot
     os.system("python3 plotting.py")
