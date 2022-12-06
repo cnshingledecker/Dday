@@ -1,5 +1,6 @@
 import math, os, csv
 import numpy as np
+import pandas as pd
 
 def is_int(val):
     try:
@@ -134,3 +135,27 @@ def modify_modelInp_values(linesToModify, directory): # required format of lines
 
     os.system("cat modelTemp.inp > model.inp")
     os.system("rm modelTemp.inp")
+
+def setup_experimental_data():
+    flux = 2.33e14
+
+    exp_data_local = pd.DataFrame({'expX': [4.709604,
+                                    13.496563,
+                                    50.07993,
+                                    146.55681,
+                                    465.09692,
+                                    2581.1648],
+                                'expY': [0.055385794,
+                                        0.15238622,
+                                        0.52023816,
+                                        1.062651,
+                                        1.4836915,
+                                        1.6182984]})
+
+
+    # Scale modifications
+    exp_data_local["expY"] = exp_data_local["expY"] * (24 / 1.6182984) # Scaling factor used in figure_2_DO_NOT_MODIFY.pro.
+    exp_data_local["expX"] = exp_data_local["expX"] * flux # (Old comment: Scaling factor used in figure_2_DO_NOT_MODIFY.pro.) Scaling factor now is different (flux value, which is different) 
+                                                                                                                    # as of 22 November 2022.
+
+    return exp_data_local

@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from cycler import cycler
+from .exportable_custom_functions import setup_experimental_data
 
 # Get ozone from file bO3.csv, do comparison of data based on Dr. Shingledecker email. We only need to compare this data, not anything else 
 #                                                                                      (look at the below code to make sure this is the case).
@@ -55,31 +56,14 @@ wions_df = pd.read_csv(w_ions_modified_version)
 
 os.remove("./bO3_for_dataframe.csv") # Because we no longer need the file
 
-initialO2 = 5.7E22
-flux = 2.33e14
 
 # Isolate data of interest
 model_data_woions = woions_df[['Fluence', 'total_O3', 'total_O2']]
 model_data_wions = wions_df[['Fluence', 'bO3']]
 
-exp_data = pd.DataFrame({'expX': [4.709604,
-                                  13.496563,
-                                  50.07993,
-                                  146.55681,
-                                  465.09692,
-                                  2581.1648],
-                             'expY': [0.055385794,
-                                      0.15238622,
-                                      0.52023816,
-                                      1.062651,
-                                      1.4836915,
-                                      1.6182984]})
+initialO2 = 5.7E22
 
-
-# Scale modifications
-exp_data["expY"] = exp_data["expY"] * (24 / 1.6182984) # Scaling factor used in figure_2_DO_NOT_MODIFY.pro.
-exp_data["expX"] = exp_data["expX"] * flux # (Old comment: Scaling factor used in figure_2_DO_NOT_MODIFY.pro.) Scaling factor now is different (flux value, which is different) 
-                                                                                                                # as of 22 November 2022.
+exp_data = setup_experimental_data()
 
 model_data_woions["Fluence"] = model_data_woions["Fluence"]
 

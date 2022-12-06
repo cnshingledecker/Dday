@@ -5,11 +5,13 @@ import csv
 import numpy as np
 import itertools
 import time
-from exportable_custom_functions import find_nearest_index,is_float, is_int, modify_modelInp_values, get_data_to_modify_modelInp
+from exportable_custom_functions import find_nearest_index,is_float, is_int, modify_modelInp_values, get_data_to_modify_modelInp, setup_experimental_data
 
 startTime = time.time()
 
 results = open("resultsFile_2", 'w')
+
+experimental_data = setup_experimental_data() # The experimental data we compare the model to
 
 to_modify_modelInp_values = True # Set this to True if you want to modify model.inp values using the below array 
 reset_modelInp = True # If this is true, model.inp will be reset to default values 
@@ -98,26 +100,25 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     print("Finding RMSD...")  # RMSD is root-mean square deviation
 
     num_experimental_data_points = 0
-    with open('experimental_data/experimental_o3.csv') as csv_file: # Experimental data
-        deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        csv_model_data = open('csv/total_ice_O3.csv')
-        csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
-        csv_model_data_list = list(csv_model_data_reader)
-        csv_model_data.close()
-        for row in csv_reader: # This assumes that row[0] is the time, row[1] is the y-value (I'm not sure what this is),
-            closest_model_values = csv_model_data_list[find_nearest_index(row[0], 0, csv_model_data_list)]
-            deviation = float(closest_model_values[1])*1e7 - float(row[1]) # Deviation of the model value from the actual (experimental) value
-            
-            # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
-            if 0.9 * float(row[1]) <= deviation <= 1.1 * float(row[1]): # 0.9 * float(row[1]) is the allowed_lower_deviation, 1.1 * float(row[1]) is the allowed_upper_deviation
-                deviation = 0
-            deviations.append(deviation)
-            num_experimental_data_points += 1
-        sum = 0
-        for value in deviations:
-            sum += (value**2)
-        rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
+    deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
+
+    csv_model_data = open('./csv/total_ice_O3.csv')
+    csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
+    csv_model_data_list = list(csv_model_data_reader)
+    for i in range(0, len(experimental_data['expX'])): 
+        experimentalY = experimental_data["expY"][i]
+        closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
+        deviation = float(closest_model_values[1])*1e7 - float(experimentalY) # Deviation of the model value from the actual (experimental) value
+        
+        # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
+        if 0.9 * float(experimentalY) <= deviation <= 1.1 * float(experimentalY): # 0.9 * float(experimentalY) is the allowed_lower_deviation, 1.1 * float(experimentalY) is the allowed_upper_deviation
+            deviation = 0
+        deviations.append(deviation)
+        num_experimental_data_points += 1
+    sum = 0
+    for value in deviations:
+        sum += (value**2)
+    rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
 
         # Should I create a boolean to only write to the output string if there was data in the experimental data csv file?
 

@@ -15,6 +15,8 @@ to_modify_modelInp_values = True # Set this to True if you want to modify model.
 reset_modelInp = True  # If this is true, model.inp will be reset to default values 
                         #     (specified in modelCopy.inp,; model.inp will be overwritten with the contents of this file)
 
+experimental_data = setup_experimental_data() # The experimental data we compare the model to
+
 # Note: the below code is ran on every core because each core needs the reaction, and reading it on each core means the data from the file doesn't have to be sent to each core
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
@@ -143,45 +145,43 @@ if rank >= 0:
             print("Finding RMSD...")  # RMSD is root-mean square deviation
 
             num_experimental_data_points = 0
-            with open(new_dir_name + '/experimental_data/experimental_o3.csv') as csv_file: # Experimental data
-                deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
-                csv_reader = csv.reader(csv_file, delimiter=',')
+            deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
 
-                csv_model_data = open(new_dir_name + '/csv/total_ice_O3.csv')
-                csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
-                csv_model_data_list = list(csv_model_data_reader)
-                for row in csv_reader: # This assumes that row[0] is the time, row[1] is the y-value (I'm not sure what this is),
-                    closest_model_values = csv_model_data_list[find_nearest_index(row[0], 0, csv_model_data_list)]
-                    deviation = float(closest_model_values[1])*1e7 - float(row[1]) # Deviation of the model value from the actual (experimental) value
-                    
-                    # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
-                    if 0.9 * float(row[1]) <= deviation <= 1.1 * float(row[1]): # 0.9 * float(row[1]) is the allowed_lower_deviation, 1.1 * float(row[1]) is the allowed_upper_deviation
-                        deviation = 0
-                    deviations.append(deviation)
-                    num_experimental_data_points += 1
-                sum = 0
-                for value in deviations:
-                    sum += (value**2)
-                rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
-
-                # Should I create a boolean to only write to the output string if there was data in the experimental data csv file?
+            csv_model_data = open(new_dir_name + '/csv/total_ice_O3.csv')
+            csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
+            csv_model_data_list = list(csv_model_data_reader)
+            for i in range(0, len(experimental_data['expX'])): 
+                experimentalY = experimental_data["expY"][i]
+                closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
+                deviation = float(closest_model_values[1])*1e7 - float(experimentalY) # Deviation of the model value from the actual (experimental) value
                 
-                # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
-                output_string = ""
-                for i in range(0, len(reactions)): 
-                    output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reactions[i] + " delta values \n"
-                for i in range(0, len(modified_lines_to_modify_modelInp)):
-                    output_string = output_string + str(fitting_factor_combination[i + 3]) + "".join(" "*(23 - len(str(fitting_factor_combination[i + 3])))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
-                output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"
-                results.write(output_string)
+                # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
+                if 0.9 * float(experimentalY) <= deviation <= 1.1 * float(experimentalY): # 0.9 * float(experimentalY) is the allowed_lower_deviation, 1.1 * float(experimentalY) is the allowed_upper_deviation
+                    deviation = 0
+                deviations.append(deviation)
+                num_experimental_data_points += 1
+            sum = 0
+            for value in deviations:
+                sum += (value**2)
+            rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
 
-                if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
-                    fitting_factors_and_least_rmsd[0] = rmsd
-                    for i in range(1, len(reactions) + 1):
-                        fitting_factors_and_least_rmsd[i] = fitting_factor_combination[i-1]
-                    for i in range(1, len(modified_lines_to_modify_modelInp) + 1):
-                        fitting_factors_and_least_rmsd[i + 3] = fitting_factor_combination[i + 2]
-                csv_file.close()
+            # Should I create a boolean to only write to the output string if there was data in the experimental data csv file?
+            
+            # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
+            output_string = ""
+            for i in range(0, len(reactions)): 
+                output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reactions[i] + " delta values \n"
+            for i in range(0, len(modified_lines_to_modify_modelInp)):
+                output_string = output_string + str(fitting_factor_combination[i + 3]) + "".join(" "*(23 - len(str(fitting_factor_combination[i + 3])))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
+            output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"
+            results.write(output_string)
+
+            if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
+                fitting_factors_and_least_rmsd[0] = rmsd
+                for i in range(1, len(reactions) + 1):
+                    fitting_factors_and_least_rmsd[i] = fitting_factor_combination[i-1]
+                for i in range(1, len(modified_lines_to_modify_modelInp) + 1):
+                    fitting_factors_and_least_rmsd[i + 3] = fitting_factor_combination[i + 2]
     results.close()
     print(fitting_factors_and_least_rmsd)
 
