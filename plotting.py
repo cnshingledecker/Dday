@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from cycler import cycler
-from .exportable_custom_functions import setup_experimental_data
+from exportable_custom_functions import setup_experimental_data
 
 # Get ozone from file bO3.csv, do comparison of data based on Dr. Shingledecker email. We only need to compare this data, not anything else 
 #                                                                                      (look at the below code to make sure this is the case).
