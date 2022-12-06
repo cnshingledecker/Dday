@@ -84,7 +84,7 @@ exp_data["expX"] = exp_data["expX"] * flux # (Old comment: Scaling factor used i
 model_data_woions["Fluence"] = model_data_woions["Fluence"]
 
 model_data_wions["Fluence"] = model_data_wions["Fluence"]
-model_data_wions["bO3"] = (model_data_wions["bO3"] / initialO2) * 100 * 1e3
+model_data_wions["bO3"] = (model_data_wions["bO3"] / initialO2) * 100
 
 # Create figure
 
