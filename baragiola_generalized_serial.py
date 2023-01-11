@@ -120,27 +120,27 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
         sum += (value**2)
     rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
 
-        # Should I create a boolean to only write to the output string if there was data in the experimental data csv file?
+    # Should I create a boolean to only write to the output string if there was data in the experimental data csv file?
 
-        # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
-        output_string = "" 
-        for i in range(0, len(reactions)): 
-            output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reactions[i] + " delta values \n"
-        for i in range(0, len(modified_lines_to_modify_modelInp)):
-            output_string = output_string + str(fitting_factor_combination[i + 3]) + "".join(" "*(23 - len(str(fitting_factor_combination[i + 3])))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
-        output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"
-        results.write(output_string)
+    # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
+    output_string = "" 
+    for i in range(0, len(reactions)): 
+        output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reactions[i] + " delta values \n"
+    for i in range(0, len(modified_lines_to_modify_modelInp)):
+        output_string = output_string + str(fitting_factor_combination[i + 3]) + "".join(" "*(23 - len(str(fitting_factor_combination[i + 3])))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
+    output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"
+    results.write(output_string)
 
-        if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
-            fitting_factors_and_least_rmsd[0] = rmsd
-            for i in range(1, len(fitting_factors_and_least_rmsd)):
-                print(len(fitting_factors_and_least_rmsd))
-                print(len(fitting_factor_combination))
-                print(i)
-                fitting_factors_and_least_rmsd[i] = fitting_factor_combination[i-1]
-            for i in range(1, len(modified_lines_to_modify_modelInp) + 1):
-                fitting_factors_and_least_rmsd[i + 3] = fitting_factor_combination[i + 2]
-        csv_file.close()
+    if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
+        fitting_factors_and_least_rmsd[0] = rmsd
+        for i in range(1, len(fitting_factors_and_least_rmsd)):
+            print(len(fitting_factors_and_least_rmsd))
+            print(len(fitting_factor_combination))
+            print(i)
+            fitting_factors_and_least_rmsd[i] = fitting_factor_combination[i-1]
+        for i in range(1, len(modified_lines_to_modify_modelInp) + 1):
+            fitting_factors_and_least_rmsd[i + 3] = fitting_factor_combination[i + 2]
+            
 results.close()
 
 print("The smallest performance metric value and fitting factors that produced it: ")
