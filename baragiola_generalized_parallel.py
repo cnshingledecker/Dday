@@ -176,6 +176,8 @@ if rank >= 0:
             sum = 0
             for value in deviations:
                 sum += (value**2)
+            
+            # NOTE: RMSD's of parallel and serial scripts were off for one run 18.8ish vs 8ish). Not an immediate significant cause for concern.
             rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
 
             # Should I create a boolean to only write to the output string if there was data in the experimental data csv file?

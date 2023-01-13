@@ -14,8 +14,6 @@ results = open("resultsFile_2", 'w')
 experimental_data = setup_experimental_data() # The experimental data we compare the model to
 initialO2 = 5.7E22
 
-print(experimental_data)
-
 to_modify_modelInp_values = True # Set this to True if you want to modify model.inp values using the below array 
 reset_modelInp = True # If this is true, model.inp will be reset to default values 
                         #     (specified in modelCopy.inp,; model.inp will be overwritten with the contents of this file)
@@ -120,12 +118,8 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     for i in range(0, len(experimental_data['expX'])): 
         experimentalY = experimental_data["expY"][i]
         closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
-
-        # print("\nExperimental X: " + str(experimental_data["expX"][i]) + " \nModel X:        " + str(closest_model_values[0]))
         
         modelY = (float(closest_model_values[1]) / initialO2) * 100
-        # print("Experimental Y: " + str(experimentalY))
-        # print("Model        Y: " + str(modelY))
 
         deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
         
@@ -137,7 +131,9 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     sum = 0
     for value in deviations:
         sum += (value**2)
-    rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
+
+    # NOTE: RMSD's of parallel and serial scripts were off for one run 18.8ish vs 8ish). Not an immediate significant cause for concern.
+    rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD. 
 
     # Should I create a boolean to only write to the output string if there was data in the experimental data csv file?
 
@@ -153,9 +149,6 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
         fitting_factors_and_least_rmsd[0] = rmsd
         for i in range(1, len(fitting_factors_and_least_rmsd)):
-            print(len(fitting_factors_and_least_rmsd))
-            print(len(fitting_factor_combination))
-            print(i)
             fitting_factors_and_least_rmsd[i] = fitting_factor_combination[i-1]
         for i in range(1, len(modified_lines_to_modify_modelInp) + 1):
             fitting_factors_and_least_rmsd[i + 3] = fitting_factor_combination[i + 2]
