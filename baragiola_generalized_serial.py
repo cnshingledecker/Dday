@@ -13,7 +13,7 @@ results = open("resultsFile_2", 'w')
 
 experimental_data = setup_experimental_data() # The experimental data we compare the model to
 
-to_modify_modelInp_values = True # Set this to True if you want to modify model.inp values using the below array 
+to_modify_modelInp_values = False # Set this to True if you want to modify model.inp values using the below array 
 reset_modelInp = True # If this is true, model.inp will be reset to default values 
                         #     (specified in modelCopy.inp,; model.inp will be overwritten with the contents of this file)
 if(reset_modelInp == True):
