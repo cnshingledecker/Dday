@@ -16,6 +16,7 @@ reset_modelInp = True  # If this is true, model.inp will be reset to default val
                         #     (specified in modelCopy.inp,; model.inp will be overwritten with the contents of this file)
 
 experimental_data = setup_experimental_data() # The experimental data we compare the model to
+initialO2 = 5.7E22
 
 # Note: the below code is ran on every core because each core needs the reaction, and reading it on each core means the data from the file doesn't have to be sent to each core
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
@@ -46,7 +47,10 @@ if(to_modify_modelInp_values):
     for line in lines_to_modify_modelInp:
         line_linspace = np.linspace(line[0], line[1], int(line[2])) # Range of values we want to try for that line's value
         line_linspace_list = list(line_linspace)
-        modified_lines_to_modify_modelInp.append(line_linspace_list)
+        line_linspace_list_power10 = []
+        for value in line_linspace_list:
+            line_linspace_list_power10.append(10**value)
+        modified_lines_to_modify_modelInp.append(line_linspace_list_power10)
 
 # Notes: The core is the one that handles the generation and distribution of fitting factors and the collection of data.
 #        In this if statement, a directory is created for each core with the files necessary for it to run monaco as well as find the rmsd and write to output files,
@@ -61,7 +65,10 @@ if rank == 0:
     for vector_args in all_vector_args: # Create numpy linspace out using the parameters in vector_args (read from an input file)
         single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
         single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
-        fitting_factors.append(single_vector_fitting_factors)
+        single_vector_fitting_factors_power10 = []
+        for value in single_vector_fitting_factors:
+            single_vector_fitting_factors_power10.append(10**value)
+        fitting_factors.append(single_vector_fitting_factors_power10)
 
     if(to_modify_modelInp_values == True):
         for list_of_values in modified_lines_to_modify_modelInp:
@@ -121,7 +128,7 @@ if rank >= 0:
         for fitting_factor_combination in mini_chunk:
             if(to_modify_modelInp_values == True):
                 lines_to_modify_modelInp_local = []
-                fitting_factor_combination_modelInp_index = 3 # Because the fitting factors come first
+                fitting_factor_combination_modelInp_index = 3 # Because the fitting factors come in the first three spots
                 for line in lines_to_modify_modelInp:
                     lines_to_modify_modelInp_local.append([line[3], fitting_factor_combination[fitting_factor_combination_modelInp_index], line[4]])
                     fitting_factor_combination_modelInp_index += 1
@@ -141,29 +148,24 @@ if rank >= 0:
             infile.close()
             outfile.close()
             print("Running model...core " + str(rank))
-            os.system('cd ' + new_dir_name + '; ./run.sh > /dev/null') # Includes a run of monaco (note that what these commands do is temporarily dipping down into the directory of the files for this core and running run.sh); after runnign these commands, the current directory is the same as it was before these commands were run
             # Run model, deal with files, and silence output
+            os.system('cd ' + new_dir_name + '; ./run.sh > /dev/null') # Includes a run of monaco (note that what these commands do is temporarily dipping down into the directory of the files for this core and running run.sh); after runnign these commands, the current directory is the same as it was before these commands were run
 
             print("Finding RMSD...")  # RMSD is root-mean square deviation
 
-            # IMPORTANT:
-            #
-            # NEED TO CHANGE THE SERIAL VERSION (TRANSFORMING INPUTS AND CALCULATING RMSD)
-            #     ONCE IT IS IS WORKING HERE
             num_experimental_data_points = 0
             deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
 
-            csv_model_data = open(new_dir_name + '/csv/total_ice_O3.csv')
+            csv_model_data = open('./csv/bO3.csv')
             csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
+            throwAway = next(csv_model_data_reader)
             csv_model_data_list = list(csv_model_data_reader)
             for i in range(0, len(experimental_data['expX'])): 
                 experimentalY = experimental_data["expY"][i]
                 closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
                 
-                modelY = float(closest_model_values[1])*1e7
+                modelY = (float(closest_model_values[1]) / initialO2) * 100
 
-                print(f"\nModel Y: {modelY}")
-                print(f"Experimental Y: {experimentalY}")
                 deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
                 
                 # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value

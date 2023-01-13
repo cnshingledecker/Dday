@@ -12,8 +12,11 @@ startTime = time.time()
 results = open("resultsFile_2", 'w')
 
 experimental_data = setup_experimental_data() # The experimental data we compare the model to
+initialO2 = 5.7E22
 
-to_modify_modelInp_values = False # Set this to True if you want to modify model.inp values using the below array 
+print(experimental_data)
+
+to_modify_modelInp_values = True # Set this to True if you want to modify model.inp values using the below array 
 reset_modelInp = True # If this is true, model.inp will be reset to default values 
                         #     (specified in modelCopy.inp,; model.inp will be overwritten with the contents of this file)
 if(reset_modelInp == True):
@@ -30,7 +33,10 @@ if(to_modify_modelInp_values):
     for line in lines_to_modify_modelInp:
         line_linspace = np.linspace(line[0], line[1], int(line[2])) # Range of values we want to try for that line's value
         line_linspace_list = list(line_linspace)
-        modified_lines_to_modify_modelInp.append(line_linspace_list)
+        line_linspace_list_power10 = []
+        for value in line_linspace_list:
+            line_linspace_list_power10.append(10**value)
+        modified_lines_to_modify_modelInp.append(line_linspace_list_power10)
 
 reactions = [] # Will hold the reactions for which the fitting factors are being modified
 all_vector_args = [] # Holds a series of arrays (one for each of the linspaces that is created for a reaction)
@@ -60,10 +66,13 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
 fitting_factors_and_least_rmsd = [0] * (len(reactions) + 1 + len(modified_lines_to_modify_modelInp)) # there needs to be 1 spot for the rmsd and len(reactions) spots for the fitting factor for each set of reactions, plus those for the model.inp values that are modified 
 fitting_factors_and_least_rmsd[0] = 1e80 # Initialize the RMSD to a high value so during testing a lower RMSD will likely be found and be saved in the array (along with the fitting factors that produced it)
 
-for vector_args in all_vector_args:
-    single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
-    single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
-    fitting_factors.append(single_vector_fitting_factors) 
+for vector_args in all_vector_args: # Create numpy linspace out using the parameters in vector_args (read from an input file)
+        single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
+        single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
+        single_vector_fitting_factors_power10 = []
+        for value in single_vector_fitting_factors:
+            single_vector_fitting_factors_power10.append(10**value)
+        fitting_factors.append(single_vector_fitting_factors_power10)
 
 if(to_modify_modelInp_values == True):
     for list_of_values in modified_lines_to_modify_modelInp:
@@ -96,19 +105,29 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     infile.close()
     outfile.close()
     print("Running model...")
-    os.system('./runGeneralization.sh') # Executes a version of run.sh that runs the monaco executable for this generalization (a monaco that uses certain fortran files for this generalization)
+    # Run model, deal with files, and silence output
+    os.system('./runGeneralization.sh > /dev/null') # Executes a version of run.sh that runs the monaco executable for this generalization (a monaco that uses certain fortran files for this generalization). Does not write output to the terminal.
+    
     print("Finding RMSD...")  # RMSD is root-mean square deviation
 
     num_experimental_data_points = 0
     deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
 
-    csv_model_data = open('./csv/total_ice_O3.csv')
+    csv_model_data = open('./csv/bO3.csv')
     csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
+    throwAway = next(csv_model_data_reader)
     csv_model_data_list = list(csv_model_data_reader)
     for i in range(0, len(experimental_data['expX'])): 
         experimentalY = experimental_data["expY"][i]
         closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
-        deviation = float(closest_model_values[1])*1e7 - float(experimentalY) # Deviation of the model value from the actual (experimental) value
+
+        # print("\nExperimental X: " + str(experimental_data["expX"][i]) + " \nModel X:        " + str(closest_model_values[0]))
+        
+        modelY = (float(closest_model_values[1]) / initialO2) * 100
+        # print("Experimental Y: " + str(experimentalY))
+        # print("Model        Y: " + str(modelY))
+
+        deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
         
         # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
         if 0.9 * float(experimentalY) <= deviation <= 1.1 * float(experimentalY): # 0.9 * float(experimentalY) is the allowed_lower_deviation, 1.1 * float(experimentalY) is the allowed_upper_deviation
@@ -184,7 +203,8 @@ if(to_modify_modelInp_values == True):
 
 print(fitting_factors_and_least_rmsd)
 print("Running model with best fit parameters...")
-os.system('./runGeneralization.sh')
+# Run model, deal with files, and silence output
+os.system('./runGeneralization.sh > /dev/null')
 
 # Create the plot
 os.system("python3 plotting.py")
