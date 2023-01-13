@@ -33,7 +33,7 @@ custom_cycler = (cycler(color=['#098ec3', #blue
 plt.rcParams['axes.prop_cycle'] = custom_cycler # Sets plot color cycler to the cycle defined above
 
 # Define filepath
-wo_ions_version = 'wo_ions/old_output' # Mullikin results
+# wo_ions_version = 'wo_ions/old_output' # Mullikin results
 w_ions_version = 'csv/bO3.csv'
 w_ions_modified_version = "bO3_for_dataframe.csv"
 
@@ -51,21 +51,21 @@ with open(w_ions_version, newline='') as bO3_csv:  # Read in the lines from the 
          pass # We are done processing lines; this is the exception (expected) which is thrown when we are out of lines to write to the file. 
 
 # Load in data
-woions_df = pd.read_pickle(wo_ions_version + '/pickle_dataframes/csv_dataframe.pkl')
+# woions_df = pd.read_pickle(wo_ions_version + '/pickle_dataframes/csv_dataframe.pkl')
 wions_df = pd.read_csv(w_ions_modified_version)
 
 os.remove("./bO3_for_dataframe.csv") # Because we no longer need the file
 
 
 # Isolate data of interest
-model_data_woions = woions_df[['Fluence', 'total_O3', 'total_O2']]
+# model_data_woions = woions_df[['Fluence', 'total_O3', 'total_O2']]
 model_data_wions = wions_df[['Fluence', 'bO3']]
 
 initialO2 = 5.7E22
 
 exp_data = setup_experimental_data()
 
-model_data_woions["Fluence"] = model_data_woions["Fluence"]
+# model_data_woions["Fluence"] = model_data_woions["Fluence"]
 
 model_data_wions["Fluence"] = model_data_wions["Fluence"]
 model_data_wions["bO3"] = (model_data_wions["bO3"] / initialO2) * 100
