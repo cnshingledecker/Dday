@@ -156,14 +156,14 @@ if rank >= 0:
             num_experimental_data_points = 0
             deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
 
-            csv_model_data = open('./csv/bO3.csv')
+            csv_model_data = open(new_dir_name + '/csv/bO3.csv')
             csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
             throwAway = next(csv_model_data_reader)
             csv_model_data_list = list(csv_model_data_reader)
             for i in range(0, len(experimental_data['expX'])): 
                 experimentalY = experimental_data["expY"][i]
                 closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
-                
+
                 modelY = (float(closest_model_values[1]) / initialO2) * 100
 
                 deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
@@ -224,7 +224,7 @@ if rank == 0:
     # Put in best fitting factor combination found (before generating a plot for it)
     new_dir_name = "."
     fitting_factor_combination = [0]*(len(fitting_factors_and_least_rmsd[least_rmsd_index])-1)
-    for i in range(1, len(fitting_factors_and_least_rmsd)):
+    for i in range(1, len(fitting_factors_and_least_rmsd[least_rmsd_index])):
         fitting_factor_combination[i-1] = fitting_factors_and_least_rmsd[least_rmsd_index][i]
 
     print("fitting_factor_combination is " + str(fitting_factor_combination))
