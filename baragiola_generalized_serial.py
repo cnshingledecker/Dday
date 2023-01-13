@@ -83,7 +83,7 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
         modify_modelInp_values(lines_to_modify_modelInp_local, ".")
     
     infile = open("parameter_inputs_template.dat",'r')
-    outfile = open("photo_processes.dat",'w')
+    outfile = open("photo_processes_2.dat",'w')
     for line in infile:
         line_as_list = line.split()  # Convert the DAT file line into a list
         possible_fitting_factor_index = line_as_list[len(line_as_list) - 1] # See below comment for the meaning of this variable
@@ -161,7 +161,7 @@ print("Time taken: " + str(timeTaken / 60) + " minutes.")
 
 # Put in best fitting factor combination found (with model.inp values if they were reset) (before generating a plot for it)
 infile = open("parameter_inputs_template.dat",'r')
-outfile = open("photo_processes.dat",'w')
+outfile = open("photo_processes_2.dat",'w')
 for line in infile:
     line_as_list = line.split()  # Convert the DAT file line into a list
     possible_fitting_factor_index = line_as_list[len(line_as_list) - 1] # See below comment for the meaning of this variable
