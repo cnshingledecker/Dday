@@ -1,4 +1,4 @@
 The general structure of a line is: linspace argument, linspace argument, linspace argument, line number in model.inp (indexing starting at 1), the name of the value you wish to overwrite. List the values you want to modify in ascending order (line number in model.inp).
-11,15,10,45,TRIAL_NU 
-4,7,10,46,ION_NU   
-6,12,10,47,IONION_NU 
+13,14.2,10,45,TRIAL_NU 
+4,6,10,46,ION_NU   
+7,16,10,47,IONION_NU 
