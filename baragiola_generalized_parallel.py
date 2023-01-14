@@ -165,22 +165,23 @@ if rank >= 0:
                 closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
 
                 modelY = (float(closest_model_values[1]) / initialO2) * 100
+                # print("\nX: " + str(closest_model_values[0]) + " " + str(experimental_data["expX"][i]))
+                # print("Y: " + str(modelY) + " " + str(float(experimentalY)))
 
                 deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
                 
                 # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
-                if 0.9 * float(experimentalY) <= deviation <= 1.1 * float(experimentalY): # 0.9 * float(experimentalY) is the allowed_lower_deviation, 1.1 * float(experimentalY) is the allowed_upper_deviation
-                    deviation = 0
+                # if 0.9 * float(experimentalY) <= deviation <= 1.1 * float(experimentalY): # 0.9 * float(experimentalY) is the allowed_lower_deviation, 1.1 * float(experimentalY) is the allowed_upper_deviation
+                #     deviation = 0
                 deviations.append(deviation)
                 num_experimental_data_points += 1
             sum = 0
+            
             for value in deviations:
                 sum += (value**2)
             
             # NOTE: RMSD's of parallel and serial scripts were off for one run 18.8ish vs 8ish). Not an immediate significant cause for concern.
             rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
-
-            # Should I create a boolean to only write to the output string if there was data in the experimental data csv file?
             
             # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
             output_string = ""
