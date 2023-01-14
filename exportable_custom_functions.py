@@ -105,8 +105,11 @@ def modify_modelInp_values(linesToModify, directory): # required format of lines
     while(linesToModify[linesToModifyIndex][0] < 0):
         linesToModifyIndex += 1 # Skip over negative line numbers (only should happen due to user error)
 
-    outputModelFile = open("modelTemp.inp", "w") # A temp file whose contents will be written into model.inp upon completion of the below 'with' block
-    with open(os.path.join(directory, "model.inp"), "r", newline='') as inpFile:
+    directoryModelInpPath = os.path.join(directory, "model.inp")
+    directoryModelTempInpPath = os.path.join(directory, "modelTemp.inp")
+
+    outputModelFile = open(directoryModelTempInpPath, "w") # A temp file whose contents will be written into model.inp upon completion of the below 'with' block
+    with open(directoryModelInpPath, "r", newline='') as inpFile:
         for line in inpFile:
             lineIndex += 1
             lineToWrite = line # The value of this variable will be written (may be modified if the user wants to change the value for that line)
@@ -133,8 +136,8 @@ def modify_modelInp_values(linesToModify, directory): # required format of lines
         inpFile.close()
     outputModelFile.close()
 
-    os.system("cat modelTemp.inp > model.inp")
-    os.system("rm modelTemp.inp")
+    os.system("cat " + directoryModelTempInpPath + " >" + directoryModelInpPath)
+    os.system("rm " + directoryModelTempInpPath)
 
 def setup_experimental_data():
     flux = 2.33e14
