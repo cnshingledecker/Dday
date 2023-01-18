@@ -138,12 +138,15 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     # Should I create a boolean to only write to the output string if there was data in the experimental data csv file?
 
     # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
-    output_string = "" 
+    output_string = ""
     for i in range(0, len(reactions)): 
-        output_string = output_string + str(fitting_factor_combination[i]) + "".join(" "*(23 - len(str(fitting_factor_combination[i])))) + reactions[i] + " delta values \n"
+        fitting_factor_combination_formatted = np.format_float_scientific(fitting_factor_combination[i], precision=20,unique=False)
+        output_string = output_string + str(fitting_factor_combination_formatted) + "".join(" "*(30 - len(str(fitting_factor_combination_formatted)))) + reactions[i] + " delta values \n"
     for i in range(0, len(modified_lines_to_modify_modelInp)):
-        output_string = output_string + str(fitting_factor_combination[i + 3]) + "".join(" "*(23 - len(str(fitting_factor_combination[i + 3])))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
-    output_string += str(rmsd) + "".join(" "*(23 - len(str(rmsd)))) + "RMSD" + "\n\n"
+        model_Inp_value_formatted = np.format_float_scientific(fitting_factor_combination[i + 3], precision=20,unique=False)
+        output_string = output_string + str(model_Inp_value_formatted) + "".join(" "*(30 - len(str(model_Inp_value_formatted)))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
+    rmsd_formatted = np.format_float_scientific(rmsd, precision=20,unique=False)
+    output_string += str(rmsd_formatted) + "".join(" "*(30 - len(str(rmsd_formatted)))) + "RMSD" + "\n\n"
     results.write(output_string)
 
     if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
@@ -157,13 +160,14 @@ results.close()
 
 print("The smallest performance metric value and fitting factors that produced it: ")
 print(fitting_factors_and_least_rmsd)
-results_file = open("resultsRMSDGeneralization", 'w')
+results_file = open("resultsGeneralizedSerial", 'w')
 output_string = ""
 for i in range(0, len(reactions)): 
-    output_string = output_string + str(fitting_factors_and_least_rmsd[i+1]) + "".join(" "*(23 - len(str(fitting_factors_and_least_rmsd[i+1])))) + reactions[i] + " delta values \n"
+    output_string = output_string + str(fitting_factors_and_least_rmsd[i+1]) + "".join(" "*(30 - len(str(fitting_factors_and_least_rmsd[i+1])))) + reactions[i] + " delta values \n"
 for i in range(0, len(modified_lines_to_modify_modelInp)):
-    output_string = output_string + str(fitting_factor_combination[i + 3]) + "".join(" "*(23 - len(str(fitting_factor_combination[i + 3])))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
-output_string += str(fitting_factors_and_least_rmsd[0]) + "".join(" "*(23 - len(str(fitting_factors_and_least_rmsd[0])))) + "RMSD" + "\n\n"
+    output_string = output_string + str(fitting_factor_combination[i + 3]) + "".join(" "*(30 - len(str(fitting_factor_combination[i + 3])))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
+rmsd_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[0], precision=20,unique=False)
+output_string += str(rmsd_formatted) + "".join(" "*(30 - len(str(rmsd_formatted)))) + "RMSD" + "\n\n"
 results_file.write(output_string)
 results_file.close()
 
