@@ -6,3 +6,4 @@
 6. 1.14.2023 #6
 7. 1.14.2023 #7
 8. 1.16.2023 #1
+9. 1.18.2023 #1 (repeat of #8 but with the delta values. model.inp values, and RMSD in scientific notation)
