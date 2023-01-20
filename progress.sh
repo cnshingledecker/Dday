@@ -17,10 +17,10 @@ linesPerSimulation=8
 approxNumSimulationsDone=`expr $totalNumLines / $linesPerSimulation`
 
 # The operand on the left is the number of simulations being run
-approxNumSimulationsLeft=`expr 42875 - $approxNumSimulationsDone`
+approxNumSimulationsLeft=`expr 6125 - $approxNumSimulationsDone`
 
-# The operand on the right is for the number of simulations being run divided by 100, if it is not an integer, the nearest integer higher than it 
-percentOfSimulationsDone=`expr $approxNumSimulationsDone / 429`
+# The operand on the right is for the number of simulations being run divided by 100, if it is not an integer, the nearest integer to it
+percentOfSimulationsDone=`expr $approxNumSimulationsDone / 62`
 
 beginTime=1674104850 # The beginning time of the simulation in seconds since the Unix epoch
 currentTime=$EPOCHSECONDS
