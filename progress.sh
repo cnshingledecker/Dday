@@ -2,10 +2,10 @@
 
 # works on the server for sure
 
-core0filepath="/mnt/c/Users/danie/Desktop/Discovery Day/2020-2021 School Year/Actual Project/Dday/baragiola_files_core0/output_file_results"
-core1filepath="/mnt/c/Users/danie/Desktop/Discovery Day/2020-2021 School Year/Actual Project/Dday/baragiola_files_core1/output_file_results"
-core2filepath="/mnt/c/Users/danie/Desktop/Discovery Day/2020-2021 School Year/Actual Project/Dday/baragiola_files_core2/output_file_results"
-core3filepath="/mnt/c/Users/danie/Desktop/Discovery Day/2020-2021 School Year/Actual Project/Dday/baragiola_files_core3/output_file_results"
+core0filepath="/home/lope4037@benedictine.edu/Dday/baragiola_files_core0/output_file_results"
+core1filepath="/home/lope4037@benedictine.edu/Dday/baragiola_files_core1/output_file_results"
+core2filepath="/home/lope4037@benedictine.edu/Dday/baragiola_files_core2/output_file_results"
+core3filepath="/home/lope4037@benedictine.edu/Dday/baragiola_files_core3/output_file_results"
 
 core0numLines=`wc --lines < $core0filepath`
 core1numLines=`wc --lines < $core1filepath`
