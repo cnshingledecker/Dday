@@ -46,7 +46,9 @@ with open(w_ions_version, newline='') as bO3_csv:  # Read in the lines from the 
       bO3_csv_writer.writerow(["Fluence", "bO3"])
       try:
          while(True):
-            bO3_csv_writer.writerow(next(reader))
+            row = next(reader)
+            if(float(row[0]) != 0 and float(row[1]) != 0): # Gets rid of a value that sometimes occurs that causes weird plotting results for bO3.csv
+               bO3_csv_writer.writerow(row)
       except StopIteration:
          pass # We are done processing lines; this is the exception (expected) which is thrown when we are out of lines to write to the file. 
 
