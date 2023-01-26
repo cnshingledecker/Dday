@@ -140,7 +140,6 @@ if rank >= 0:
                     else:
                         ion_nu_list = [line[3], lines_to_modify_modelInp_local[len(lines_to_modify_modelInp_local) - 1][1], line[4]]
                         lines_to_modify_modelInp_local.append(ion_nu_list)
-                print(lines_to_modify_modelInp_local)
                 modify_modelInp_values(lines_to_modify_modelInp_local, new_dir_name)
 
             infile = open(new_dir_name + "/parameter_inputs_template.dat",'r')
@@ -174,11 +173,10 @@ if rank >= 0:
                 closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
 
                 modelY = (float(closest_model_values[1]) / initialO2) * 100
-                # print("\nX: " + str(closest_model_values[0]) + " " + str(experimental_data["expX"][i]))
-                # print("Y: " + str(modelY) + " " + str(float(experimentalY)))
 
                 deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
                 
+                # Daniel Lopez-Sanders: Not sure why this was in here; it didn't make sense so I commented it out
                 # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
                 # if 0.9 * float(experimentalY) <= deviation <= 1.1 * float(experimentalY): # 0.9 * float(experimentalY) is the allowed_lower_deviation, 1.1 * float(experimentalY) is the allowed_upper_deviation
                 #     deviation = 0
@@ -226,6 +224,8 @@ fitting_factors_and_least_rmsd = comm.gather(fitting_factors_and_least_rmsd, roo
 
 if rank == 0:
     least_rmsd_index = 0
+    
+    # We can start at 1 because we initialize least_rmsd_index to be 0 and it is only changed if the first RMSD is not the least one
     for i in range(1, len(fitting_factors_and_least_rmsd)): # Loop through the least fake performance metric value and associated fitting factors 
                                                              # from each core and find the ones with the least value for the fake performance metrix
         if fitting_factors_and_least_rmsd[i][0] < fitting_factors_and_least_rmsd[least_rmsd_index][0]:

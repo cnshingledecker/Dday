@@ -165,11 +165,10 @@ if rank >= 0:
                 closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
 
                 modelY = (float(closest_model_values[1]) / initialO2) * 100
-                # print("\nX: " + str(closest_model_values[0]) + " " + str(experimental_data["expX"][i]))
-                # print("Y: " + str(modelY) + " " + str(float(experimentalY)))
 
                 deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
                 
+                # Daniel Lopez-Sanders: Not sure why this was in here; it didn't make sense so I commented it out
                 # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
                 # if 0.9 * float(experimentalY) <= deviation <= 1.1 * float(experimentalY): # 0.9 * float(experimentalY) is the allowed_lower_deviation, 1.1 * float(experimentalY) is the allowed_upper_deviation
                 #     deviation = 0
