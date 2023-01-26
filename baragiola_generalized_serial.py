@@ -123,9 +123,10 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
 
         deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
         
+        # Daniel Lopez-Sanders: Not sure why this was in here; it didn't make sense so I commented it out
         # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
-        if 0.9 * float(experimentalY) <= deviation <= 1.1 * float(experimentalY): # 0.9 * float(experimentalY) is the allowed_lower_deviation, 1.1 * float(experimentalY) is the allowed_upper_deviation
-            deviation = 0
+        # if 0.9 * float(experimentalY) <= deviation <= 1.1 * float(experimentalY): # 0.9 * float(experimentalY) is the allowed_lower_deviation, 1.1 * float(experimentalY) is the allowed_upper_deviation
+        #     deviation = 0
         deviations.append(deviation)
         num_experimental_data_points += 1
     sum = 0
