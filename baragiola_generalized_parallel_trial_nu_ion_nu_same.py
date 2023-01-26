@@ -7,6 +7,8 @@ startTime = time.time()
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
+# BEFORE VERIFYING (ON THE SERVER AND YOUR LOCAL COMPUTER), DO NOT USE THE RESULTS FILE THIS IS WRITING TO; IT IS NOT WRITING THE CORRECT RMSD AND THE FITTING FACTORS THAT PRODUCED IT
+
 reactions = [] # Will hold the reactions for which the fitting factors are being modified
 all_vector_args = [] # Holds a series of lists (with each list containing the values in each of the linspaces that is created for a reaction)
 base_dir_name = "baragiola_files_core" # The partial name for each directory of the files for a core
@@ -250,6 +252,7 @@ if rank == 0:
                                                             #     so we have to subtract the index by 1 for ion_nu and everything or after to get the right fitting factor in the list
         model_Inp_value_formatted = np.format_float_scientific(fitting_factor_combination[fitting_factor_combination_modelInp_index], precision = 20,unique = False)
         output_string = output_string + str(model_Inp_value_formatted) + "".join(" "*(30 - len(str(model_Inp_value_formatted)))) + lines_to_modify_modelInp[i][4] + " model.inp value\n" 
+    rmsd = fitting_factors_and_least_rmsd[least_rmsd_index][0] # Get the correct RMSD (the least one) in the 'rmsd' variable
     rmsd_formatted = np.format_float_scientific(rmsd, precision=20,unique=False)
     output_string += str(rmsd_formatted) + "".join(" "*(30 - len(str(rmsd_formatted)))) + "RMSD" + "\n\n"
     results_file.write(output_string)
