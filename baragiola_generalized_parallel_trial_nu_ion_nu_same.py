@@ -7,8 +7,6 @@ startTime = time.time()
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
-# BEFORE VERIFYING (ON THE SERVER AND YOUR LOCAL COMPUTER), DO NOT USE THE RESULTS FILE THIS IS WRITING TO; IT IS NOT WRITING THE CORRECT RMSD AND THE FITTING FACTORS THAT PRODUCED IT
-
 reactions = [] # Will hold the reactions for which the fitting factors are being modified
 all_vector_args = [] # Holds a series of lists (with each list containing the values in each of the linspaces that is created for a reaction)
 base_dir_name = "baragiola_files_core" # The partial name for each directory of the files for a core
@@ -164,59 +162,62 @@ if rank >= 0:
             num_experimental_data_points = 0
             deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
 
-            csv_model_data = open(new_dir_name + '/csv/bO3.csv')
-            csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
-            throwAway = next(csv_model_data_reader)
-            csv_model_data_list = list(csv_model_data_reader)
-            for i in range(0, len(experimental_data['expX'])): 
-                experimentalY = experimental_data["expY"][i]
-                closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
+            try:
+                csv_model_data = open(new_dir_name + '/csv/bO3.csv')
+                csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
+                throwAway = next(csv_model_data_reader)
+                csv_model_data_list = list(csv_model_data_reader)
+                for i in range(0, len(experimental_data['expX'])): 
+                    experimentalY = experimental_data["expY"][i]
+                    closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
 
-                modelY = (float(closest_model_values[1]) / initialO2) * 100
+                    modelY = (float(closest_model_values[1]) / initialO2) * 100
 
-                deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
+                    deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
+                    
+                    # Daniel Lopez-Sanders: Not sure why this was in here; it didn't make sense so I commented it out
+                    # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
+                    # if 0.9 * float(experimentalY) <= deviation <= 1.1 * float(experimentalY): # 0.9 * float(experimentalY) is the allowed_lower_deviation, 1.1 * float(experimentalY) is the allowed_upper_deviation
+                    #     deviation = 0
+                    deviations.append(deviation)
+                    num_experimental_data_points += 1
+                sum = 0
                 
-                # Daniel Lopez-Sanders: Not sure why this was in here; it didn't make sense so I commented it out
-                # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
-                # if 0.9 * float(experimentalY) <= deviation <= 1.1 * float(experimentalY): # 0.9 * float(experimentalY) is the allowed_lower_deviation, 1.1 * float(experimentalY) is the allowed_upper_deviation
-                #     deviation = 0
-                deviations.append(deviation)
-                num_experimental_data_points += 1
-            sum = 0
-            
-            for value in deviations:
-                sum += (value**2)
-            
-            # NOTE: RMSD's of parallel and serial scripts were off for one run 18.8ish vs 8ish). Not an immediate significant cause for concern.
-            rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
+                for value in deviations:
+                    sum += (value**2)
+                
+                # NOTE: RMSD's of parallel and serial scripts were off for one run 18.8ish vs 8ish). Not an immediate significant cause for concern.
+                rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
 
-            ion_nu_current_or_done = False
-            
-            # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
-            output_string = ""
-            for i in range(0, len(reactions)): 
-                fitting_factor_combination_formatted = np.format_float_scientific(fitting_factor_combination[i], precision=20,unique=False)
-                output_string = output_string + str(fitting_factor_combination_formatted) + "".join(" "*(30 - len(str(fitting_factor_combination_formatted)))) + reactions[i] + " delta values \n"
-            for i in range(0, len(lines_to_modify_modelInp)):
-                if(lines_to_modify_modelInp[i][4].strip() == "ION_NU"):
-                    ion_nu_current_or_done = True
+                ion_nu_current_or_done = False
+                
+                # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
+                output_string = ""
+                for i in range(0, len(reactions)): 
+                    fitting_factor_combination_formatted = np.format_float_scientific(fitting_factor_combination[i], precision=20,unique=False)
+                    output_string = output_string + str(fitting_factor_combination_formatted) + "".join(" "*(30 - len(str(fitting_factor_combination_formatted)))) + reactions[i] + " delta values \n"
+                for i in range(0, len(lines_to_modify_modelInp)):
+                    if(lines_to_modify_modelInp[i][4].strip() == "ION_NU"):
+                        ion_nu_current_or_done = True
 
-                fitting_factor_combination_modelInp_index = i + 3
-                if(ion_nu_current_or_done == True):
-                    fitting_factor_combination_modelInp_index -= 1 # Since we have ion_nu the same as model_nu, a separate value for ion_nu is not in the fitting factor combination,
-                                                                    #     so we have to subtract the index by 1 for ion_nu and everything or after to get the right fitting factor in the list
-                model_Inp_value_formatted = np.format_float_scientific(fitting_factor_combination[fitting_factor_combination_modelInp_index], precision = 20,unique = False)
-                output_string = output_string + str(model_Inp_value_formatted) + "".join(" "*(30 - len(str(model_Inp_value_formatted)))) + lines_to_modify_modelInp[i][4] + " model.inp value\n" 
-            rmsd_formatted = np.format_float_scientific(rmsd, precision=20,unique=False)
-            output_string += str(rmsd_formatted) + "".join(" "*(30 - len(str(rmsd_formatted)))) + "RMSD" + "\n\n"
-            results.write(output_string)
+                    fitting_factor_combination_modelInp_index = i + 3
+                    if(ion_nu_current_or_done == True):
+                        fitting_factor_combination_modelInp_index -= 1 # Since we have ion_nu the same as model_nu, a separate value for ion_nu is not in the fitting factor combination,
+                                                                        #     so we have to subtract the index by 1 for ion_nu and everything or after to get the right fitting factor in the list
+                    model_Inp_value_formatted = np.format_float_scientific(fitting_factor_combination[fitting_factor_combination_modelInp_index], precision = 20,unique = False)
+                    output_string = output_string + str(model_Inp_value_formatted) + "".join(" "*(30 - len(str(model_Inp_value_formatted)))) + lines_to_modify_modelInp[i][4] + " model.inp value\n" 
+                rmsd_formatted = np.format_float_scientific(rmsd, precision=20,unique=False)
+                output_string += str(rmsd_formatted) + "".join(" "*(30 - len(str(rmsd_formatted)))) + "RMSD" + "\n\n"
+                results.write(output_string)
 
-            if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
-                fitting_factors_and_least_rmsd[0] = rmsd
-                for i in range(1, len(reactions) + 1):
-                    fitting_factors_and_least_rmsd[i] = fitting_factor_combination[i-1]
-                for i in range(1, len(modified_lines_to_modify_modelInp) + 1):
-                    fitting_factors_and_least_rmsd[i + 3] = fitting_factor_combination[i + 2]
+                if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
+                    fitting_factors_and_least_rmsd[0] = rmsd
+                    for i in range(1, len(reactions) + 1):
+                        fitting_factors_and_least_rmsd[i] = fitting_factor_combination[i-1]
+                    for i in range(1, len(modified_lines_to_modify_modelInp) + 1):
+                        fitting_factors_and_least_rmsd[i + 3] = fitting_factor_combination[i + 2]
+            except FileNotFoundError:
+                pass # Nothing we can do if the model failed
     results.close()
     print(fitting_factors_and_least_rmsd)
 
