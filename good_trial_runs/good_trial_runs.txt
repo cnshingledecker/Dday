@@ -15,5 +15,5 @@ Note: the parameters for 1-8 are not reliable at least those for #4 did not give
 12. 1.25.2023 #2 (varying all delta values but the O2-->2O* one (keeping it at 10))
 13. 1.25.2023 #3 (varying all delta values but the O2-->O2* and O3-->O2+O and O3-->O3* one (keeping it at 10))
 14. 1.31.2023 #2 (fixing the O2-->2O delta value at 1, and varying the others)
-15. 1.31.2023 #3 (fixing the O2-->2O* delta value at 1, and varying the others) (got 90% of the way done but stalled, so I killed it)
+15. 1.31.2023 #3 (fixing the O2-->2O* delta value at 1, and varying the others) (got 90% of the way done but was on that for a while, so I killed it)
 16. 1.31.2023 #4 (fixing the O2-->O2* and O3-->O2+O and O3-->O3* delta value at 1, and varying the others)
