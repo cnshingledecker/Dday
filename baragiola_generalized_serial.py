@@ -13,6 +13,7 @@ results = open("resultsFile_2", 'w')
 
 experimental_data = setup_experimental_data() # The experimental data we compare the model to
 initialO2 = 5.7E22
+num_delta_values = 3
 
 to_modify_modelInp_values = True # Set this to True if you want to modify model.inp values using the below array 
 reset_modelInp = True # If this is true, model.inp will be reset to default values 
@@ -83,7 +84,7 @@ all_fitting_factor_combinations = itertools.product(*fitting_factors)    # Creat
 for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_factor_combinations[n] is a value from the (n + 1)th np.linspace created 
     if(to_modify_modelInp_values == True):
         lines_to_modify_modelInp_local = []
-        fitting_factor_combination_modelInp_index = 3 # Because the fitting factors come first
+        fitting_factor_combination_modelInp_index = num_delta_values # Because the fitting factors come first
         for line in lines_to_modify_modelInp:
             lines_to_modify_modelInp_local.append([line[3], fitting_factor_combination[fitting_factor_combination_modelInp_index], line[4]])
             fitting_factor_combination_modelInp_index += 1
@@ -147,7 +148,7 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
             fitting_factor_combination_formatted = np.format_float_scientific(fitting_factor_combination[i], precision=20,unique=False)
             output_string = output_string + str(fitting_factor_combination_formatted) + "".join(" "*(30 - len(str(fitting_factor_combination_formatted)))) + reactions[i] + " delta values \n"
         for i in range(0, len(modified_lines_to_modify_modelInp)):
-            model_Inp_value_formatted = np.format_float_scientific(fitting_factor_combination[i + 3], precision=20,unique=False)
+            model_Inp_value_formatted = np.format_float_scientific(fitting_factor_combination[i + num_delta_values], precision=20,unique=False)
             output_string = output_string + str(model_Inp_value_formatted) + "".join(" "*(30 - len(str(model_Inp_value_formatted)))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
         rmsd_formatted = np.format_float_scientific(rmsd, precision=20,unique=False)
         output_string += str(rmsd_formatted) + "".join(" "*(30 - len(str(rmsd_formatted)))) + "RMSD" + "\n\n"
@@ -158,7 +159,7 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
             for i in range(1, len(fitting_factors_and_least_rmsd)):
                 fitting_factors_and_least_rmsd[i] = fitting_factor_combination[i-1]
             for i in range(1, len(modified_lines_to_modify_modelInp) + 1):
-                fitting_factors_and_least_rmsd[i + 3] = fitting_factor_combination[i + 2]
+                fitting_factors_and_least_rmsd[i + num_delta_values] = fitting_factor_combination[i + num_delta_values - 1]
     except FileNotFoundError:
         pass # Do nothing because the CSV file does not exist
             
@@ -169,9 +170,11 @@ print(fitting_factors_and_least_rmsd)
 results_file = open("resultsGeneralizedSerial", 'w')
 output_string = ""
 for i in range(0, len(reactions)): 
-    output_string = output_string + str(fitting_factors_and_least_rmsd[i+1]) + "".join(" "*(30 - len(str(fitting_factors_and_least_rmsd[i+1])))) + reactions[i] + " delta values \n"
+    fitting_factor_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[i+1], precision=20,unique=False)
+    output_string = output_string + str(fitting_factor_formatted) + "".join(" "*(30 - len(str(fitting_factor_formatted)))) + reactions[i] + " delta values \n"
 for i in range(0, len(modified_lines_to_modify_modelInp)):
-    output_string = output_string + str(fitting_factor_combination[i + 3]) + "".join(" "*(30 - len(str(fitting_factor_combination[i + 3])))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
+    model_Inp_value_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[i + num_delta_values + 1], precision=20,unique=False)
+    output_string = output_string + str(model_Inp_value_formatted) + "".join(" "*(30 - len(str(model_Inp_value_formatted)))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
 rmsd_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[0], precision=20,unique=False)
 output_string += str(rmsd_formatted) + "".join(" "*(30 - len(str(rmsd_formatted)))) + "RMSD" + "\n\n"
 results_file.write(output_string)
@@ -198,7 +201,7 @@ outfile.close()
 
 if(to_modify_modelInp_values == True):
     lines_to_modify_modelInp_local = []
-    fitting_factor_combination_modelInp_index = 4 # Because the fitting factors and RMSD come first
+    fitting_factor_combination_modelInp_index = num_delta_values + 1 # Because the fitting factors and RMSD come first
     for line in lines_to_modify_modelInp:
         lines_to_modify_modelInp_local.append([line[3], fitting_factors_and_least_rmsd[fitting_factor_combination_modelInp_index], line[4]])
         fitting_factor_combination_modelInp_index += 1

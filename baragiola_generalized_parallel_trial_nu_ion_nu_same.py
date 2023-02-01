@@ -17,6 +17,7 @@ reset_modelInp = True  # If this is true, model.inp will be reset to default val
 
 experimental_data = setup_experimental_data() # The experimental data we compare the model to
 initialO2 = 5.7E22
+num_delta_values = 3
 
 # Note: the below code is ran on every core because each core needs the reaction, and reading it on each core means the data from the file doesn't have to be sent to each core
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
@@ -129,7 +130,7 @@ if rank >= 0:
         for fitting_factor_combination in mini_chunk:
             if(to_modify_modelInp_values == True):
                 lines_to_modify_modelInp_local = []
-                fitting_factor_combination_modelInp_index = 3 # Because the fitting factors come in the first three spots
+                fitting_factor_combination_modelInp_index = num_delta_values # Because the fitting factors come in the first num_delta_values spots
                 
                 for line in lines_to_modify_modelInp:
                     if(line[4].strip() != "ION_NU"):
@@ -202,7 +203,7 @@ if rank >= 0:
                     if(lines_to_modify_modelInp[i][4].strip() == "ION_NU"):
                         ion_nu_current_or_done = True
 
-                    fitting_factor_combination_modelInp_index = i + 3
+                    fitting_factor_combination_modelInp_index = i + num_delta_values
                     if(ion_nu_current_or_done == True):
                         fitting_factor_combination_modelInp_index -= 1 # Since we have ion_nu the same as model_nu, a separate value for ion_nu is not in the fitting factor combination,
                                                                         #     so we have to subtract the index by 1 for ion_nu and everything or after to get the right fitting factor in the list
@@ -217,7 +218,7 @@ if rank >= 0:
                     for i in range(1, len(reactions) + 1):
                         fitting_factors_and_least_rmsd[i] = fitting_factor_combination[i-1]
                     for i in range(1, len(modified_lines_to_modify_modelInp) + 1):
-                        fitting_factors_and_least_rmsd[i + 3] = fitting_factor_combination[i + 2]
+                        fitting_factors_and_least_rmsd[i + num_delta_values] = fitting_factor_combination[i + num_delta_values - 1]
             except FileNotFoundError:
                 pass # Do nothing because the CSV file does not exist
     results.close()
@@ -242,18 +243,18 @@ if rank == 0:
             
     # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
     output_string = ""
-    for i in range(0, len(reactions)): 
-        fitting_factor_combination_formatted = np.format_float_scientific(fitting_factor_combination[i], precision=20,unique=False)
-        output_string = output_string + str(fitting_factor_combination_formatted) + "".join(" "*(30 - len(str(fitting_factor_combination_formatted)))) + reactions[i] + " delta values \n"
+    for i in range(1, len(reactions) + 1): # Skip RMSD at the beginning (1st element of the list) 
+        fitting_factor_combination_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[least_rmsd_index][i], precision=20,unique=False)
+        output_string = output_string + str(fitting_factor_combination_formatted) + "".join(" "*(30 - len(str(fitting_factor_combination_formatted)))) + reactions[i - 1] + " delta values \n"
     for i in range(0, len(lines_to_modify_modelInp)):
         if(lines_to_modify_modelInp[i][4].strip() == "ION_NU"):
             ion_nu_current_or_done = True
 
-        fitting_factor_combination_modelInp_index = i + 3
+        fitting_factor_combination_modelInp_index = i + num_delta_values + 1
         if(ion_nu_current_or_done == True):
             fitting_factor_combination_modelInp_index -= 1 # Since we have ion_nu the same as model_nu, a separate value for ion_nu is not in the fitting factor combination,
                                                             #     so we have to subtract the index by 1 for ion_nu and everything or after to get the right fitting factor in the list
-        model_Inp_value_formatted = np.format_float_scientific(fitting_factor_combination[fitting_factor_combination_modelInp_index], precision = 20,unique = False)
+        model_Inp_value_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[least_rmsd_index][fitting_factor_combination_modelInp_index], precision = 20,unique = False)
         output_string = output_string + str(model_Inp_value_formatted) + "".join(" "*(30 - len(str(model_Inp_value_formatted)))) + lines_to_modify_modelInp[i][4] + " model.inp value\n" 
     rmsd = fitting_factors_and_least_rmsd[least_rmsd_index][0] # Get the correct RMSD (the least one) in the 'rmsd' variable
     rmsd_formatted = np.format_float_scientific(rmsd, precision=20,unique=False)
@@ -288,7 +289,7 @@ if rank == 0:
 
     if(to_modify_modelInp_values == True):
         lines_to_modify_modelInp_local = []
-        fitting_factor_combination_modelInp_index = 3 # Because the fitting factors come in the first three spots
+        fitting_factor_combination_modelInp_index = num_delta_values # Because the fitting factors come in the first three spots
         
         for line in lines_to_modify_modelInp:
             if(line[4].strip() != "ION_NU"):
