@@ -162,7 +162,9 @@ if rank >= 0:
             num_experimental_data_points = 0
             deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
 
-            try:
+            # Calculate the RMSD, write it and the parameters that produced it to an output file, 
+            #     compare it to the best one found so far, and if it's less, store it and the parameters that produced it
+            try: # If the model finished running, the CSV file will exist
                 csv_model_data = open(new_dir_name + '/csv/bO3.csv')
                 csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
                 throwAway = next(csv_model_data_reader)
@@ -217,7 +219,7 @@ if rank >= 0:
                     for i in range(1, len(modified_lines_to_modify_modelInp) + 1):
                         fitting_factors_and_least_rmsd[i + 3] = fitting_factor_combination[i + 2]
             except FileNotFoundError:
-                pass # Nothing we can do if the model failed
+                pass # Do nothing because the CSV file does not exist
     results.close()
     print(fitting_factors_and_least_rmsd)
 

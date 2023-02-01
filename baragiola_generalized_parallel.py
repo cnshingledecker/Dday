@@ -153,53 +153,58 @@ if rank >= 0:
 
             print("Finding RMSD...")  # RMSD is root-mean square deviation
 
-            num_experimental_data_points = 0
-            deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
+            # Calculate the RMSD, write it and the parameters that produced it to an output file, 
+            #     compare it to the best one found so far, and if it's less, store it and the parameters that produced it
+            try: # If the model finished running, the CSV file will exist
+                num_experimental_data_points = 0
+                deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
 
-            csv_model_data = open(new_dir_name + '/csv/bO3.csv')
-            csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
-            throwAway = next(csv_model_data_reader)
-            csv_model_data_list = list(csv_model_data_reader)
-            for i in range(0, len(experimental_data['expX'])): 
-                experimentalY = experimental_data["expY"][i]
-                closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
+                csv_model_data = open(new_dir_name + '/csv/bO3.csv')
+                csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
+                throwAway = next(csv_model_data_reader)
+                csv_model_data_list = list(csv_model_data_reader)
+                for i in range(0, len(experimental_data['expX'])): 
+                    experimentalY = experimental_data["expY"][i]
+                    closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
 
-                modelY = (float(closest_model_values[1]) / initialO2) * 100
+                    modelY = (float(closest_model_values[1]) / initialO2) * 100
 
-                deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
-                
-                # Daniel Lopez-Sanders: Not sure why this was in here; it didn't make sense so I commented it out
-                # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
-                # if 0.9 * float(experimentalY) <= deviation <= 1.1 * float(experimentalY): # 0.9 * float(experimentalY) is the allowed_lower_deviation, 1.1 * float(experimentalY) is the allowed_upper_deviation
-                #     deviation = 0
-                deviations.append(deviation)
-                num_experimental_data_points += 1
-            sum = 0
-            
-            for value in deviations:
-                sum += (value**2)
-            
-            # NOTE: RMSD's of parallel and serial scripts were off for one run 18.8ish vs 8ish). Not an immediate significant cause for concern.
-            rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
-            
-            # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
-            output_string = ""
-            for i in range(0, len(reactions)): 
-                fitting_factor_combination_formatted = np.format_float_scientific(fitting_factor_combination[i], precision=20,unique=False)
-                output_string = output_string + str(fitting_factor_combination_formatted) + "".join(" "*(30 - len(str(fitting_factor_combination_formatted)))) + reactions[i] + " delta values \n"
-            for i in range(0, len(modified_lines_to_modify_modelInp)):
-                model_Inp_value_formatted = np.format_float_scientific(fitting_factor_combination[i + 3], precision=20,unique=False)
-                output_string = output_string + str(model_Inp_value_formatted) + "".join(" "*(30 - len(str(model_Inp_value_formatted)))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
-            rmsd_formatted = np.format_float_scientific(rmsd, precision=20,unique=False)
-            output_string += str(rmsd_formatted) + "".join(" "*(30 - len(str(rmsd_formatted)))) + "RMSD" + "\n\n"
-            results.write(output_string)
+                    deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
 
-            if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
-                fitting_factors_and_least_rmsd[0] = rmsd
-                for i in range(1, len(reactions) + 1):
-                    fitting_factors_and_least_rmsd[i] = fitting_factor_combination[i-1]
-                for i in range(1, len(modified_lines_to_modify_modelInp) + 1):
-                    fitting_factors_and_least_rmsd[i + 3] = fitting_factor_combination[i + 2]
+                    # Daniel Lopez-Sanders: Not sure why this was in here; it didn't make sense so I commented it out
+                    # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
+                    # if 0.9 * float(experimentalY) <= deviation <= 1.1 * float(experimentalY): # 0.9 * float(experimentalY) is the allowed_lower_deviation, 1.1 * float(experimentalY) is the allowed_upper_deviation
+                    #     deviation = 0
+                    deviations.append(deviation)
+                    num_experimental_data_points += 1
+                sum = 0
+
+                for value in deviations:
+                    sum += (value**2)
+
+                # NOTE: RMSD's of parallel and serial scripts were off for one run 18.8ish vs 8ish). Not an immediate significant cause for concern.
+                rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
+
+                # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
+                output_string = ""
+                for i in range(0, len(reactions)): 
+                    fitting_factor_combination_formatted = np.format_float_scientific(fitting_factor_combination[i], precision=20,unique=False)
+                    output_string = output_string + str(fitting_factor_combination_formatted) + "".join(" "*(30 - len(str(fitting_factor_combination_formatted)))) + reactions[i] + " delta values \n"
+                for i in range(0, len(modified_lines_to_modify_modelInp)):
+                    model_Inp_value_formatted = np.format_float_scientific(fitting_factor_combination[i + 3], precision=20,unique=False)
+                    output_string = output_string + str(model_Inp_value_formatted) + "".join(" "*(30 - len(str(model_Inp_value_formatted)))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
+                rmsd_formatted = np.format_float_scientific(rmsd, precision=20,unique=False)
+                output_string += str(rmsd_formatted) + "".join(" "*(30 - len(str(rmsd_formatted)))) + "RMSD" + "\n\n"
+                results.write(output_string)
+
+                if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
+                    fitting_factors_and_least_rmsd[0] = rmsd
+                    for i in range(1, len(reactions) + 1):
+                        fitting_factors_and_least_rmsd[i] = fitting_factor_combination[i-1]
+                    for i in range(1, len(modified_lines_to_modify_modelInp) + 1):
+                        fitting_factors_and_least_rmsd[i + 3] = fitting_factor_combination[i + 2]
+            except FileNotFoundError:
+                pass # Do nothing because the CSV file does not exist
     results.close()
     print(fitting_factors_and_least_rmsd)
 
