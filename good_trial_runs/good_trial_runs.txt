@@ -1,5 +1,5 @@
-Note: the parameters for 1-8 are not reliable at least those for #4 did not give the same RMSD upon a 2nd run 
-(same as what is in the results file in this directory for that run).
+Note: The printing of results for 1-8 was not reliable, so those trials were reran with the input parameters used being those written out to
+files when the writing out of results may not have been correct. This is why some of the results are not as good.
 
 1. 1.14.2023 #1
 2. 1.14.2023 #2

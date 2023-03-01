@@ -1,8 +1,0 @@
-0.1                    O2-->2O delta values 
-100.0                  O2-->2O* delta values 
-1.0                    O2-->O2* and O3-->O2+O and O3-->O3* delta values 
-278255940220712.6      TRIAL_NU  model.inp value
-46415.888336127726     ION_NU    model.inp value
-100000000.0            IONION_NU  model.inp value
-2.9566806443206093     RMSD
-
