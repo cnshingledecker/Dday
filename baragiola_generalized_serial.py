@@ -5,7 +5,7 @@ import csv
 import numpy as np
 import itertools
 import time
-from exportable_custom_functions import find_nearest_index,is_float, is_int, modify_modelInp_values, get_data_to_modify_modelInp, setup_experimental_data
+from exportable_custom_functions import find_nearest_index,is_float, is_int, modify_modelInp_values, get_data_to_modify_modelInp, setup_experimental_data, format_data_with_spaces
 
 startTime = time.time()
 
@@ -14,6 +14,8 @@ results = open("resultsFile_2", 'w')
 experimental_data = setup_experimental_data() # The experimental data we compare the model to
 initialO2 = 5.7E22
 num_delta_values = 3
+
+minFieldWidth = 30 # The minimum width of a printed field (including adding spaces if necessary)
 
 to_modify_modelInp_values = True # Set this to True if you want to modify model.inp values using the below array 
 reset_modelInp = True # If this is true, model.inp will be reset to default values 
@@ -146,12 +148,12 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
         output_string = ""
         for i in range(0, len(reactions)): 
             fitting_factor_combination_formatted = np.format_float_scientific(fitting_factor_combination[i], precision=20,unique=False)
-            output_string = output_string + str(fitting_factor_combination_formatted) + "".join(" "*(30 - len(str(fitting_factor_combination_formatted)))) + reactions[i] + " delta values \n"
+            output_string += format_data_with_spaces(fitting_factor_combination_formatted, minFieldWidth) + reactions[i] + " delta values \n"
         for i in range(0, len(modified_lines_to_modify_modelInp)):
             model_Inp_value_formatted = np.format_float_scientific(fitting_factor_combination[i + num_delta_values], precision=20,unique=False)
-            output_string = output_string + str(model_Inp_value_formatted) + "".join(" "*(30 - len(str(model_Inp_value_formatted)))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
+            output_string += format_data_with_spaces(model_Inp_value_formatted, minFieldWidth) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
         rmsd_formatted = np.format_float_scientific(rmsd, precision=20,unique=False)
-        output_string += str(rmsd_formatted) + "".join(" "*(30 - len(str(rmsd_formatted)))) + "RMSD" + "\n\n"
+        output_string += format_data_with_spaces(rmsd_formatted, minFieldWidth) + "RMSD" + "\n\n"
         results.write(output_string)
 
         if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
@@ -171,12 +173,12 @@ results_file = open("resultsGeneralizedSerial", 'w')
 output_string = ""
 for i in range(0, len(reactions)): 
     fitting_factor_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[i+1], precision=20,unique=False)
-    output_string = output_string + str(fitting_factor_formatted) + "".join(" "*(30 - len(str(fitting_factor_formatted)))) + reactions[i] + " delta values \n"
+    output_string += format_data_with_spaces(fitting_factor_formatted, minFieldWidth) + reactions[i] + " delta values \n"
 for i in range(0, len(modified_lines_to_modify_modelInp)):
     model_Inp_value_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[i + num_delta_values + 1], precision=20,unique=False)
-    output_string = output_string + str(model_Inp_value_formatted) + "".join(" "*(30 - len(str(model_Inp_value_formatted)))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
+    output_string += format_data_with_spaces(model_Inp_value_formatted, minFieldWidth) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
 rmsd_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[0], precision=20,unique=False)
-output_string += str(rmsd_formatted) + "".join(" "*(30 - len(str(rmsd_formatted)))) + "RMSD" + "\n\n"
+output_string += format_data_with_spaces(rmsd_formatted, minFieldWidth) + "RMSD" + "\n\n"
 results_file.write(output_string)
 results_file.close()
 

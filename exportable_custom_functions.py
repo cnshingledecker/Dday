@@ -30,6 +30,10 @@ def find_nearest_index(value_to_find, pos, in_order_list):
         index += 1
     return smallest_index
 
+def format_data_with_spaces(data, numSpaces):
+    dataString = str(data)
+    return dataString + "".join(" "*(max(0, numSpaces) - len(dataString))) 
+
 # How to test this function? I'm not sure how to write an automated test to see if all the start and end indices are correctly calculated? Figure out good test cases.
 def split_list_chunks(list_var, mini_chunk_size): # list_var is a list of n chunks that are each split up into mini_chunk_size evenly-sized (as much as possible) chunks
     new_split_data = []

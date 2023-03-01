@@ -19,6 +19,8 @@ experimental_data = setup_experimental_data() # The experimental data we compare
 initialO2 = 5.7E22
 num_delta_values = 3
 
+minFieldWidth = 30 # The minimum width of a printed field (including adding spaces if necessary)
+
 # Note: the below code is ran on every core because each core needs the reaction, and reading it on each core means the data from the file doesn't have to be sent to each core
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
@@ -190,12 +192,12 @@ if rank >= 0:
                 output_string = ""
                 for i in range(0, len(reactions)): 
                     fitting_factor_combination_formatted = np.format_float_scientific(fitting_factor_combination[i], precision=20,unique=False)
-                    output_string = output_string + str(fitting_factor_combination_formatted) + "".join(" "*(30 - len(str(fitting_factor_combination_formatted)))) + reactions[i] + " delta values \n"
+                    output_string += format_data_with_spaces(fitting_factor_combination_formatted, minFieldWidth) + reactions[i] + " delta values \n"
                 for i in range(0, len(modified_lines_to_modify_modelInp)):
                     model_Inp_value_formatted = np.format_float_scientific(fitting_factor_combination[i + num_delta_values], precision=20,unique=False)
-                    output_string = output_string + str(model_Inp_value_formatted) + "".join(" "*(30 - len(str(model_Inp_value_formatted)))) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
+                    output_string += format_data_with_spaces(model_Inp_value_formatted, minFieldWidth) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
                 rmsd_formatted = np.format_float_scientific(rmsd, precision=20,unique=False)
-                output_string += str(rmsd_formatted) + "".join(" "*(30 - len(str(rmsd_formatted)))) + "RMSD" + "\n\n"
+                output_string += format_data_with_spaces(rmsd_formatted, minFieldWidth) + "RMSD" + "\n\n"
                 results.write(output_string)
 
                 if (rmsd < fitting_factors_and_least_rmsd[0]): # fitting_factors_and_least_rmsd[0] is the least rmsd; if the new rmsd is less than it, store the new rmsd and the fitting factors that produced it
@@ -225,13 +227,13 @@ if rank == 0:
     output_string = ""
     for i in range(0, len(reactions)): 
        fitting_factor_combination_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[least_rmsd_index][i+1], precision=20,unique=False)
-       output_string = output_string + str(fitting_factor_combination_formatted) + "".join(" "*(30 - len(str(fitting_factor_combination_formatted)))) + reactions[i] + " delta values \n"
+       output_string += format_data_with_spaces(fitting_factor_combination_formatted, minFieldWidth) + reactions[i] + " delta values \n"
     for i in range(1, len(modified_lines_to_modify_modelInp) + 1): # Because the RMSD is at the beginning of the list, 
                                                                    #     so we have to start 1 after we would if it wasn't at the beginning of the list
        model_Inp_value_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[least_rmsd_index][i + num_delta_values], precision=20,unique=False)
-       output_string = output_string + str(model_Inp_value_formatted) + "".join(" "*(30 - len(str(model_Inp_value_formatted)))) + lines_to_modify_modelInp[i - 1][4] + " model.inp value\n"
+       output_string += format_data_with_spaces(model_Inp_value_formatted, minFieldWidth) + lines_to_modify_modelInp[i - 1][4] + " model.inp value\n"
     rmsd_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[least_rmsd_index][0], precision=20,unique=False)
-    output_string += str(rmsd_formatted) + "".join(" "*(30 - len(str(rmsd_formatted)))) + "RMSD" + "\n\n"
+    output_string += format_data_with_spaces(rmsd_formatted, minFieldWidth) + "RMSD" + "\n\n"
     results_file.write(output_string)
     results_file.close()
     endTime = time.time()
