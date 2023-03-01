@@ -6,7 +6,7 @@ import numpy as np
 import itertools
 import time
 from exportable_custom_functions import find_nearest_index,is_float, is_int, modify_modelInp_values, get_data_to_modify_modelInp, setup_experimental_data, format_data_with_spaces
-from baragiola_file_and_data_functions import modelCSVFileName, process_model_data, serialAllOutputFileName, serialBestResultsOutputFileName
+from baragiola_file_and_data_functions import modelCSVFileName, min_field_width, process_model_data, serialAllOutputFileName, serialBestResultsOutputFileName
 
 startTime = time.time()
 
@@ -22,7 +22,7 @@ debugModelRunOutputString = "" if debug == False else " > /dev/null" # For the m
 experimental_data = setup_experimental_data() # The experimental data we compare the model to
 num_delta_values = 0 # Set below after reading the file (so we can automate counting how many delta values there are)
 
-minFieldWidth = 30 # The minimum width of a printed field (including adding spaces if necessary)
+minFieldWidth = min_field_width() # The minimum width of a printed field (including adding spaces if necessary)
 
 to_modify_modelInp_values = True # Set this to True if you want to modify model.inp values using the below array 
 reset_modelInp = True # If this is true, model.inp will be reset to default values 

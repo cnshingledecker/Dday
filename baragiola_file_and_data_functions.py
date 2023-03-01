@@ -1,6 +1,13 @@
 def modelCSVFileName():
     return "./csv/bO3.csv"
 
+# For the parallel scripts
+def num_processors_to_use():
+    return 4
+
+def min_field_width():
+    return 30
+
 def serialAllOutputFileName():
     return "resultsSerialAll.txt"
 

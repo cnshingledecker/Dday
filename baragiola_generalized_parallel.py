@@ -2,7 +2,7 @@ import numpy as np
 import csv, itertools, math, os, time
 from exportable_custom_functions import split_list, split_list_chunks, find_nearest_index,is_float, is_int, modify_modelInp_values, get_data_to_modify_modelInp, setup_experimental_data, format_data_with_spaces
 from mpi4py import MPI
-from baragiola_file_and_data_functions import modelCSVFileName, parallelAllOutputForCoreFileName, parallelBestResultsFileName, process_model_data
+from baragiola_file_and_data_functions import modelCSVFileName, min_field_width, num_processors_to_use, parallelAllOutputForCoreFileName, parallelBestResultsFileName, process_model_data
 
 startTime = time.time()
 
@@ -27,7 +27,8 @@ debugModelRunOutputString = "" if debug == False else " > /dev/null" # For the m
 experimental_data = setup_experimental_data() # The experimental data we compare the model to
 num_delta_values = 0 # Set below after reading the file (so we can automate counting how many delta values there are)
 
-minFieldWidth = 30 # The minimum width of a printed field (including adding spaces if necessary)
+minFieldWidth = min_field_width() # The minimum width of a printed field (including adding spaces if necessary)
+num_processors = num_processors_to_use() # IMPORTANT: Need to adjust if running on a different number of processors
 
 # Note: the below code is ran on every core because each core needs the reaction, and reading it on each core means the data from the file doesn't have to be sent to each core
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
@@ -74,7 +75,6 @@ if rank == 0:
     
     fitting_factors = [] # Holds lists (each list is a numpy linspace (converted to a list) that was created using the arguments read in from the csv input file above) 
                          #     and lists for modifying model.inp values  
-    num_processors = 4 # IMPORTANT: Need to adjust if running on a different number of processors
     for vector_args in all_vector_args: # Create numpy linspace out using the parameters in vector_args (read from an input file)
         single_vector_fitting_factors = np.linspace(vector_args[0], vector_args[1], int(vector_args[2])) # Creates numpy linspace of the fitting factors (for the reaction) using arguments peeviously retrieved from the csv file
         single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
