@@ -2,8 +2,14 @@ import numpy as np
 import csv, itertools, math, os, time
 from exportable_custom_functions import split_list, split_list_chunks, find_nearest_index,is_float, is_int, modify_modelInp_values, get_data_to_modify_modelInp, setup_experimental_data, format_data_with_spaces
 from mpi4py import MPI
+from baragiola_file_and_data_functions import modelCSVFileName, parallelTrialNuIonNuSameAllOutputForCoreFileName, parallelTrialNuIonNuSameBestResultsFileName, process_model_data
 
 startTime = time.time()
+
+allResultsForCoreFileName = parallelTrialNuIonNuSameAllOutputForCoreFileName()
+bestResultsFileName = parallelTrialNuIonNuSameBestResultsFileName()
+modelCSVFileString = modelCSVFileName()
+
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
@@ -19,12 +25,11 @@ debug = False # If this is True, debug mode is on, which includes writing the ou
 debugModelRunOutputString = "" if debug == False else " > /dev/null" # For the model runs later in the file
 
 experimental_data = setup_experimental_data() # The experimental data we compare the model to
-initialO2 = 5.7E22
-num_delta_values = 3
+num_delta_values = 0 # Set below after reading the file (so we can automate counting how many delta values there are)
 
 minFieldWidth = 30 # The minimum width of a printed field (including adding spaces if necessary)
 
-# Note: the below code is ran on every core because each core needs the reaction, and reading it on each core means the data from the file doesn't have to be sent to each core
+# Note: the below code is ran on every core because each core needs the reaction and needs the value of num_delta_values, and reading it on each core means the data from the file doesn't have to be sent to each core
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
     for i in range(0, 4): # Skips the first 4 lines of the csv file (lines which are comments)
@@ -41,6 +46,8 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
             else:  # It is text (it is not an index specifying a delta value to choose; because it is text, it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
                 reactions.append(argument) # Note that for each fitting factor combination; fitting_factor_combination[i] is the fitting factor associated with reaction[i]
         all_vector_args.append(args_for_single_linspace)
+
+    num_delta_values = i  # The number of rows is the number of delta values
  
 modified_lines_to_modify_modelInp = [] # Needed by the core with rank 0 but we create it here so we only process the file once
 lines_to_modify_modelInp = get_data_to_modify_modelInp()
@@ -98,7 +105,7 @@ if rank == 0:
     for i in range(0, num_processors): # Create directory for the files for each core, copy into it the files specified in the above array, copy the experimental_data directory into it, and create the results file in each array
         new_dir_name = base_dir_name + str(i)
         os.system("mkdir " + new_dir_name)
-        os.system("touch " + new_dir_name + "/output_file_results") # Create file that each core will write to (will write fitting factors and associated rmsds)
+        os.system("touch " + new_dir_name + "/" + allResultsForCoreFileName) # Create file that each core will write to (will write fitting factors and associated rmsds)
         for file_name in files_to_copy_to_new_dir:
             os.system("cp " + file_name + " " + new_dir_name)
         os.system("cp -R experimental_data " + new_dir_name)
@@ -127,7 +134,7 @@ if rank >= 0:
     fitting_factors_and_least_rmsd = [0] * (len(reactions) + 1 + len(modified_lines_to_modify_modelInp)) # there needs to be 1 spot for the rmsd and len(reactions) spots for the fitting factor for each set of reactions, plus a spot for each of the model.inp lines to modify
     fitting_factors_and_least_rmsd[0] = 1e80 # Initialize the RMSD to a high value so during testing a lower RMSD will likely be found and be saved in the array (along with the fitting factors that produced it)
 
-    results = open(new_dir_name + "/output_file_results",'w')
+    results = open(new_dir_name + "/" + allResultsForCoreFileName,'w')
     for i in range(0, num_mini_chunks_to_recv): # Receive all the mini-chunks
         data = comm.recv(source=0)
         core_fitting_factor_combinations.append(data)
@@ -171,7 +178,7 @@ if rank >= 0:
             # Calculate the RMSD, write it and the parameters that produced it to an output file, 
             #     compare it to the best one found so far, and if it's less, store it and the parameters that produced it
             try: # If the model finished running, the CSV file will exist
-                csv_model_data = open(new_dir_name + '/csv/bO3.csv')
+                csv_model_data = open(new_dir_name + "/" + modelCSVFileString)
                 csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
                 throwAway = next(csv_model_data_reader)
                 csv_model_data_list = list(csv_model_data_reader)
@@ -179,7 +186,7 @@ if rank >= 0:
                     experimentalY = experimental_data["expY"][i]
                     closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
 
-                    modelY = (float(closest_model_values[1]) / initialO2) * 100
+                    modelY = process_model_data(closest_model_values[1])
 
                     deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
                     
@@ -241,7 +248,7 @@ if rank == 0:
             least_rmsd_index = i
     print("The smallest performance metric value and fitting factors that produced it: ")
     print(fitting_factors_and_least_rmsd[least_rmsd_index])
-    results_file = open("resultsGeneralizedParallelTrialNuIonNuSame", 'w')
+    results_file = open(bestResultsFileName, 'w')
 
 
     ion_nu_current_or_done = False

@@ -6,18 +6,21 @@ import numpy as np
 import itertools
 import time
 from exportable_custom_functions import find_nearest_index,is_float, is_int, modify_modelInp_values, get_data_to_modify_modelInp, setup_experimental_data, format_data_with_spaces
+from baragiola_file_and_data_functions import modelCSVFileName, process_model_data, serialAllOutputFileName, serialBestResultsOutputFileName
 
 startTime = time.time()
 
-results = open("resultsFile_2", 'w')
+allResultsFileName = serialAllOutputFileName()
+bestResultsFileName = serialBestResultsOutputFileName()
 
+results = open(allResultsFileName, 'w')
+modelCSVFileString = modelCSVFileName()
 debug = False # If this is True, debug mode is on, which includes writing the output of the model runs to the screen (update this as necessary).
 
 debugModelRunOutputString = "" if debug == False else " > /dev/null" # For the model runs later in the file
 
 experimental_data = setup_experimental_data() # The experimental data we compare the model to
-initialO2 = 5.7E22
-num_delta_values = 3
+num_delta_values = 0 # Set below after reading the file (so we can automate counting how many delta values there are)
 
 minFieldWidth = 30 # The minimum width of a printed field (including adding spaces if necessary)
 
@@ -48,7 +51,7 @@ all_vector_args = [] # Holds a series of arrays (one for each of the linspaces t
 num_modified_fitting_factors = 0
 fitting_factors = [] # Holds arrays containing the fitting_factors for the reactions (each element of the array is a list with the various fitting factors for a reaction)
 
-# Note: the below code is ran on every core because each core needs the reaction, and reading it on each core means the data from the file doesn't have to be sent to each core
+# Note: the below code is ran on every core because each core needs the reaction and needs the value of num_delta_values, and reading it on each core means the data from the file doesn't have to be sent to each core
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
     for i in range(0, 4): # Skips the first 4 lines of the csv file (lines which are comments)
@@ -65,6 +68,8 @@ with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_
             else:  # It is text (it is not an index specifying a delta value to choose; because it is text, it must be the reaction(s) for which the fitting factors are being varied using the linspace created using some of the values in this row)
                 reactions.append(argument) # Note that for each fitting factor combination; fitting_factor_combination[i] is the fitting factor associated with reaction[i]
         all_vector_args.append(args_for_single_linspace)
+
+    num_delta_values = i # The number of rows is the number of delta values
 
 # Holds the least rmsd and the fitting factors that produced it; fitting_factors_and_least_rmsd[0] is the rmsd, 
 #    indices 1 to len(fitting_factors_and_least_rmsd) (inclusive) are the fitting factors that led to that rmsd value
@@ -121,7 +126,7 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     # Calculate the RMSD, write it and the parameters that produced it to an output file, 
     #     compare it to the best one found so far, and if it's less, store it and the parameters that produced it
     try: # If the model finished running, the CSV file will exist
-        csv_model_data = open('./csv/bO3.csv')
+        csv_model_data = open(modelCSVFileString)
         csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
         throwAway = next(csv_model_data_reader)
         csv_model_data_list = list(csv_model_data_reader)
@@ -129,7 +134,7 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
             experimentalY = experimental_data["expY"][i]
             closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
             
-            modelY = (float(closest_model_values[1]) / initialO2) * 100
+            modelY = process_model_data(closest_model_values[1])
 
             deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
             
@@ -173,7 +178,7 @@ results.close()
 
 print("The smallest performance metric value and fitting factors that produced it: ")
 print(fitting_factors_and_least_rmsd)
-results_file = open("resultsGeneralizedSerial", 'w')
+results_file = open(bestResultsFileName, 'w')
 output_string = ""
 for i in range(0, len(reactions)): 
     fitting_factor_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[i+1], precision=20,unique=False)
