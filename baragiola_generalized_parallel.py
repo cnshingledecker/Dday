@@ -14,6 +14,9 @@ base_dir_name = "baragiola_files_core" # The partial name for each directory of 
 to_modify_modelInp_values = True # Set this to True if you want to modify model.inp values using the below array 
 reset_modelInp = True  # If this is true, model.inp will be reset to default values 
                         #     (specified in modelCopy.inp,; model.inp will be overwritten with the contents of this file)
+debug = False # If this is True, debug mode is on, which includes writing the output of the model runs to the screen (update this as necessary).
+
+debugModelRunOutputString = "" if debug == False else " > /dev/null" # For the model runs later in the file
 
 experimental_data = setup_experimental_data() # The experimental data we compare the model to
 initialO2 = 5.7E22
@@ -151,8 +154,8 @@ if rank >= 0:
             infile.close()
             outfile.close()
             print("Running model...core " + str(rank))
-            # Run model, deal with files, and silence output
-            os.system('cd ' + new_dir_name + '; ./run.sh > /dev/null') # Includes a run of monaco (note that what these commands do is temporarily dipping down into the directory of the files for this core and running run.sh); after runnign these commands, the current directory is the same as it was before these commands were run
+            # Run model, deal with files, and silence output if in debug mode
+            os.system('cd ' + new_dir_name + '; ./run.sh' + debugModelRunOutputString) # Includes a run of monaco (note that what these commands do is temporarily dipping down into the directory of the files for this core and running run.sh); after runnign these commands, the current directory is the same as it was before these commands were run
 
             print("Finding RMSD...")  # RMSD is root-mean square deviation
 
@@ -271,7 +274,7 @@ if rank == 0:
         modify_modelInp_values(lines_to_modify_modelInp_local, ".")
 
     print("Running model with best fit parameters...")
-    os.system('./run.sh > /dev/null') # Run model, deal with files, and silence output
+    os.system('./run.sh >' + debugModelRunOutputString) # Run model, deal with files, and silence output if in debug mode
 
     # Create the plot
     os.system("python3 plotting.py")

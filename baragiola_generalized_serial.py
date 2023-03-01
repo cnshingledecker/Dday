@@ -11,6 +11,10 @@ startTime = time.time()
 
 results = open("resultsFile_2", 'w')
 
+debug = False # If this is True, debug mode is on, which includes writing the output of the model runs to the screen (update this as necessary).
+
+debugModelRunOutputString = "" if debug == False else " > /dev/null" # For the model runs later in the file
+
 experimental_data = setup_experimental_data() # The experimental data we compare the model to
 initialO2 = 5.7E22
 num_delta_values = 3
@@ -106,8 +110,8 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
     infile.close()
     outfile.close()
     print("Running model...")
-    # Run model, deal with files, and silence output
-    os.system('./runGeneralization.sh > /dev/null') # Executes a version of run.sh that runs the monaco executable for this generalization (a monaco that uses certain fortran files for this generalization). Does not write output to the terminal.
+    # Run model, deal with files, and silence output if in debug mode
+    os.system('./runGeneralization.sh' + debugModelRunOutputString) # Executes a version of run.sh that runs the monaco executable for this generalization (a monaco that uses certain fortran files for this generalization). Does not write output to the terminal.
     
     print("Finding RMSD...")  # RMSD is root-mean square deviation
 
@@ -211,8 +215,8 @@ if(to_modify_modelInp_values == True):
 
 print(fitting_factors_and_least_rmsd)
 print("Running model with best fit parameters...")
-# Run model, deal with files, and silence output
-os.system('./runGeneralization.sh > /dev/null')
+# Run model, deal with files, and silence output if in debug mode
+os.system('./runGeneralization.sh' + debugModelRunOutputString)
 
 # Create the plot
 os.system("python3 plotting.py")
