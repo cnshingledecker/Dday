@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from cycler import cycler
 from exportable_custom_functions import setup_experimental_data
+from baragiola_file_and_data_functions import process_model_data
 
 # Get ozone from file bO3.csv, do comparison of data based on Dr. Shingledecker email. We only need to compare this data, not anything else 
 #                                                                                      (look at the below code to make sure this is the case).
@@ -63,14 +64,12 @@ os.remove("./bO3_for_dataframe.csv") # Because we no longer need the file
 # model_data_woions = woions_df[['Fluence', 'total_O3', 'total_O2']]
 model_data_wions = wions_df[['Fluence', 'bO3']]
 
-initialO2 = 5.7E22
-
 exp_data = setup_experimental_data()
 
 # model_data_woions["Fluence"] = model_data_woions["Fluence"]
 
 model_data_wions["Fluence"] = model_data_wions["Fluence"]
-model_data_wions["bO3"] = (model_data_wions["bO3"] / initialO2) * 100
+model_data_wions["bO3"] = process_model_data(model_data_wions["bO3"])
 
 # Create figure
 
