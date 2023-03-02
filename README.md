@@ -122,10 +122,10 @@ The following was done for both the generalized and parallel scripts: a custom f
 
 ### Code Examples
 The Baragiola scripts are as follows:
-    - [Original -- `baragiola_optmization.py`](/baragiola_optimization.py)
-    - [Generalized Serial -- `baragiola_generalized_serial.py`](/baragiola_generalized_serial.py)
-    - [Generalized Parallel - `baragiola_generalized_parallel.py`](/baragiola_generalized_parallel.py)
-    - [Generalized Parallel with Keeping Trial Nu and Ion Nu the same - `baragiola_generalized_parallel_trial_nu_ion_nu_same.py`](/baragiola_generalized_parallel_trial_nu_ion_nu_same.py)
+- [Original -- `baragiola_optmization.py`](/baragiola_optimization.py)
+- [Generalized Serial -- `baragiola_generalized_serial.py`](/baragiola_generalized_serial.py)
+- [Generalized Parallel - `baragiola_generalized_parallel.py`](/baragiola_generalized_parallel.py)
+- [Generalized Parallel with Keeping Trial Nu and Ion Nu the same - `baragiola_generalized_parallel_trial_nu_ion_nu_same.py`](/baragiola_generalized_parallel_trial_nu_ion_nu_same.py)
 
     The parallel scripts contain examples of running models in parallel, and all scripts contain examples of running the models and calculating the RMSD for a model run.
 
@@ -154,4 +154,4 @@ When switching the network, make sure to change the files mentioned below as fol
 To test this code, you should make sure that the outputted CSV files are generating the data you think they should, the models are running with minimal errors, and (if you change it) that the code to modify `model.inp` and fitting factor values is working as expected.
 
 ### Credits
-Anton Vasyunin's development of `monaco` and Christopher Shingledecker's work on it are invaluable to this project. Also, Ella Mullikin's writing of the original Baragiola script [`baragiola_optimization.py`](/baragiola_optimization.py) was invaluable to the development of this script. Finally, the advising of especially Dr. Christopher Shingledecker, as well as Dr. Juan Carlos Araque, have helped Daniel Lopez-Sanders work on this project.
+Anton Vasyunin's development of `monaco` and Christopher Shingledecker's work on it are invaluable to this project. Also, Ella Mullikin's writing of the original Baragiola script [`baragiola_optimization.py`](/baragiola_optimization.py) was invaluable to the development of this script. Finally, the advising of especially Dr. Christopher Shingledecker, as well as Dr. Juan Carlos Araque, have advised and assisted Daniel Lopez-Sanders in the completion of the work for this project.
