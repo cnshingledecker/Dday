@@ -1,4 +1,4 @@
-The general structure of a line is: linspace argument, linspace argument, linspace argument, line number in model.inp (indexing starting at 1), the name of the value you wish to overwrite. List the values you want to modify in ascending order (line number in model.inp).
+The general structure of a line is: linspace argument, linspace argument, linspace argument, line number in model.inp (indexing starting at 1), the name of the value you wish to overwrite. List the values you want to modify in ascending order (line number in model.inp). Make sure if you are running the parallel script where TRIAL_NU and ION_NU are the same to put the ranges you want for TRIAL_NU, as the ones for ION_NU will be ignored.
 6,16,5,45,TRIAL_NU
 6,16,5,46,ION_NU   
 1,16,4,47,IONION_NU 
