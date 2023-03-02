@@ -39,7 +39,7 @@ Thus, this current project was intiated to both generalize the previously writte
             - mpi4py (version 3.1.4)
             - numpy (version 1.24.2)
 
-Any used Python packages not installed should be put in this section, as well as in []`requirements.txt`](\requirements.txt).
+Any used Python packages not installed should be put in this section, as well as in [`requirements.txt`](/requirements.txt).
 
 ### Project Information and Features
 Note that monaco reads from certain input files (including reading fitting factors). Thus, when writing a different baragiola_optimization where input files were different that the original, the monaco script that a new version used had to use the files that were different because of differences from the original input files (such as when certain fitting factors were written to files, and other differences).
@@ -81,7 +81,7 @@ The following changes were made in the generalization of the script (see baragio
 
 1. Place the arguments for the numpy linspaces (and the associated reaction) in a csv file, to be read in when the program runs.
     1. This data is in the file `reaction_fitting_factor_vector_arguments.csv`, which is in the directory `reaction_fitting_factor_linspace_args`. This is done because otherwise, the file is deleted when clean.sh is run. The format for this is in that file; do this for each of the reaction rates for which you want to try different values.
-2. Place the arguments for creating numpy linspaces for `model.inp` values that are desired to be changed in the file [`model_inp_values\model_inp_values.csv`](\model_inp_values\model_inp_values.csv). As with the above file, the format for this is in that file; do this for each of the `model.inp` values for which you want to try different values.
+2. Place the arguments for creating numpy linspaces for `model.inp` values that are desired to be changed in the file [`model_inp_values/model_inp_values.csv`](/model_inp_values/model_inp_values.csv). As with the above file, the format for this is in that file; do this for each of the `model.inp` values for which you want to try different values.
 2. Instead of accessing a combination of fitting factors in the innermost loop of 3 nested for loops, generate a Cartesian combination of the linspaces (after converting them to lists), and run the code using only 1 for loop that uses 1 fitting factor combination per iteration of the for loop. **The rest of the script is run the same inside this for loop.**
 3. Note that the experimental file that the experimental data file that the baragiola optimization reads from is in a custom function in `exportable_custom_functions.py`.
 4. The output of the program (fitting factors, their reactions, the model.inp values, and RMSD that they produced, all in a string written to a file) was composed in a different way:
@@ -122,36 +122,36 @@ The following was done for both the generalized and parallel scripts: a custom f
 
 ### Code Examples
 The Baragiola scripts are as follows:
-    - [Original -- `baragiola_optmization.py`](\baragiola_optimization.py)
-    - [Generalized Serial -- `baragiola_generalized_serial.py`](\baragiola_generalized_serial.py)
-    - [Generalized Parallel - `baragiola_generalized_parallel.py`](\baragiola_generalized_parallel.py)
-    - [Generalized Parallel with Keeping Trial Nu and Ion Nu the same - `baragiola_generalized_parallel_trial_nu_ion_nu_same.py`](\baragiola_generalized_parallel_trial_nu_ion_nu_same.py)
+    - [Original -- `baragiola_optmization.py`](/baragiola_optimization.py)
+    - [Generalized Serial -- `baragiola_generalized_serial.py`](/baragiola_generalized_serial.py)
+    - [Generalized Parallel - `baragiola_generalized_parallel.py`](/baragiola_generalized_parallel.py)
+    - [Generalized Parallel with Keeping Trial Nu and Ion Nu the same - `baragiola_generalized_parallel_trial_nu_ion_nu_same.py`](/baragiola_generalized_parallel_trial_nu_ion_nu_same.py)
 
     The parallel scripts contain examples of running models in parallel, and all scripts contain examples of running the models and calculating the RMSD for a model run.
 
 ### Installation
-To install the software for this project, make sure to clone the code off of GitHub into a Linux environment (Ubuntu was used for the development of this software). Make sure Python 3 is installed (Python 3.8.10 was used to develop this project, so at least that is safe). Make sure to install the packages listed in the [Technology and Software Used](#technology-and-software-used) section of this documentation, which for the Python ones can be done with the [`requirements.txt`](\requirements.txt) file.
+To install the software for this project, make sure to clone the code off of GitHub into a Linux environment (Ubuntu was used for the development of this software). Make sure Python 3 is installed (Python 3.8.10 was used to develop this project, so at least that is safe). Make sure to install the packages listed in the [Technology and Software Used](#technology-and-software-used) section of this documentation, which for the Python ones can be done with the [`requirements.txt`](/requirements.txt) file.
 
 ### Making Changes
 
 When switching the network, make sure to change the files mentioned below as follows. You may need to change them as necessary throughout your work. 
-- [`baragiola_file_and_data_functions.py`](\baragiola_file_and_data_functions.py)
+- [`baragiola_file_and_data_functions.py`](/baragiola_file_and_data_functions.py)
     - Make sure to change the names of the output files for the different versions of the generalized script as desired.
     - Set the minimum field width (when writing `model.inp` values, fitting factors, and the `RMSD` to a file) in the body of that function.
     - Rewrite the definition of the `process_model_data` function so it formats the string data outputted by the model (the dependent variable) so it is the same format as the experimental data, which is in the `exportable_custom_functions.py` file.
-- [`model_inp_values.csv`](\model_inp_values\model_inp_values.csv)
-    - If you wish to modify values in `model.inp` to optimize them (by trying out ranges of values, similar to modifying the delta values for the reaction rates), edit the file `model_inp_values\model_inp_values.csv` according to the rules in there, and make sure to set the variable `to_modify_modelInp_values` to `True` if you want to test out the different `model.inp` values specified in the file. If you don't want the contents of that file to be read (whether it contains data for modifying lines or not), set `to_modify_modelInp_values` to `False`. 
-- [`reaction_fitting_factor_linspace_args\reaction_fitting_factor_linspace_args.csv`](\reaction_fitting_factor_linspace_args\reaction_fitting_factor_linspace_args.csv)
+- [`model_inp_values/model_inp_values.csv`](/model_inp_values/model_inp_values.csv)
+    - If you wish to modify values in `model.inp` to optimize them (by trying out ranges of values, similar to modifying the delta values for the reaction rates), edit the file `model_inp_values/model_inp_values.csv` according to the rules in there, and make sure to set the variable `to_modify_modelInp_values` to `True` if you want to test out the different `model.inp` values specified in the file. If you don't want the contents of that file to be read (whether it contains data for modifying lines or not), set `to_modify_modelInp_values` to `False`. 
+- [`reaction_fitting_factor_linspace_args/reaction_fitting_factor_linspace_args.csv`](/reaction_fitting_factor_linspace_args/reaction_fitting_factor_linspace_args.csv)
     - Make sure to put in one line per reaction rate for which you want to try a range of values. The rules for how to format this are in that file.
-- [`exportable_custom_functions.py`](\exportable_custom_functions.py)
+- [`exportable_custom_functions.py`](/exportable_custom_functions.py)
     - You must change the `setup_experimental_data` function--put your experimental data in there; keep the names `expX` (independent variable) and `expY` (dependent variable).
-- [`model.inp`](\model.inp)
+- [`model.inp`](/model.inp)
     - Make sure to set the initial values as desired.
-- [`plotting.py`](\plotting.py)
+- [`plotting.py`](/plotting.py)
     - Make sure to change the `w_ions_version` and `w_ions_modified_version` declaration lines to reference the correct output file for the model data. Also, make sure to change any other lines that reference the output file species name, and don't forget to change the axis titles, axis ranges, and the plot title as necessary.
 
 ### Tests
 To test this code, you should make sure that the outputted CSV files are generating the data you think they should, the models are running with minimal errors, and (if you change it) that the code to modify `model.inp` and fitting factor values is working as expected.
 
 ### Credits
-Anton Vasyunin's development of `monaco` and Christopher Shingledecker's work on it are invaluable to this project. Also, Ella Mullikin's writing of the original Baragiola script [`baragiola_optimization.py`](\baragiola_optimization.py) was invaluable to the development of this script. Finally, the advising of especially Dr. Christopher Shingledecker, as well as Dr. Juan Carlos Araque, have helped Daniel Lopez-Sanders work on this project.
+Anton Vasyunin's development of `monaco` and Christopher Shingledecker's work on it are invaluable to this project. Also, Ella Mullikin's writing of the original Baragiola script [`baragiola_optimization.py`](/baragiola_optimization.py) was invaluable to the development of this script. Finally, the advising of especially Dr. Christopher Shingledecker, as well as Dr. Juan Carlos Araque, have helped Daniel Lopez-Sanders work on this project.
