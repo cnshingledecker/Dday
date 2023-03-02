@@ -134,7 +134,7 @@ for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_fa
             experimentalY = experimental_data["expY"][i]
             closest_model_values = csv_model_data_list[find_nearest_index(experimental_data["expX"][i], 0, csv_model_data_list)]
             
-            modelY = process_model_data(closest_model_values[1])
+            modelY = process_model_data(float(closest_model_values[1]))
 
             deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
             

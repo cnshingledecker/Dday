@@ -138,7 +138,7 @@ When switching the network, make sure to change the files mentioned below as fol
 - [`baragiola_file_and_data_functions.py`](/baragiola_file_and_data_functions.py)
     - Make sure to change the names of the output files for the different versions of the generalized script as desired.
     - Set the minimum field width (when writing `model.inp` values, fitting factors, and the `RMSD` to a file) in the body of that function.
-    - Rewrite the definition of the `process_model_data` function so it formats the string data outputted by the model (the dependent variable) so it is the same format as the experimental data, which is in the `exportable_custom_functions.py` file.
+    - Rewrite the definition of the `process_model_data` function so it formats the data outputted by the model (the dependent variable) so it is the same units as the experimental data, which is in the `exportable_custom_functions.py` file.
 - [`model_inp_values/model_inp_values.csv`](/model_inp_values/model_inp_values.csv)
     - If you wish to modify values in `model.inp` to optimize them (by trying out ranges of values, similar to modifying the delta values for the reaction rates), edit the file `model_inp_values/model_inp_values.csv` according to the rules in there, and make sure to set the variable `to_modify_modelInp_values` to `True` if you want to test out the different `model.inp` values specified in the file. If you don't want the contents of that file to be read (whether it contains data for modifying lines or not), set `to_modify_modelInp_values` to `False`. 
 - [`reaction_fitting_factor_linspace_args/reaction_fitting_factor_linspace_args.csv`](/reaction_fitting_factor_linspace_args/reaction_fitting_factor_linspace_args.csv)

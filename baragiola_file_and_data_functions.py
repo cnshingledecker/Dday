@@ -28,4 +28,4 @@ def parallelTrialNuIonNuSameBestResultsFileName():
 
 def process_model_data(data):
     initialO2 = 5.7E22
-    return (float(data) / initialO2) * 100
+    return (data / initialO2) * 100
