@@ -44,6 +44,8 @@ Any used Python packages not installed should be put in this section, as well as
 ### Project Information and Features
 Note that monaco reads from certain input files (including reading fitting factors). Thus, when writing a different baragiola_optimization where input files were different that the original, the monaco script that a new version used had to use the files that were different because of differences from the original input files (such as when certain fitting factors were written to files, and other differences).
 
+There are two Python functions that create progress Bash scripts in [`baragiola_file_and_data_functions.py`](/baragiola_file_and_data_functions.py), `serialProgressShellScriptGeneration` and `parallelProgressShellScriptGeneration`; both functions give that file a name of `baragiolaProgress.sh`. Run this while you are running one of the Baragiola scripts to see its progress (number and percent of simulations ran), as well as when you started the run of the Baragiola script.
+
 There are three versions of this generalized script:
 1. Serial, where only one model can be run at a time.
 2. Parallel, where up to the number of cores on the machine can be running at a time.
@@ -130,7 +132,7 @@ The Baragiola scripts are as follows:
     The parallel scripts contain examples of running models in parallel, and all scripts contain examples of running the models and calculating the RMSD for a model run.
 
 ### Installation
-To install the software for this project, make sure to clone the code off of GitHub into a Linux environment (Ubuntu was used for the development of this software). Make sure Python 3 is installed (Python 3.8.10 was used to develop this project, so at least that is safe). Make sure to install the packages listed in the [Technology and Software Used](#technology-and-software-used) section of this documentation, which for the Python ones can be done with the [`requirements.txt`](/requirements.txt) file.
+To install the software for this project, make sure to clone the code off of GitHub into a Linux environment (Ubuntu was used for the development of this software). Make sure Python 3 is installed (Python 3.8.10 was used to develop this project, so at least that is safe). Make sure to install the packages listed in the [Technology and Software Used](#technology-and-software-used) section of this documentation, which for the Python ones can be done with the [`requirements.txt`](/requirements.txt) file. Make sure to change the time zone of the project in the two Python functions that create progress Bash scripts in [`baragiola_file_and_data_functions.py`](/baragiola_file_and_data_functions.py), `serialProgressShellScriptGeneration` and `parallelProgressShellScriptGeneration` to the desired timezone (by default, it is "America/Chicago").
 
 ### Making Changes
 
