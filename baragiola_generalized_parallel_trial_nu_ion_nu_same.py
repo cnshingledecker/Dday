@@ -2,7 +2,7 @@ import numpy as np
 import csv, itertools, math, os, time
 from exportable_custom_functions import split_list, split_list_chunks, find_nearest_index,is_float, is_int, modify_modelInp_values, get_data_to_modify_modelInp, setup_experimental_data, format_data_with_spaces
 from mpi4py import MPI
-from baragiola_file_and_data_functions import modelCSVFileName, min_field_width, num_processors_to_use, parallelTrialNuIonNuSameAllOutputForCoreFileName, parallelTrialNuIonNuSameBestResultsFileName, process_model_data
+from baragiola_file_and_data_functions import modelCSVFileName, min_field_width, num_processors_to_use, parallelTrialNuIonNuSameAllOutputForCoreFileName, parallelTrialNuIonNuSameBestResultsFileName, parallelProgressShellScriptGeneration, process_model_data
 
 startTime = time.time()
 
@@ -93,6 +93,10 @@ if rank == 0:
                                                                          #    n lists has k elements (where k is the number of fitting factors (num_modified_fitting_factors) plus the number of model.inp values we want to modify)
 
     all_fitting_factor_combinations = [list(fitting_factor_combination) for fitting_factor_combination in all_fitting_factor_combinations]
+
+    # Create the shell script for checking the progress of the run of this script
+    parallelProgressShellScriptGeneration(numFittingFactorCombinations = len(all_fitting_factor_combinations), original = False)
+
     all_fitting_factor_combinations = split_list(all_fitting_factor_combinations, num_processors) # Splits the list into 'num_processors' chunks
     all_fitting_factor_combinations = split_list_chunks(all_fitting_factor_combinations, 15) # Splits each of the list chunks into mini-chunks of up to size 15 (creates as many with size 15 as possible)
                                                                                               # Note: Sending a mini-chunk on my (Daniel's) machine does not arrive at the destination (the program just sits and the mini-chunk

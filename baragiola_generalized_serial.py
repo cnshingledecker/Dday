@@ -6,7 +6,7 @@ import numpy as np
 import itertools
 import time
 from exportable_custom_functions import find_nearest_index,is_float, is_int, modify_modelInp_values, get_data_to_modify_modelInp, setup_experimental_data, format_data_with_spaces
-from baragiola_file_and_data_functions import modelCSVFileName, min_field_width, process_model_data, serialAllOutputFileName, serialBestResultsOutputFileName
+from baragiola_file_and_data_functions import modelCSVFileName, min_field_width, process_model_data, serialProgressShellScriptGeneration, serialAllOutputFileName, serialBestResultsOutputFileName
 
 startTime = time.time()
 
@@ -91,6 +91,9 @@ if(to_modify_modelInp_values == True):
 all_fitting_factor_combinations = itertools.product(*fitting_factors)    # Creates all possible combinations of fitting factor values from the previously created lists (created in the 'for vector args in all_vector_args' for loop)
                                                                          #    Note that this creates a list of n lists (where n is the product of the number of values for each list of fitting factors), and each of these 
                                                                          #    n lists has k + d elements (where k is the number of fitting factors (num_modified_fitting_factors), and d is the number of values in model.inp that are modified)
+
+all_fitting_factor_combinations = list(all_fitting_factor_combinations)
+serialProgressShellScriptGeneration(len(all_fitting_factor_combinations)) # Creates shell script in this directory to check the progress of a Baragiola script run in the middle of it
 
 for fitting_factor_combination in all_fitting_factor_combinations:  # fitting_factor_combinations[n] is a value from the (n + 1)th np.linspace created 
     if(to_modify_modelInp_values == True):
