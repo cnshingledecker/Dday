@@ -21,8 +21,8 @@ approxNumSimulationsLeft=$(expr {numFittingFactorCombinations} - $approxNumSimul
 # The operand on the right is for the number of simulations being run divided by 100, if it is not an integer, the nearest integer to it
 percentOfSimulationsDone=$(expr $approxNumSimulationsDone / {numFittingFactorCombinationsDivided})
 
-echo "Approximate Number of Simulations Done: $approxNumSimulationsDone of {numFittingFactorCombinations}."
-echo "Percent of Simulations Done: $percentOfSimulationsDone." 
+echo "Approximate Number of Simulations Done: $approxNumSimulationsDone of {numFittingFactorCombinations}"
+echo "Percent of Simulations Done: $percentOfSimulationsDone" 
 
 startTime={int(time.time())}
 
@@ -65,8 +65,8 @@ approxNumSimulationsLeft=$(expr {numFittingFactorCombinations} - $approxNumSimul
 # The operand on the right is for the number of simulations being run divided by 100, if it is not an integer, the nearest integer to it
 percentOfSimulationsDone=$(expr $approxNumSimulationsDone / {numFittingFactorCombinationsDivided})
 
-echo "Approximate Number of Simulations Done: $approxNumSimulationsDone of {numFittingFactorCombinations}."
-echo "Percent of Simulations Done: $percentOfSimulationsDone." 
+echo "Approximate Number of Simulations Done: $approxNumSimulationsDone of {numFittingFactorCombinations}"
+echo "Percent of Simulations Done: $percentOfSimulationsDone" 
 
 startTime={int(time.time())}
 
