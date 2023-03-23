@@ -54,7 +54,7 @@ core3numLines=`wc --lines < "$core3filepath"`
 resultsFilepath=$(pwd)
 resultsFilepathFormatted="$resultsFilepath/{serialAllOutputFileName()}"
 
-totalNumLines=`wc --lines < "$resultsFilepathFormatted"`
+totalNumLines=$(expr $core0numLines + $core1numLines + $core2numLines + $core3numLines)
 
 linesPerSimulation=8
 approxNumSimulationsDone=$(expr $totalNumLines / $linesPerSimulation)
