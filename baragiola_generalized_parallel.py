@@ -285,7 +285,7 @@ if rank == 0:
         modify_modelInp_values(lines_to_modify_modelInp_local, ".")
 
     print("Running model with best fit parameters...")
-    os.system('./run.sh >' + debugModelRunOutputString) # Run model, deal with files, and silence output if in debug mode
+    os.system('./run.sh ' + debugModelRunOutputString) # Run model, deal with files, and silence output if in debug mode
 
     # Create the plot
     os.system("python3 plotting.py")
