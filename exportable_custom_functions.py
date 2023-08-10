@@ -2,6 +2,8 @@ import math, os, csv
 import numpy as np
 import pandas as pd
 
+from baragiola_file_and_data_functions import getFlux
+
 def is_int(val):
     try:
         int(val)
@@ -144,8 +146,6 @@ def modify_modelInp_values(linesToModify, directory): # required format of lines
     os.system("rm " + directoryModelTempInpPath)
 
 def setup_experimental_data():
-    flux = 2.33e14
-
     exp_data_local = pd.DataFrame({'expX': [4.709604,
                                     13.496563,
                                     50.07993,
@@ -162,7 +162,7 @@ def setup_experimental_data():
 
     # Scale modifications
     exp_data_local["expY"] = exp_data_local["expY"] * (24 / 1.6182984) # Scaling factor used in figure_2_DO_NOT_MODIFY.pro.
-    exp_data_local["expX"] = exp_data_local["expX"] * flux # (Old comment: Scaling factor used in figure_2_DO_NOT_MODIFY.pro.) Scaling factor now is different (flux value, which is different) 
+    exp_data_local["expX"] = exp_data_local["expX"] * getFlux() # (Old comment: Scaling factor used in figure_2_DO_NOT_MODIFY.pro.) Scaling factor now is different (flux value, which is different) 
                                                                                                                     # as of 22 November 2022.
 
     return exp_data_local
