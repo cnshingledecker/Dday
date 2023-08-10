@@ -1,5 +1,11 @@
 import math, time
 
+def getInitialO2():
+    return 5.7E22
+
+def getFlux():
+    return 2.33e14
+
 def modelCSVFileName():
     return "./csv/bO3.csv"
 
@@ -102,8 +108,7 @@ def parallelTrialNuIonNuSameBestResultsFileName():
     return "resultsParallelTrialNuIonNuSameBest.txt"
 
 def process_model_data(data):
-    initialO2 = 5.7E22
-    return (data / initialO2) * 100
+    return (data / getInitialO2()) * 100
 
 def projectTimeZone():
     return "America/Chicago"
