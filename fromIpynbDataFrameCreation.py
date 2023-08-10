@@ -29,7 +29,7 @@ ion_list = ['bO+', 'bO2+', 'bO3+'] # for testing code
 # This is the filepath from the current directory to the directory where your data is stored. This directory should contain the subdirectories: csv, analytics, pickle_dataframes
 
 # %%
-version = 'w_ions/22_02_07_fit'
+version = '.'
 
 # %% [markdown]
 # ## Importing csv files

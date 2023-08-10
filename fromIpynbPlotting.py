@@ -12,6 +12,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from cycler import cycler
+from exportable_custom_functions import setup_experimental_data
+from baragiola_file_and_data_functions import getFlux, getInitialO2, process_model_data
+
+onlyPaperPlots = True
 
 # %%
 #Set custom default colors
@@ -38,163 +42,26 @@ plt.rcParams['axes.prop_cycle'] = custom_cycler # Sets plot color cycler to the 
 # %% [markdown]
 # ## Define filepath
 # 
-# This is the filepath from the current directory to the directory where your data is stored. This directory should contain the subdirectories: csv, analytics, pickle_dataframes, figures
+# This is the filepath from the current directory to the directory where your data is stored. This directory should contain the subdirectories: csv, analytics, pickle_dataframes, paper_figures
 
 # %%
 # Define filepath
 wo_ions_version = 'wo_ions/old_output' # Mullikin results
-w_ions_version = 'w_ions/22_01_07_fit'
+w_ions_version = '.'
 
 # %% [markdown]
 # ## 2test_fig2.pro: 
 # 
 # This code is for the model and network used in my thesis
 # 
-# ```
-# f2data = READ_CSV('csv\bO3.csv',N_TABLE_HEADER=1)
-# 
-# initialO2 = 2*5.7E22
-# flux = 2.33e14
-# 
-# set_plot, 'WIN'
-# 
-# expX = [4.709604,$
-#   13.496563,$
-#   50.07993,$
-#   146.55681,$
-#   465.09692,$
-#   2581.1648]
-# 
-# expY = [0.055385794,$
-#   0.15238622,$
-#   0.52023816,$
-#   1.062651,$
-#   1.4836915,$
-#   1.6182984]
-# 
-# expY = expY*15
-# expX = expX*flux
-# 
-# f2data.field1 = f2data.field1
-# f2data.field2 = 3*(f2data.field2/initialO2)*100
-# 
-# ;DEVICE, FILENAME='f2_newcode_newnetwork.eps', DECOMPOSED=1, /ENCAPSULATED
-# DEVICE, DECOMPOSED=1
-# 
-# plot, f2data.field1,$
-#   f2data.field2,$
-#   /XLOG,$
-#   /YLOG,$
-#   XRANGE=[1e15,1e18],$
-#   YRANGE=[0.8,30],$
-#   xtitle='Fluence (photons/cm!E2!N)',$
-#   ytitle='[O!D3!N]/[initial O!D2!N] x 100 %',$
-#   ;      title='O!D3!N Production During O!D2!N Irradiation',$
-#   ystyle=1,$
-#   charsize=1.8,$
-#   charthick=3,$
-#   xthick=3,$
-#   ythick=3,$
-#   /NODATA
-# 
-# loadct, 40
-# 
-# oplot, expX,$
-#   expY,$
-#   PSYM=-5,$
-#   COLOR=250,$
-#   thick=5,$
-#   symsize=1.5
-# 
-# oplot, f2data.field1,$
-#   f2data.field2,$
-#   COLOR=100,$
-#   thick=5
-# 
-# legend,['Experiment','Model'],psym=[-5,0],number=1,/bottom,/right,colors=[250,100],box=0,charsize=1.8,charthick=3,thick=5,pspacing=1          ; plot two symbols, not one
-# 
-# ;device, /close
-# 
-# END
-# ```
+# See the Jupyter notebook file for the code if needed
 
 # %% [markdown]
 # ## figure_2_DO_NOT_MODIFY.pro
 # 
 # This code is for the model and network published in Mullikin et al.
 # 
-# ```
-# time = bO3.field1
-# totalO3 = bO3.field2 + gO3.field2
-# totalO2 = bO2.field2 + gO2.field2
-# 
-# last = N_elements(totalO3)
-# 
-# flux = 2.33e14
-# 
-# set_plot, 'WIN'
-# 
-# O3t = [4.709604,$
-# 13.496563,$
-# 50.07993,$
-# 146.55681,$
-# 465.09692,$
-# 2581.1648]
-# 
-# O3 = [0.055385794,$
-# 0.15238622,$
-# 0.52023816,$
-# 1.062651,$
-# 1.4836915,$
-# 1.6182984]
-# 
-# O3 = O3*(24.0/1.6182984)
-# O3t = O3t*2.2E14
-# 
-# 
-# ;DEVICE, FILENAME='f2.eps', DECOMPOSED=0, /ENCAPSULATED
-# DEVICE, DECOMPOSED=1
-# 
-# 
-# plot, time*flux,$
-#  ;     100*(totalO3[63:*]*(0.24/totalO3[last-1])),$
-#       100*(totalO3/totalO2[0]),$
-#       /XLOG,$
-#       /YLOG,$
-#       XRANGE=[1e15,1e18],$
-#       YRANGE=[0.8,30],$
-#       xtitle='Fluence (photons/cm!E2!N)',$
-#       ytitle='[O!D3!N]/[initial O!D2!N] x 100 %',$
-# ;      title='O!D3!N Production During O!D2!N Irradiation',$
-#       ystyle=1,$
-#       charsize=1.8,$
-#       charthick=3,$
-#       xthick=3,$
-#       ythick=3,$
-#       /NODATA
-# 
-# loadct, 40
-# 
-#       
-# oplot, O3t,$
-#        O3,$
-#        PSYM=-5,$
-#        COLOR=250,$
-#        thick=5,$
-#        symsize=1.5
-#        
-# oplot, time*flux,$
-# ;       100*(totalO3[63:*]*(0.24/totalO3[last-1])),$
-#        100*(totalO3/totalO2[0]),$
-#        COLOR=100,$
-#        thick=5
-# 
-# legend,['Experiment','Model'],psym=[-5,0],number=1,/bottom,/right,colors=[250,100],box=0,charsize=1.8,charthick=3,thick=5,pspacing=1          ; plot two symbols, not one
-#       
-# ;device, /close
-# 
-# END
-# ```
+# See the Jupyter notebook file for the code if needed
 
 # %% [markdown]
 # ## Plotting comparison to Gerakines et al.
@@ -212,8 +79,8 @@ wions_df = pd.read_pickle(w_ions_version + '/pickle_dataframes/csv_dataframe.pkl
 # ICE_DENSITY = 5.7e22 # molecules/cm3 Called RHO_ICE in model.inp
 # PHI_EXP = 1.0e15
 
-initialO2 = 2*5.7E22
-flux = 2.33e14
+initialO2 = getInitialO2() # FLUX WAS TWICE THE VALUE USED FOR THE OTHER PAPER PLOTS. NOTE THIS IN THE EMAIL TO DR. SHINGLEDECKER.
+flux = getFlux()
 
 # Calculate initial O2 
 # initialO2 = ICE_DENSITY * ICE_AREA * ICE_THICK # # of initial O2 molecules
@@ -223,31 +90,21 @@ flux = 2.33e14
 model_data_woions = woions_df[['Fluence', 'total_O3', 'total_O2']]
 model_data_wions = wions_df[['Fluence', 'bO3']]
 
-exp_data = pd.DataFrame({'expX': [4.709604,
-                                      13.496563,
-                                      50.07993,
-                                      146.55681,
-                                      465.09692,
-                                      2581.1648],
-                             'expY': [0.055385794,
-                                      0.15238622,
-                                      0.52023816,
-                                      1.062651,
-                                      1.4836915,
-                                      1.6182984]})
-
 # Scale modifications
 # exp_data["expY"] = exp_data["expY"] * 15 # 15 is an artifact of the digitization of the gerakines data. I can confirm with the plot in the paper that the dta is plotted correctly.
 # exp_data["expX"] = exp_data["expX"] * flux
-exp_data["expY"] = exp_data["expY"] * (24.0 / 1.6182984) # Scaling factor used in figure_2_DO_NOT_MODIFY.pro
-exp_data["expX"] = exp_data["expX"] * 2.2E14 # Scaling factor used in figure_2_DO_NOT_MODIFY.pro
+
+# Note: flux from the Jupyter notebook file is 2.2e14, but the one used for the model runs for the Ion ice paper 
+#     (which is being used below) is 2.33e14. 
+#     MAKE SURE TO ASK IF IT'S OKAY IN THE EMAIL TO DR. SHINGLEDECKER.
+exp_data = setup_experimental_data()
 
 model_data_woions["Fluence"] = model_data_woions["Fluence"]
 #model_data_woions["bO3"] = 3 * (model_data_woions["bO3"] / initialO2) * 100
 model_data_woions["bO3"] = (model_data_woions['total_O3'] / model_data_woions.at[0,'total_O2']) * 100
 
 model_data_wions["Fluence"] = model_data_wions["Fluence"]
-model_data_wions["bO3"] = 3 * (model_data_wions["bO3"] / initialO2) * 100
+model_data_wions["bO3"] = process_model_data(model_data_wions["bO3"]) # See email from Kristen for the reason the bO3 was multiplied by 3
 
 #model_data.head()
 # Create figure
@@ -267,46 +124,18 @@ plt.ylim([0.7,30])
 
 plt.xlabel(r'Fluence $\left( \frac{particles}{cm^2} \right)$')
 plt.ylabel(r'$[O_3]/[O_2]_{initial} \times 100 \%$')
-plt.title(r'$O_3$ Production During $O_2$ Irradiation',
-          fontsize=16)
+plt.title(r'$O_3$ Production During $O_2$ Irradiation', fontsize=16)
 
-# Show plot
-# plt.savefig(w_ions_version + '/figures/f2.png')
-# plt.savefig(w_ions_version + '/figures/f2.pgf')
-# plt.savefig(w_ions_version + '/figures/f2.eps')
-plt.show()
+# Save plot (of the abundance of O3 relative to the initial O2 vs. fluence)
+plt.savefig(w_ions_version + '/paper_figures/O3AbundanceVsFluence.jpg')
+
 
 # %% [markdown]
 # ## Percent Ion
 # 
 # Plots the percentage of ionic species in the model with respect to fluence
+#     This plot wasn't needed for the ion ice paper, so the code was removed (still in the )
 
-# %%
-# Load in data
-csv_df = pd.read_pickle(w_ions_version + '/pickle_dataframes/csv_dataframe.pkl')
-
-# Create figure
-#fig = plt.figure()
-
-# Add the data
-csv_df.plot(x = 'Fluence', y = 'Percent Ion', legend=None)
-
-# Add plot elements 
-plt.xscale("log")
-#plt.yscale("log")
-
-# plt.xlim([1e14,1e17])
-# #plt.ylim([0.8,30])
-
-plt.xlabel(r'Fluence $\left( \frac{particles}{cm^2} \right)$')
-plt.ylabel(r'Percent Ionic Volume Density')
-plt.title(r"Percent ion", fontsize=16)
-
-# Show and save plot
-# plt.savefig(w_ions_version + '/figures/percent_ion.png')
-# plt.savefig(w_ions_version + '/figures/percent_ion.pgf')
-# plt.savefig(w_ions_version + '/figures/percent_ion.eps')
-plt.show()
 
 # %% [markdown]
 # ## Ion Abundances
@@ -316,7 +145,7 @@ plt.show()
 # %%
 # Load in data
 csv_df = pd.read_pickle(w_ions_version + '/pickle_dataframes/csv_dataframe.pkl')
-initial_O2 = csv_df.at[0,'bO2']
+initial_O2 = getInitialO2()
 
 # Create figure
 #fig = plt.figure(figsize=[12.8, 9.6])
@@ -329,7 +158,7 @@ plot_ion_labels = [r'Ion Sum', r'$e^-$', r'$O^+$', r'$O^-$', r'$O_2^+$', r'$O_2^
 i=0
 while i < len(plot_ion_list):
     #csv_df[plot_ion_list[i]] = csv_df[plot_ion_list[i]] / csv_df['Total volume density']
-    csv_df[plot_ion_list[i]] = csv_df[plot_ion_list[i]] * 100 / initial_O2
+    csv_df[plot_ion_list[i]] = process_model_data(csv_df[plot_ion_list[i]])
     i += 1
 
 # Add the data
@@ -346,14 +175,10 @@ plt.xscale("log")
 
 plt.xlabel(r'Fluence $\left( \frac{particles}{cm^2} \right)$')
 plt.ylabel(r'$[A]/[O_2]_{initial} \times 100 \%$')
-plt.title(r'Ion Abundances in the Bulk over the Model Time',
-          fontsize=16)
+plt.title(r'Ion Abundances in the Bulk over the Model Time',fontsize=16)
 
 # Show plot
-# plt.savefig(w_ions_version + '/figures/ion_abundance.png')
-# plt.savefig(w_ions_version + '/figures/ion_abundance.pgf')
-#plt.savefig(w_ions_version + '/figures/ion_abundance.eps')
-plt.show()
+plt.savefig(w_ions_version + '/paper_figures/IonAbundance.jpg')
 
 # %% [markdown]
 # ## Reaction Contribution
@@ -540,7 +365,7 @@ Rxn_label.at[185,'Type'] = 3 #
 # Load in data
 spc_list = ['be-', 'bO', 'bO-', 'bO+', 'bO2', 'bO2-', 'bO2+', 'bO3', 'bO3-', 'bO3+']
 spc_label = [r'$e^-$', r'$O$', r'$O^-$', r'$O^+$', r'$O_2$', r'$O_2^-$', r'$O_2^+$', r'$O_3$', r'$O_3^-$', r'$O_3^+$']
-flux = 2.33e14 # particles/cm^2 s This is not confirmed!
+flux = getFlux()
 
 i=0
 while i < len(spc_list) :
@@ -613,10 +438,7 @@ while i < len(spc_list) :
     plt.title(r'Reaction Contributions to Rate of Formation of ' + spc_label[i], fontsize=16)
     
     # Save plot
-    # plt.savefig(w_ions_version + '/figures/' + spc_list[i] + '_rxn_contribution.png', bbox_inches='tight')
-    # plt.savefig(w_ions_version + '/figures/' + spc_list[i] + '_rxn_contribution.pgf', bbox_inches='tight')
-    # plt.savefig(w_ions_version + '/figures/' + spc_list[i] + '_rxn_contribution.eps', bbox_inches='tight')
-    plt.show()
+    plt.savefig(w_ions_version + '/paper_figures/' + spc_list[i] + '_rxn_contribution.jpg', bbox_inches='tight')
     
     i += 1
 
@@ -640,7 +462,7 @@ legend_elements = [Line2D([0], [0], color='k', ls='-', label= 'neutral-neutral r
 
 legend = ax.legend(handles=legend_elements, loc='center', framealpha=1, frameon=True)
 
-def export_legend(legend, filename=w_ions_version + '/figures/legend.pgf', expand=[-5,-5,5,5]):
+def export_legend(legend, filename=w_ions_version + '/paper_figures/legend.pgf', expand=[-5,-5,5,5]):
     fig  = legend.figure
     fig.canvas.draw()
     bbox  = legend.get_window_extent()
