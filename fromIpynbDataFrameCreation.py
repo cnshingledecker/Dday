@@ -86,53 +86,7 @@ print(merged_data.head(n=25))
 ## For old code outputs
 ## This is only for the version of the code from the Mullikin paper. 
 
-# import csv
-# import os
-
-# # Change to the list you want the data for
-# wk_lst = all_list_woions
-# #version = 'wo_ions/old_output'
-
-# # Rewrite csv file in order to modify the header, must be done to then read into a dataframe. I used code from  https://stackoverflow.com/questions/16306819/python-edit-csv-headers 
-# i = 0
-# while i < len(wk_lst) :
-#     inputFileName = version + "/csv/" + wk_lst[i] + ".csv"
-#     outputFileName = os.path.splitext(inputFileName)[0] + "_modified.csv"
-    
-#     with open(inputFileName, newline='') as inFile, open(outputFileName, 'w', newline='') as outfile:
-#         r = csv.reader(inFile)
-#         w = csv.writer(outfile)
-        
-#         next(r, None)  # skip the first row from the reader, the old header
-#         # write new header
-#         w.writerow(['Time', wk_lst[i]])
-        
-#         # copy the rest
-#         for row in r:
-#             w.writerow(row)
-        
-#     i += 1
-
-# # read and merge data
-# i=0
-
-# while i < len(wk_lst) :
-#     csv = pd.read_csv(version + "/csv/" + wk_lst[i] + "_modified.csv")
-#     if i == 0:
-#         merged_data = csv
-#     else:
-#         merged_data = merged_data.merge(csv, on=["Time"])
-#     i += 1
-    
-# flux = 2.33e14
-
-# merged_data['Fluence'] = merged_data['Time'] * flux
-# merged_data['total_O2'] = merged_data['bO2'] + merged_data['gO2']
-# merged_data['total_O3'] = merged_data['bO3'] + merged_data['gO3']
-    
-# # Save dataframe
-# merged_data.to_pickle(version + '/pickle_dataframes/csv_dataframe.pkl')
-# print(merged_data.head(n=25))
+# Code is in the ipynb file if needed
 
 # %% [markdown]
 # ## Importing and formatting analytics files
@@ -143,7 +97,8 @@ print(merged_data.head(n=25))
 # Defining values needed to read the analytics files
 # with ions
 ana_list = ['be-', 'bO', 'bO-', 'bO+', 'bO2', 'bO2-', 'bO2+', 'bO3', 'bO3-', 'bO3+']
-num_rxn = [9, 24, 13, 11, 36, 14, 15, 15, 13, 15]
+num_rxn = [  9,     24,   13,    11,    35,    14,     15,     14,     13,    15]
+
 
 # #w/o ions
 # ana_list = ['bO', 'bO2', 'bO3']
@@ -223,7 +178,7 @@ while i < len(ana_list) :
             rxn_data = rxn_data.merge(temp2_df, on=["Fluence"])
         
         j += 1
-        
+
     #Drop all reactions that contribute less than 5% to the rate at all times
     k=0        
     while k < len(plot_rxn_list):
@@ -243,8 +198,3 @@ while i < len(ana_list) :
     
 #rxn_data
 #print(plot_rxn_list)
-
-# %%
-
-
-

@@ -15,8 +15,6 @@ from cycler import cycler
 from exportable_custom_functions import setup_experimental_data
 from baragiola_file_and_data_functions import getFlux, getInitialO2, process_model_data
 
-onlyPaperPlots = True
-
 # %%
 #Set custom default colors
 custom_cycler = (cycler(color=['#098ec3', #blue
@@ -79,7 +77,7 @@ wions_df = pd.read_pickle(w_ions_version + '/pickle_dataframes/csv_dataframe.pkl
 # ICE_DENSITY = 5.7e22 # molecules/cm3 Called RHO_ICE in model.inp
 # PHI_EXP = 1.0e15
 
-initialO2 = getInitialO2() # FLUX WAS TWICE THE VALUE USED FOR THE OTHER PAPER PLOTS. NOTE THIS IN THE EMAIL TO DR. SHINGLEDECKER.
+initialO2 = getInitialO2()
 flux = getFlux()
 
 # Calculate initial O2 
@@ -94,17 +92,18 @@ model_data_wions = wions_df[['Fluence', 'bO3']]
 # exp_data["expY"] = exp_data["expY"] * 15 # 15 is an artifact of the digitization of the gerakines data. I can confirm with the plot in the paper that the dta is plotted correctly.
 # exp_data["expX"] = exp_data["expX"] * flux
 
-# Note: flux from the Jupyter notebook file is 2.2e14, but the one used for the model runs for the Ion ice paper 
-#     (which is being used below) is 2.33e14. 
-#     MAKE SURE TO ASK IF IT'S OKAY IN THE EMAIL TO DR. SHINGLEDECKER.
 exp_data = setup_experimental_data()
 
 model_data_woions["Fluence"] = model_data_woions["Fluence"]
 #model_data_woions["bO3"] = 3 * (model_data_woions["bO3"] / initialO2) * 100
 model_data_woions["bO3"] = (model_data_woions['total_O3'] / model_data_woions.at[0,'total_O2']) * 100
 
+# Drop all zero rows
+indexZero = model_data_wions[ (model_data_wions['Fluence'] == 0.0) & (model_data_wions['bO3'] == 0.0) ].index
+model_data_wions.drop(indexZero, inplace=True)
+
 model_data_wions["Fluence"] = model_data_wions["Fluence"]
-model_data_wions["bO3"] = process_model_data(model_data_wions["bO3"]) # See email from Kristen for the reason the bO3 was multiplied by 3
+model_data_wions["bO3"] = process_model_data(model_data_wions["bO3"])
 
 #model_data.head()
 # Create figure
@@ -134,7 +133,7 @@ plt.savefig(w_ions_version + '/paper_figures/O3AbundanceVsFluence.jpg')
 # ## Percent Ion
 # 
 # Plots the percentage of ionic species in the model with respect to fluence
-#     This plot wasn't needed for the ion ice paper, so the code was removed (still in the )
+#     This plot wasn't needed for the ion ice paper, so the code was removed (still in the .ipynb file)
 
 
 # %% [markdown]
@@ -368,7 +367,7 @@ spc_label = [r'$e^-$', r'$O$', r'$O^-$', r'$O^+$', r'$O_2$', r'$O_2^-$', r'$O_2^
 flux = getFlux()
 
 i=0
-while i < len(spc_list) :
+while i < len(spc_list):
     rxn_data = pd.read_pickle(w_ions_version + '/pickle_dataframes/' + spc_list[i]+'_rxn_dataframe.pkl')
     # Get list of reaction numbers
     rxn_list = rxn_data.columns.values.tolist()
@@ -412,6 +411,16 @@ while i < len(spc_list) :
     
     if spc_list[i] == 'bO3' :
         plt.legend(loc='best', bbox_to_anchor=(0, 0.3, 0.5, 0.5))
+
+    if spc_list[i] == 'bO2-':
+        plt.legend(ncol= 3, loc='upper center', bbox_to_anchor=(.5, -.15)) # Below the plot
+
+    if spc_list[i] == 'bO3':
+        plt.legend(ncol= 3, loc='upper center', bbox_to_anchor=(.5, -.15)) # Below the plot
+
+    if spc_list[i] == 'bO3-':
+        plt.legend(ncol= 3, loc='upper center', bbox_to_anchor=(.5, -.15)) # Below the plot
+    
         
 #     if len(rxn_list) > 10 : 
 #         plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
