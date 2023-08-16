@@ -78,6 +78,10 @@ merged_data['Ion volume density'] = merged_data[bulk_ion_list].sum(axis=1)
 merged_data['Total volume density'] = merged_data[bulk_list_2].sum(axis=1)
 merged_data['Percent Ion'] = merged_data['Ion volume density']/merged_data['Total volume density']
 
+# Drop all zero rows
+indexZero = merged_data[(merged_data['Fluence'] == 0.0) & (merged_data['bO3'] == 0.0)].index
+merged_data.drop(indexZero, inplace=True)
+
 # Save dataframe
 merged_data.to_pickle(version + '/pickle_dataframes/csv_dataframe.pkl')
 print(merged_data.head(n=25))

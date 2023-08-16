@@ -98,10 +98,6 @@ model_data_woions["Fluence"] = model_data_woions["Fluence"]
 #model_data_woions["bO3"] = 3 * (model_data_woions["bO3"] / initialO2) * 100
 model_data_woions["bO3"] = (model_data_woions['total_O3'] / model_data_woions.at[0,'total_O2']) * 100
 
-# Drop all zero rows
-indexZero = model_data_wions[ (model_data_wions['Fluence'] == 0.0) & (model_data_wions['bO3'] == 0.0) ].index
-model_data_wions.drop(indexZero, inplace=True)
-
 model_data_wions["Fluence"] = model_data_wions["Fluence"]
 model_data_wions["bO3"] = process_model_data(model_data_wions["bO3"])
 
@@ -188,7 +184,7 @@ plt.savefig(w_ions_version + '/paper_figures/IonAbundance.jpg')
 # Labels for the numberes reactions
 
 # Highest reaction number + 1 in the spc_list[i]_rxn_dataframe.pkl
-last_rxn = 186
+last_rxn = 188
 
 Rxn_label = pd.DataFrame({'Rxn': list(range(0,last_rxn,1)),
                           'Label': [(r'Add reaction ' + str(i)) for i in range(last_rxn)],
@@ -335,28 +331,34 @@ Rxn_label.at[156,'Label'] = r'$O + O_2 \rightarrow O_3^*$' #156
 Rxn_label.at[156,'Type'] = 0 #
 Rxn_label.at[158,'Label'] = r'$O^* \rightarrow O$' #158
 Rxn_label.at[158,'Type'] = 4 #
-Rxn_label.at[159,'Label'] = r'$O_2^* \rightarrow O_2$' #159
+Rxn_label.at[159,'Label'] = r'$O^* \rightarrow O$' #159
 Rxn_label.at[159,'Type'] = 4 #
 Rxn_label.at[160,'Label'] = r'$O_3^* \rightarrow O_3$' #160
 Rxn_label.at[160,'Type'] = 4 #
+Rxn_label.at[162,'Label'] = r'$O_2^* \rightarrow O_2$' #162
+Rxn_label.at[162,'Type'] = 4 #
+Rxn_label.at[165,'Label'] = r'$O_3^* \rightarrow O_3$' #165
+Rxn_label.at[165,'Type'] = 4 #
 Rxn_label.at[169,'Label'] = r'$O_2 \rightarrow 2 O$' #169
 Rxn_label.at[169,'Type'] = 3 #
-Rxn_label.at[171,'Label'] = r'$O_2 \rightarrow O^+ + O^-$' #171
+Rxn_label.at[171,'Label'] = r'$O_2 \rightarrow O + O$' #171
 Rxn_label.at[171,'Type'] = 3 #
-Rxn_label.at[173,'Label'] = r'$O_2 \rightarrow O_2^*$' #173
+Rxn_label.at[173,'Label'] = r'$O_2 \rightarrow O^+ + O^-$' #173
 Rxn_label.at[173,'Type'] = 3 #
-Rxn_label.at[175,'Label'] = r'$O_2 \rightarrow 2 O^*$' #175
+Rxn_label.at[175,'Label'] = r'$O_2 \rightarrow O_2^*$' #175
 Rxn_label.at[175,'Type'] = 3 #
-Rxn_label.at[177,'Label'] = r'$O_2 \rightarrow O_2^+ + e^-$' #177
+Rxn_label.at[177,'Label'] = r'$O_2 \rightarrow 2 O^*$' #177
 Rxn_label.at[177,'Type'] = 3 #
-Rxn_label.at[179,'Label'] = r'$O_3 \rightarrow O^+ + O_2^-$' #179
+Rxn_label.at[179,'Label'] = r'$O_2 \rightarrow O_2^+ + e^-$' #179
 Rxn_label.at[179,'Type'] = 3 #
-Rxn_label.at[181,'Label'] = r'$O_3 \rightarrow O_2 + O$' #181
+Rxn_label.at[181,'Label'] = r'$O_3 \rightarrow O^+ + O_2^-$' #181
 Rxn_label.at[181,'Type'] = 3 #
-Rxn_label.at[183,'Label'] = r'$O_3 \rightarrow O_2^+ + O^-$' #183
+Rxn_label.at[183,'Label'] = r'$O_3 \rightarrow O_2 + O$' #183
 Rxn_label.at[183,'Type'] = 3 #
-Rxn_label.at[185,'Label'] = r'$O_3 \rightarrow O_3^*$' #185
+Rxn_label.at[185,'Label'] = r'$O_3 \rightarrow O_2^+ + O^-$' #185
 Rxn_label.at[185,'Type'] = 3 #
+Rxn_label.at[187,'Label'] = r'$O_3 \rightarrow O_3^*$' #187
+Rxn_label.at[187,'Type'] = 3 #
 
 #Rxn_label
 
@@ -471,7 +473,7 @@ legend_elements = [Line2D([0], [0], color='k', ls='-', label= 'neutral-neutral r
 
 legend = ax.legend(handles=legend_elements, loc='center', framealpha=1, frameon=True)
 
-def export_legend(legend, filename=w_ions_version + '/paper_figures/legend.pgf', expand=[-5,-5,5,5]):
+def export_legend(legend, filename=w_ions_version + '/paper_figures/legend.png', expand=[-5,-5,5,5]):
     fig  = legend.figure
     fig.canvas.draw()
     bbox  = legend.get_window_extent()
