@@ -179,6 +179,9 @@ while i < len(ana_list) :
         if j == 0: 
             rxn_data = temp2_df
         else:
+            # Make sure the analytics file doesn't have any extra rows in a set of reactions
+            #     (between fluence rows) if you're not going to modify this code. If you don't,
+            #     the merged DataFrame will get larger than needed and the merge may fail.
             rxn_data = rxn_data.merge(temp2_df, on=["Fluence"])
         
         j += 1
