@@ -80,64 +80,9 @@ merged_data['Percent Ion'] = merged_data['Ion volume density']/merged_data['Tota
 
 # Save dataframe
 merged_data.to_pickle(version + '/pickle_dataframes/csv_dataframe.pkl')
-print(merged_data.head(n=25))
 
-# %%
-## For old code outputs
-## This is only for the version of the code from the Mullikin paper. 
-
-# import csv
-# import os
-
-# # Change to the list you want the data for
-# wk_lst = all_list_woions
-# #version = 'wo_ions/old_output'
-
-# # Rewrite csv file in order to modify the header, must be done to then read into a dataframe. I used code from  https://stackoverflow.com/questions/16306819/python-edit-csv-headers 
-# i = 0
-# while i < len(wk_lst) :
-#     inputFileName = version + "/csv/" + wk_lst[i] + ".csv"
-#     outputFileName = os.path.splitext(inputFileName)[0] + "_modified.csv"
-    
-#     with open(inputFileName, newline='') as inFile, open(outputFileName, 'w', newline='') as outfile:
-#         r = csv.reader(inFile)
-#         w = csv.writer(outfile)
-        
-#         next(r, None)  # skip the first row from the reader, the old header
-#         # write new header
-#         w.writerow(['Time', wk_lst[i]])
-        
-#         # copy the rest
-#         for row in r:
-#             w.writerow(row)
-        
-#     i += 1
-
-# # read and merge data
-# i=0
-
-# while i < len(wk_lst) :
-#     csv = pd.read_csv(version + "/csv/" + wk_lst[i] + "_modified.csv")
-#     if i == 0:
-#         merged_data = csv
-#     else:
-#         merged_data = merged_data.merge(csv, on=["Time"])
-#     i += 1
-    
-# flux = 2.33e14
-
-# merged_data['Fluence'] = merged_data['Time'] * flux
-# merged_data['total_O2'] = merged_data['bO2'] + merged_data['gO2']
-# merged_data['total_O3'] = merged_data['bO3'] + merged_data['gO3']
-    
-# # Save dataframe
-# merged_data.to_pickle(version + '/pickle_dataframes/csv_dataframe.pkl')
-# print(merged_data.head(n=25))
-
-# %% [markdown]
-# ## Importing and formatting analytics files
-# 
-# ``ana_list`` and ``num_rxn`` must be updated based on the analytics files. ``num_rxn`` should store the number of reactions in the analytics file for the corresponding species in `ana_list``
+# Removed commented-out code (it is in the ipynb file)
+print("dataframe written to a pickle file")
 
 # %%
 # Defining values needed to read the analytics files
@@ -168,7 +113,7 @@ def logic2(index):
     return False
 
 i=0
-while i < len(ana_list) :
+while i < len(ana_list):
     filename = version + "/analytics/analytics_" + ana_list[i]
     flu_row = num_rxn[i] + 1
     
