@@ -78,17 +78,31 @@ merged_data['Ion volume density'] = merged_data[bulk_ion_list].sum(axis=1)
 merged_data['Total volume density'] = merged_data[bulk_list_2].sum(axis=1)
 merged_data['Percent Ion'] = merged_data['Ion volume density']/merged_data['Total volume density']
 
+# Drop all zero rows
+indexZero = merged_data[(merged_data['Fluence'] == 0.0) & (merged_data['bO3'] == 0.0)].index
+merged_data.drop(indexZero, inplace=True)
+
 # Save dataframe
 merged_data.to_pickle(version + '/pickle_dataframes/csv_dataframe.pkl')
+print(merged_data.head(n=25))
 
-# Removed commented-out code (it is in the ipynb file)
-print("dataframe written to a pickle file")
+# %%
+## For old code outputs
+## This is only for the version of the code from the Mullikin paper. 
+
+# Code is in the ipynb file if needed
+
+# %% [markdown]
+# ## Importing and formatting analytics files
+# 
+# ``ana_list`` and ``num_rxn`` must be updated based on the analytics files. ``num_rxn`` should store the number of reactions in the analytics file for the corresponding species in `ana_list``
 
 # %%
 # Defining values needed to read the analytics files
 # with ions
 ana_list = ['be-', 'bO', 'bO-', 'bO+', 'bO2', 'bO2-', 'bO2+', 'bO3', 'bO3-', 'bO3+']
-num_rxn = [9, 24, 13, 11, 36, 14, 15, 15, 13, 15]
+num_rxn = [  9,     24,   13,    11,    35,    14,     15,     14,     13,    15]
+
 
 # #w/o ions
 # ana_list = ['bO', 'bO2', 'bO3']
@@ -165,10 +179,13 @@ while i < len(ana_list):
         if j == 0: 
             rxn_data = temp2_df
         else:
+            # Make sure the analytics file doesn't have any extra rows in a set of reactions
+            #     (between fluence rows) if you're not going to modify this code. If you don't,
+            #     the merged DataFrame will get larger than needed and the merge may fail.
             rxn_data = rxn_data.merge(temp2_df, on=["Fluence"])
         
         j += 1
-        
+
     #Drop all reactions that contribute less than 5% to the rate at all times
     k=0        
     while k < len(plot_rxn_list):
@@ -188,8 +205,3 @@ while i < len(ana_list):
     
 #rxn_data
 #print(plot_rxn_list)
-
-# %%
-
-
-
