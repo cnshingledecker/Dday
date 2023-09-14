@@ -1,5 +1,3 @@
-# Run DataFrameCreation.py before this
-
 import csv
 import os
 import pandas as pd
@@ -29,8 +27,8 @@ custom_cycler = (cycler(color=['#098ec3', #blue
                 )
 
 # Change style defaults
-# plt.rc('text', usetex=True) # Allows LaTeX formatting with r'Formatted Text'
-# plt.rc('font',**{'family':'serif','serif':['Computer Modern Roman']}) # Changes font to default LaTeX fount
+plt.rc('text', usetex=True) # Allows LaTeX formatting with r'Formatted Text'
+plt.rc('font',**{'family':'serif','serif':['Computer Modern Roman']}) # Changes font to default LaTeX font
 plt.rcParams['axes.prop_cycle'] = custom_cycler # Sets plot color cycler to the cycle defined above
 
 for i in range(0, 5):
