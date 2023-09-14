@@ -33,48 +33,51 @@ custom_cycler = (cycler(color=['#098ec3', #blue
 # plt.rc('font',**{'family':'serif','serif':['Computer Modern Roman']}) # Changes font to default LaTeX fount
 plt.rcParams['axes.prop_cycle'] = custom_cycler # Sets plot color cycler to the cycle defined above
 
-# Define filepath
-# wo_ions_version = 'wo_ions/old_output' # Mullikin results
-w_ions_version = 'csv/bO3.csv'
-w_ions_modified_version = "bO3_for_dataframe.csv"
+for i in range(0, 5):
+   # Define filepath
+   # wo_ions_version = 'wo_ions/old_output' # Mullikin results
+   w_ions_version = f'csv/bO3_{i}.csv'
+   w_ions_modified_version = f"bO3_for_dataframe_{i}.csv"
 
-# Format csv file correctly with correct column names; we do this by writing the results to another file
-with open(w_ions_version, newline='') as bO3_csv:  # Read in the lines from the file
-   reader = csv.reader(bO3_csv, delimiter=',')      
-   fields = next(reader) # Skip the line with the bad header
-   with open(w_ions_modified_version, 'w') as bO3_for_dataframe_csv:
-      bO3_csv_writer = csv.writer(bO3_for_dataframe_csv)
-      bO3_csv_writer.writerow(["Fluence", "bO3"])
-      try:
-         while(True):
-            row = next(reader)
-            if(float(row[0]) != 0 and float(row[1]) != 0): # Gets rid of a value that sometimes occurs that causes weird plotting results for bO3.csv
-               bO3_csv_writer.writerow(row)
-      except StopIteration:
-         pass # We are done processing lines; this is the exception (expected) which is thrown when we are out of lines to write to the file. 
+   # Format csv file correctly with correct column names; we do this by writing the results to another file
+   with open(w_ions_version, newline='') as bO3_csv:  # Read in the lines from the file
+      reader = csv.reader(bO3_csv, delimiter=',')      
+      fields = next(reader) # Skip the line with the bad header
+      with open(w_ions_modified_version, 'w') as bO3_for_dataframe_csv:
+         bO3_csv_writer = csv.writer(bO3_for_dataframe_csv)
+         bO3_csv_writer.writerow(["Fluence", "bO3"])
+         try:
+            while(True):
+               row = next(reader)
+               if(float(row[0]) != 0 and float(row[1]) != 0): # Gets rid of a value that sometimes occurs that causes weird plotting results for bO3.csv
+                  bO3_csv_writer.writerow(row)
+         except StopIteration:
+            pass # We are done processing lines; this is the exception (expected) which is thrown when we are out of lines to write to the file. 
 
-# Load in data
-# woions_df = pd.read_pickle(wo_ions_version + '/pickle_dataframes/csv_dataframe.pkl')
-wions_df = pd.read_csv(w_ions_modified_version)
+   # Load in data
+   # woions_df = pd.read_pickle(wo_ions_version + '/pickle_dataframes/csv_dataframe.pkl')
+   wions_df = pd.read_csv(w_ions_modified_version)
 
-os.remove("./bO3_for_dataframe.csv") # Because we no longer need the file
+   os.remove("./bO3_for_dataframe.csv") # Because we no longer need the file
 
 
-# Isolate data of interest
-# model_data_woions = woions_df[['Fluence', 'total_O3', 'total_O2']]
-model_data_wions = wions_df[['Fluence', 'bO3']]
+   # Isolate data of interest
+   # model_data_woions = woions_df[['Fluence', 'total_O3', 'total_O2']]
+   model_data_wions = wions_df[['Fluence', 'bO3']]
 
-exp_data = setup_experimental_data()
+   exp_data = setup_experimental_data()
 
-# model_data_woions["Fluence"] = model_data_woions["Fluence"]
+   # model_data_woions["Fluence"] = model_data_woions["Fluence"]
 
-model_data_wions["Fluence"] = model_data_wions["Fluence"]
-model_data_wions["bO3"] = process_model_data(model_data_wions["bO3"])
+   model_data_wions["Fluence"] = model_data_wions["Fluence"]
+   model_data_wions["bO3"] = process_model_data(model_data_wions["bO3"])
 
-# Create figure
+   # Create figure
+
+   # Add data to figure
+   ax = model_data_wions.plot(x = 'Fluence', y = 'bO3', label = f'Model {i + 1} with ions')
 
 # Add data to figure
-ax = model_data_wions.plot(x = 'Fluence', y = 'bO3', label = 'Model with ions')
 # model_data_woions.plot(ax = ax, x = 'Fluence', y = 'bO3', label = 'Without ions: Mullikin et al.')
 exp_data.plot.scatter(ax = ax, x = 'expX', y = 'expY', marker="x", c='dimgrey', label = 'Experiment: Gerakines et al.') #  c='#53b234'
 
