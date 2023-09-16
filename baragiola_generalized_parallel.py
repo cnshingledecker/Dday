@@ -63,7 +63,7 @@ if(to_modify_modelInp_values):
         line_linspace_list = list(line_linspace)
         line_linspace_list_power10 = []
         for value in line_linspace_list:
-            line_linspace_list_power10.append(value)
+            line_linspace_list_power10.append(10**value)
         modified_lines_to_modify_modelInp.append(line_linspace_list_power10)
 
 # Notes: The core is the one that handles the generation and distribution of fitting factors and the collection of data.
@@ -80,7 +80,7 @@ if rank == 0:
         single_vector_fitting_factors = list(single_vector_fitting_factors) # Converts the numpy linspace to a list
         single_vector_fitting_factors_power10 = []
         for value in single_vector_fitting_factors:
-            single_vector_fitting_factors_power10.append(value)
+            single_vector_fitting_factors_power10.append(10**value)
         fitting_factors.append(single_vector_fitting_factors_power10)
 
     if(to_modify_modelInp_values == True):
