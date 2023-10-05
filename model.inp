@@ -20,28 +20,28 @@ PHOTOEXC              = 1          ; 1 - Detailed photoexcitation/dissociation; 
 PHOTOION              = 1          ; 1 - Detailed photoionization/dissociation to suprathermal products; 0 - off
 FIXED_DVAL            = 0          ; 1 - Fixed δ value, used in detailed photo rate coefficients
 FIXED_NU              = 0          ; 1 - Fixed ν value, the "trial frequency" used in fast bulk rates
-DISABLE_DESORB        = 1          ; 1 - No desorption. Used when modeling some experiments. NB: must also set DES_REACTIVE=0
+DISABLE_DESORB        = 0          ; 1 - No desorption. Used when modeling some experiments. NB: must also set DES_REACTIVE=0
 
 CHEM_FILE             = network.dat
-RTOL                  = 1.0000E-08 ; Relative tolerance
-ATOL                  = 1.0000E-18 ; Absolute tolerance
+RTOL                  = 1.0000E-16 ; Relative tolerance
+ATOL                  = 1.0000E-16 ; Absolute tolerance
 
 N_S_ML                = 4.0000E+00 ; Number of `surface` monolayers (to mimic model 4-4 in VH13)
 
-EXTFAC                = 1.0000E-01 ; A factor used in calculating bulk photo rates accounting for extinction 
-DVAL                  = 1.0000E-05 ; δ value representing difference between gas and solid cross-sections
-ICE_THICK             = 1.0000E-04 ; Thickness of ice, cm (MODEL_EXPERIMENT=1 only!)
+EXTFAC                = 1.0000E-00 ; A factor used in calculating bulk photo rates accounting for extinction 
+DVAL                  = 1.0000E+00 ; δ value representing difference between gas and solid cross-sections
+ICE_THICK             = 8.0000E-06 ; Thickness of ice, cm (MODEL_EXPERIMENT=1 only!)
 ICE_AREA              = 1.0000E-20 ; Area of ice, cm^2 (MODEL_EXPERIMENT=1 only!)
 RHO_ICE               = 5.7000E+22 ; Density of ice, cm-3 (MODEL_EXPERIMENT=1 only!)
 RHO                   = 2.0000E+02 ; Density of gas, cm-3
-T                     = 1.0000E+01 ; Temperature, K
-TDUST                 = 1.0000E+01 ; Dust temperature, K
+T                     = 2.2000E+01 ; Temperature, K
+TDUST                 = 2.2000E+01 ; Dust temperature, K
 G0_STELLAR            = 0.0000E+00 ; Stellar UV field in units of Draine's
 AVST                  = 0.0000E+00 ; AvSt - stellar extinction
 AVIS                  = 0.0000E+00 ; AvIS - interstellar extinction
 ZETACR                = 0.0000E+00 ; ZetaCR - cosmic ray ionization rate
 ZETAX                 = 0.0000E+00 ; ZetaX - X-ray ionization rate
-PHI_EXP               = 1.0000E+15 ; Flux of particles/photons in experiment
+PHI_EXP               = 2.3300E+14 ; Flux of particles/photons in experiment
 Se_EXP                = 3.3000E-14 ; ev cm^2; Electronic stopping cross-section in experiment
 TRIAL_NU              = 1.0000E+15 ; Trial Frequency, ν, for bulk-phase radical reactions
 ION_NU                = 7.0000E+02 ; Trial Frequency, ν, for surface and bulk ion-neutral reactions
@@ -71,50 +71,32 @@ EFFSURFMASS           = 1.2000E+02 ; effective mass of surface molecules for RD 
 INIT_NON_ZERO         = 1          ; 0 - no initial abundances, 1 - read from init* files
 
 TIMESTEPS             = 100        ; Amount of time moments in output
-TSTART                = 1.0000E-18 ; Time of the first output
-TEND                  = 1.1420E-04 ; Time of the last output
+TSTART                = 1.0000E-12 ; Time of the first output
+TEND                  = 1.3600E-03 ; Time of the last output
 
-N_DET_SPEC            = 43         ; # of species for detailed study
-ge-
-ge-*
-be-
-be-*
-gO
-gO*
-gO+
-gO+*
-gO-*
-gO-
-gO2
-gO2*
-gO2+*
-gO2+
-gO2-*
-gO2-
-gO3
-gO3*
-gO3+*
-gO3+
-gO3-*
-gO3-
+N_DET_SPEC            = 25         ; # of species for detailed study
+H2O
+H2
+OH
+H2O2
+O2
 bO
 bO*
-bO+
-bO+*
-bO-*
-bO-
 bO2
-bO2*
-bO2+*
-bO2+
-bO2-*
-bO2-
 bO3
+bO2*
 bO3*
-bO3+*
-bO3+
-bO3-*
-bO3-
-O
-O2
-O3
+bH2
+bH
+bH2O
+bHO2
+bH2O2
+bH2*
+bH*
+bH2O*
+bHO2*
+bH2O2*
+bHO3
+bHO3*
+bOH
+bOH*
