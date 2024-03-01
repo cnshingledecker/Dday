@@ -200,7 +200,7 @@ if rank >= 0:
                     sum += (value**2)
 
                 # NOTE: RMSD's of parallel and serial scripts were off for one run 18.8ish vs 8ish). Not an immediate significant cause for concern.
-                rmsd = (sum / (num_experimental_data_points - 2))**0.5   # Formula for RMSD
+                rmsd = (sum / num_experimental_data_points)**0.5   # Formula for RMSD
 
                 # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
                 output_string = ""

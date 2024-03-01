@@ -1,7 +1,9 @@
 Note: The printing of results for 1-8 was not reliable, so those trials were reran with the input parameters used being those written out to
 files when the writing out of results may not have been correct. This is why some of the results are not as good.
 
-1. 1.14.2023 #1
+Also, the formula for RMSD was off for all runs through #16. For these results, the sum of the squares of the differences 
+between predicted and observed values was divided by n - 2, not n, resulting in a higher RMSD.
+
 2. 1.14.2023 #2
 3. 1.14.2023 #3
 4. 1.14.2023 #4
