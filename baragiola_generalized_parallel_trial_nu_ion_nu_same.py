@@ -22,7 +22,7 @@ reset_modelInp = True  # If this is true, model.inp will be reset to default val
                         #     (specified in modelCopy.inp,; model.inp will be overwritten with the contents of this file)
 debug = False # If this is True, debug mode is on, which includes writing the output of the model runs to the screen (update this as necessary).
 
-debugModelRunOutputString = "" if debug == False else " > /dev/null" # For the model runs later in the file
+debugModelRunOutputString = "" if debug == True else " > /dev/null" # For the model runs later in the file
 
 experimental_data = setup_experimental_data() # The experimental data we compare the model to
 num_delta_values = 0 # Set below after reading the file (so we can automate counting how many delta values there are)
