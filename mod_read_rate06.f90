@@ -591,6 +591,7 @@ IF ( suprathermal .EQ. 1 ) THEN
       rtemp(ii)%ip2 = 0
       rtemp(ii)%ip3 = 0
       rtemp(ii)%ip4 = 0
+      rtemp(ii)%ip5 = 0
       rtemp(ii)%alpha = 1.00e0
       rtemp(ii)%beta = 1.00e0
       rtemp(ii)%gamma = 1.00e0
@@ -682,6 +683,7 @@ IF ( suprathermal .EQ. 1 ) THEN
         IF ( r(i)%ip2 .NE. 0 ) prodatoms = prodatoms + s(r(i)%ip2)%natoms
         IF ( r(i)%ip3 .NE. 0 ) prodatoms = prodatoms + s(r(i)%ip3)%natoms
         IF ( r(i)%ip4 .NE. 0 ) prodatoms = prodatoms + s(r(i)%ip4)%natoms
+        IF ( r(i)%ip5 .NE. 0 ) prodatoms = prodatoms + s(r(i)%ip5)%natoms
         reactatoms = s(r(i)%ir1)%natoms
 
         IF (ANY(r(i)%r2 .EQ. (/"QUENCH","CRPHOT","PHOTON","FREEZE","DESORB","IONRAD","G-    ","G0    ","CR    ","CRP   ","PHOION","PHOEXC"/)) .EQV. .FALSE.) THEN
@@ -696,7 +698,7 @@ IF ( suprathermal .EQ. 1 ) THEN
         PRINT *, "ip1_natoms = ",s(r(i)%ip1)%natoms
         PRINT *, "alpha=",r(i)%alpha," beta=",r(i)%beta," gamma=",r(i)%gamma
         PRINT *, "rate=",r(i)%rate, " exothermicity =",r(i)%exothermicity
-        PRINT *, r(i)%ir1,r(i)%ir2,r(i)%ip1,r(i)%ip2,r(i)%ip3,r(i)%ip4
+        PRINT *, r(i)%ir1,r(i)%ir2,r(i)%ip1,r(i)%ip2,r(i)%ip3,r(i)%ip4,r(i)%ip5
         IF (prodatoms .NE. reactatoms) THEN
           IF  ( r(i)%r1(2:2) .NE. "e" ) THEN
             PRINT *, "Atoms not equal"
