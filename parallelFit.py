@@ -2,12 +2,12 @@ import numpy as np
 import csv, itertools, math, os, time
 from exportable_custom_functions import split_list, split_list_chunks, find_nearest_index,is_float, is_int, modify_modelInp_values, get_data_to_modify_modelInp, setup_experimental_data, format_data_with_spaces
 from mpi4py import MPI
-from baragiola_file_and_data_functions import modelCSVFileName, min_field_width, num_processors_to_use, parallelTrialNuIonNuSameAllOutputForCoreFileName, parallelTrialNuIonNuSameBestResultsFileName, parallelProgressShellScriptGeneration, process_model_data
+from file_and_data_functions import modelCSVFileName, min_field_width, num_processors_to_use, parallelAllOutputForCoreFileName, parallelBestResultsFileName, parallelProgressShellScriptGeneration, process_model_data
 
 startTime = time.time()
 
-allResultsForCoreFileName = parallelTrialNuIonNuSameAllOutputForCoreFileName()
-bestResultsFileName = parallelTrialNuIonNuSameBestResultsFileName()
+allResultsForCoreFileName = parallelAllOutputForCoreFileName()
+bestResultsFileName = parallelBestResultsFileName()
 modelCSVFileString = modelCSVFileName()
 
 comm = MPI.COMM_WORLD
@@ -15,8 +15,9 @@ rank = comm.Get_rank()
 
 reactions = [] # Will hold the reactions for which the fitting factors are being modified
 all_vector_args = [] # Holds a series of lists (with each list containing the values in each of the linspaces that is created for a reaction)
-base_dir_name = "baragiola_files_core" # The partial name for each directory of the files for a core
+base_dir_name = "files_core" # The partial name for each directory of the files for a core
 
+# Switches
 to_modify_modelInp_values = True # Set this to True if you want to modify model.inp values using the below array 
 reset_modelInp = True  # If this is true, model.inp will be reset to default values 
                         #     (specified in modelCopy.inp,; model.inp will be overwritten with the contents of this file)
@@ -30,7 +31,7 @@ num_delta_values = 0 # Set below after reading the file (so we can automate coun
 minFieldWidth = min_field_width() # The minimum width of a printed field (including adding spaces if necessary)
 num_processors = num_processors_to_use() # IMPORTANT: Need to adjust if running on a different number of processors
 
-# Note: the below code is ran on every core because each core needs the reaction and needs the value of num_delta_values, and reading it on each core means the data from the file doesn't have to be sent to each core
+# Note: the below code is ran on every core because each core needs the reaction, and reading it on each core means the data from the file doesn't have to be sent to each core
 with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
     for i in range(0, 4): # Skips the first 4 lines of the csv file (lines which are comments)
@@ -59,13 +60,12 @@ lines_to_modify_modelInp = get_data_to_modify_modelInp()
 
 if(to_modify_modelInp_values):
     for line in lines_to_modify_modelInp:
-        if(line[4].strip() != "ION_NU"):
-            line_linspace = np.linspace(line[0], line[1], int(line[2])) # Range of values we want to try for that line's value
-            line_linspace_list = list(line_linspace)
-            line_linspace_list_power10 = []
-            for value in line_linspace_list:
-                line_linspace_list_power10.append(10**value)
-            modified_lines_to_modify_modelInp.append(line_linspace_list_power10)
+        line_linspace = np.linspace(line[0], line[1], int(line[2])) # Range of values we want to try for that line's value
+        line_linspace_list = list(line_linspace)
+        line_linspace_list_power10 = []
+        for value in line_linspace_list:
+            line_linspace_list_power10.append(10**value)
+        modified_lines_to_modify_modelInp.append(line_linspace_list_power10)
 
 # Notes: The core is the one that handles the generation and distribution of fitting factors and the collection of data.
 #        In this if statement, a directory is created for each core with the files necessary for it to run monaco as well as find the rmsd and write to output files,
@@ -95,7 +95,7 @@ if rank == 0:
     all_fitting_factor_combinations = [list(fitting_factor_combination) for fitting_factor_combination in all_fitting_factor_combinations]
 
     # Create the shell script for checking the progress of the run of this script
-    parallelProgressShellScriptGeneration(numFittingFactorCombinations = len(all_fitting_factor_combinations), original = False)
+    parallelProgressShellScriptGeneration(numFittingFactorCombinations = len(all_fitting_factor_combinations), original = True)
 
     all_fitting_factor_combinations = split_list(all_fitting_factor_combinations, num_processors) # Splits the list into 'num_processors' chunks
     all_fitting_factor_combinations = split_list_chunks(all_fitting_factor_combinations, 15) # Splits each of the list chunks into mini-chunks of up to size 15 (creates as many with size 15 as possible)
@@ -138,7 +138,7 @@ if rank >= 0:
     fitting_factors_and_least_rmsd = [0] * (len(reactions) + 1 + len(modified_lines_to_modify_modelInp)) # there needs to be 1 spot for the rmsd and len(reactions) spots for the fitting factor for each set of reactions, plus a spot for each of the model.inp lines to modify
     fitting_factors_and_least_rmsd[0] = 1e80 # Initialize the RMSD to a high value so during testing a lower RMSD will likely be found and be saved in the array (along with the fitting factors that produced it)
 
-    results = open(new_dir_name + "/" + allResultsForCoreFileName,'w')
+    results = open(new_dir_name + "/" + allResultsForCoreFileName, 'w')
     for i in range(0, num_mini_chunks_to_recv): # Receive all the mini-chunks
         data = comm.recv(source=0)
         core_fitting_factor_combinations.append(data)
@@ -146,15 +146,10 @@ if rank >= 0:
         for fitting_factor_combination in mini_chunk:
             if(to_modify_modelInp_values == True):
                 lines_to_modify_modelInp_local = []
-                fitting_factor_combination_modelInp_index = num_delta_values # Because the fitting factors come in the first num_delta_values spots
-                
+                fitting_factor_combination_modelInp_index = num_delta_values # Because the fitting factors come first
                 for line in lines_to_modify_modelInp:
-                    if(line[4].strip() != "ION_NU"):
-                        lines_to_modify_modelInp_local.append([line[3], fitting_factor_combination[fitting_factor_combination_modelInp_index], line[4]])
-                        fitting_factor_combination_modelInp_index += 1
-                    else:
-                        ion_nu_list = [line[3], lines_to_modify_modelInp_local[len(lines_to_modify_modelInp_local) - 1][1], line[4]]
-                        lines_to_modify_modelInp_local.append(ion_nu_list)
+                    lines_to_modify_modelInp_local.append([line[3], fitting_factor_combination[fitting_factor_combination_modelInp_index], line[4]])
+                    fitting_factor_combination_modelInp_index += 1
                 modify_modelInp_values(lines_to_modify_modelInp_local, new_dir_name)
 
             infile = open(new_dir_name + "/parameter_inputs_template.dat",'r')
@@ -176,12 +171,12 @@ if rank >= 0:
 
             print("Finding RMSD...")  # RMSD is root-mean square deviation
 
-            num_experimental_data_points = 0
-            deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
-
             # Calculate the RMSD, write it and the parameters that produced it to an output file, 
             #     compare it to the best one found so far, and if it's less, store it and the parameters that produced it
             try: # If the model finished running, the CSV file will exist
+                num_experimental_data_points = 0
+                deviations = [] # The deviations for each model value from the experimental data value (at the closest time)
+
                 csv_model_data = open(new_dir_name + "/" + modelCSVFileString)
                 csv_model_data_reader = csv.reader(csv_model_data, delimiter=',')
                 throwAway = next(csv_model_data_reader)
@@ -193,7 +188,7 @@ if rank >= 0:
                     modelY = process_model_data(float(closest_model_values[1]))
 
                     deviation = modelY - float(experimentalY) # Deviation of the model value from the actual (experimental) value
-                    
+
                     # Daniel Lopez-Sanders: Not sure why this was in here; it didn't make sense so I commented it out
                     # the deviation of the model from the y-value is allowed to be up to 10% away from the y-value
                     # if 0.9 * float(experimentalY) <= deviation <= 1.1 * float(experimentalY): # 0.9 * float(experimentalY) is the allowed_lower_deviation, 1.1 * float(experimentalY) is the allowed_upper_deviation
@@ -201,30 +196,21 @@ if rank >= 0:
                     deviations.append(deviation)
                     num_experimental_data_points += 1
                 sum = 0
-                
+
                 for value in deviations:
                     sum += (value**2)
-                
+
                 # NOTE: RMSD's of parallel and serial scripts were off for one run 18.8ish vs 8ish). Not an immediate significant cause for concern.
                 rmsd = (sum / num_experimental_data_points)**0.5   # Formula for RMSD
 
-                ion_nu_current_or_done = False
-                
                 # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
                 output_string = ""
                 for i in range(0, len(reactions)): 
                     fitting_factor_combination_formatted = np.format_float_scientific(fitting_factor_combination[i], precision=20,unique=False)
                     output_string += format_data_with_spaces(fitting_factor_combination_formatted, minFieldWidth) + reactions[i] + " delta values \n"
-                for i in range(0, len(lines_to_modify_modelInp)):
-                    if(lines_to_modify_modelInp[i][4].strip() == "ION_NU"):
-                        ion_nu_current_or_done = True
-
-                    fitting_factor_combination_modelInp_index = i + num_delta_values
-                    if(ion_nu_current_or_done == True):
-                        fitting_factor_combination_modelInp_index -= 1 # Since we have ion_nu the same as model_nu, a separate value for ion_nu is not in the fitting factor combination,
-                                                                        #     so we have to subtract the index by 1 for ion_nu and everything or after to get the right fitting factor in the list
-                    model_Inp_value_formatted = np.format_float_scientific(fitting_factor_combination[fitting_factor_combination_modelInp_index], precision = 20,unique = False)
-                    output_string += format_data_with_spaces(model_Inp_value_formatted) + lines_to_modify_modelInp[i][4] + " model.inp value\n" 
+                for i in range(0, len(modified_lines_to_modify_modelInp)):
+                    model_Inp_value_formatted = np.format_float_scientific(fitting_factor_combination[i + num_delta_values], precision=20,unique=False)
+                    output_string += format_data_with_spaces(model_Inp_value_formatted, minFieldWidth) + lines_to_modify_modelInp[i][4] + " model.inp value\n"
                 rmsd_formatted = np.format_float_scientific(rmsd, precision=20,unique=False)
                 output_string += format_data_with_spaces(rmsd_formatted, minFieldWidth) + "RMSD" + "\n\n"
                 results.write(output_string)
@@ -244,8 +230,6 @@ fitting_factors_and_least_rmsd = comm.gather(fitting_factors_and_least_rmsd, roo
 
 if rank == 0:
     least_rmsd_index = 0
-    
-    # We can start at 1 because we initialize least_rmsd_index to be 0 and it is only changed if the first RMSD is not the least one
     for i in range(1, len(fitting_factors_and_least_rmsd)): # Loop through the least fake performance metric value and associated fitting factors 
                                                              # from each core and find the ones with the least value for the fake performance metrix
         if fitting_factors_and_least_rmsd[i][0] < fitting_factors_and_least_rmsd[least_rmsd_index][0]:
@@ -254,26 +238,16 @@ if rank == 0:
     print(fitting_factors_and_least_rmsd[least_rmsd_index])
     results_file = open(bestResultsFileName, 'w')
 
-
-    ion_nu_current_or_done = False
-            
     # Create a string to hold the rmsd along with the fitting factor value for each reaction set (the fitting factor values combination)
     output_string = ""
-    for i in range(1, len(reactions) + 1): # Skip RMSD at the beginning (1st element of the list) 
-        fitting_factor_combination_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[least_rmsd_index][i], precision=20,unique=False)
-        output_string += format_data_with_spaces(fitting_factor_combination_formatted, minFieldWidth) + reactions[i - 1] + " delta values \n"
-    for i in range(0, len(lines_to_modify_modelInp)):
-        if(lines_to_modify_modelInp[i][4].strip() == "ION_NU"):
-            ion_nu_current_or_done = True
-
-        fitting_factor_combination_modelInp_index = i + num_delta_values + 1
-        if(ion_nu_current_or_done == True):
-            fitting_factor_combination_modelInp_index -= 1 # Since we have ion_nu the same as model_nu, a separate value for ion_nu is not in the fitting factor combination,
-                                                            #     so we have to subtract the index by 1 for ion_nu and everything or after to get the right fitting factor in the list
-        model_Inp_value_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[least_rmsd_index][fitting_factor_combination_modelInp_index], precision = 20,unique = False)
-        output_string += format_data_with_spaces(model_Inp_value_formatted, minFieldWidth) + lines_to_modify_modelInp[i][4] + " model.inp value\n" 
-    rmsd = fitting_factors_and_least_rmsd[least_rmsd_index][0] # Get the correct RMSD (the least one) in the 'rmsd' variable
-    rmsd_formatted = np.format_float_scientific(rmsd, precision=20,unique=False)
+    for i in range(0, len(reactions)): 
+       fitting_factor_combination_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[least_rmsd_index][i+1], precision=20,unique=False)
+       output_string += format_data_with_spaces(fitting_factor_combination_formatted, minFieldWidth) + reactions[i] + " delta values \n"
+    for i in range(1, len(modified_lines_to_modify_modelInp) + 1): # Because the RMSD is at the beginning of the list, 
+                                                                   #     so we have to start 1 after we would if it wasn't at the beginning of the list
+       model_Inp_value_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[least_rmsd_index][i + num_delta_values], precision=20,unique=False)
+       output_string += format_data_with_spaces(model_Inp_value_formatted, minFieldWidth) + lines_to_modify_modelInp[i - 1][4] + " model.inp value\n"
+    rmsd_formatted = np.format_float_scientific(fitting_factors_and_least_rmsd[least_rmsd_index][0], precision=20,unique=False)
     output_string += format_data_with_spaces(rmsd_formatted, minFieldWidth) + "RMSD" + "\n\n"
     results_file.write(output_string)
     results_file.close()
@@ -305,19 +279,14 @@ if rank == 0:
 
     if(to_modify_modelInp_values == True):
         lines_to_modify_modelInp_local = []
-        fitting_factor_combination_modelInp_index = num_delta_values # Because the fitting factors come in the first three spots
-        
+        fitting_factor_combination_modelInp_index = num_delta_values # Because the fitting factors come first
         for line in lines_to_modify_modelInp:
-            if(line[4].strip() != "ION_NU"):
-                lines_to_modify_modelInp_local.append([line[3], fitting_factor_combination[fitting_factor_combination_modelInp_index], line[4]])
-                fitting_factor_combination_modelInp_index += 1
-            else:
-                ion_nu_list = [line[3], lines_to_modify_modelInp_local[len(lines_to_modify_modelInp_local) - 1][1], line[4]]
-                lines_to_modify_modelInp_local.append(ion_nu_list)
+            lines_to_modify_modelInp_local.append([line[3], fitting_factor_combination[fitting_factor_combination_modelInp_index], line[4]])
+            fitting_factor_combination_modelInp_index += 1
         modify_modelInp_values(lines_to_modify_modelInp_local, ".")
 
     print("Running model with best fit parameters...")
-    os.system('./run.sh' + debugModelRunOutputString) # Run model, deal with files, and silence output if in debug mode
+    os.system('./run.sh ' + debugModelRunOutputString) # Run model, deal with files, and silence output if in debug mode
 
     # Create the plot
     os.system("python3 plotting.py")
