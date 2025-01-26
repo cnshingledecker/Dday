@@ -35,7 +35,7 @@ startTime={int(time.time())}
 echo "Start Time: " 
 TZ=America/Chicago date -d @$startTime +"%Y-%m-%d %I:%M %P" """
     
-    with open("baragiolaProgress.sh", "w") as progressShellScriptFile:
+    with open("Progress.sh", "w") as progressShellScriptFile:
         progressShellScriptFile.write(progressShellScriptString)
 
 # original is a boolean parameter--supply True for the original parallel script, and False for the Model Nu Trial Nu Same parallel script
@@ -47,10 +47,10 @@ def parallelProgressShellScriptGeneration(numFittingFactorCombinations, original
 
 resultsFilepathParallel=$(pwd)
 
-core0filepath="$resultsFilepathParallel/baragiola_files_core0/{parallelScriptOutputFileName}"
-core1filepath="$resultsFilepathParallel/baragiola_files_core1/{parallelScriptOutputFileName}"
-core2filepath="$resultsFilepathParallel/baragiola_files_core2/{parallelScriptOutputFileName}"
-core3filepath="$resultsFilepathParallel/baragiola_files_core3/{parallelScriptOutputFileName}"
+core0filepath="$resultsFilepathParallel/files_core0/{parallelScriptOutputFileName}"
+core1filepath="$resultsFilepathParallel/files_core1/{parallelScriptOutputFileName}"
+core2filepath="$resultsFilepathParallel/files_core2/{parallelScriptOutputFileName}"
+core3filepath="$resultsFilepathParallel/files_core3/{parallelScriptOutputFileName}"
 
 core0numLines=`wc --lines < "$core0filepath"`
 core1numLines=`wc --lines < "$core1filepath"`
@@ -79,7 +79,7 @@ startTime={int(time.time())}
 echo "Start Time: " 
 TZ=America/Chicago date -d @$startTime +"%Y-%m-%d %I:%M %P" """
     
-    with open("baragiolaProgress.sh", "w") as progressShellScriptFile:
+    with open("Progress.sh", "w") as progressShellScriptFile:
         progressShellScriptFile.write(progressShellScriptString)
 
 # For the parallel scripts

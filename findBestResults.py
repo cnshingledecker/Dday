@@ -2,8 +2,8 @@ import os
 import numpy as np
 from exportable_custom_functions import is_int, modify_modelInp_values, get_data_to_modify_modelInp
 
-fileNames = ["baragiola_files_core0/output_file_results", "baragiola_files_core1/output_file_results",
-             "baragiola_files_core2/output_file_results", "baragiola_files_core3/output_file_results"]
+fileNames = ["files_core0/output_file_results", "files_core1/output_file_results",
+             "files_core2/output_file_results", "files_core3/output_file_results"]
 
 bestRMSD = 1e80
 lineValues = ["", "", "", "", "", "", ""]

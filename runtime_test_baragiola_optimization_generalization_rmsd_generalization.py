@@ -14,7 +14,7 @@ num_modified_fitting_factors = 0
 fitting_factors = [] # Holds arrays containing the fitting_factors for the reactions (each element of the array is a list with the various fitting factors for a reaction)
 
 # Note: the below code is ran on every core because each core needs the reaction, and reading it on each core means the data from the file doesn't have to be sent to each core
-with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
+with open('photo_processes_values/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
     for i in range(0, 4): # Skips the first 4 lines of the csv file (lines which are comments)
         fields = next(reader)

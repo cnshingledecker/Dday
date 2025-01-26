@@ -3,26 +3,25 @@ import os
 from exportable_custom_functions import is_float, is_int
 
 # startTime1 = int(round(time.time() * 1000))
-# os.system("python3 baragiola_optimization.py")
+# os.system("python3 paralellFit.py")
 # endTime1 = int(round(time.time() * 1000))
 
 startTime2 = int(round(time.time() * 1000))
-os.system("python3 baragiola_generalized_serial.py") # Run the generalized baragiola optimization
+os.system("python3 serialFit.py") # Run the generalized optimization
 endTime2 = int(round(time.time() * 1000))
 
 startTime3 = int(round(time.time() * 1000))
-os.system("python3 baragiola_optimization_test.py") # Run the original baragiola optimization file (the modified copy used for testing)
+os.system("python3 mullikinFit.py") # Run the original optimization file (the modified copy used for testing)
 endTime3 = int(round(time.time() * 1000))
 
 startTime4 = int(round(time.time() * 1000))
-os.system("mpiexec -n 4 python3 baragiola_generalized_parallel.py") # Run the parallel, generalized baragiola optimization
+os.system("mpiexec -n 4 python3 paralellFit.py") # Run the parallel, generalized optimization
 endTime4 = int(round(time.time() * 1000))
 
 
-# print("Original (baragiola_optimization.py) took " + str((endTime1 - startTime1) / 1000) + " seconds")
-print("Generalization (baragiola_generalized_serial.py) took " + str((endTime2 - startTime2) / 1000) + " seconds")
-print("Modified original (baragiola_optimization_test.py) took " + str((endTime3 - startTime3) / 1000) + " seconds")
-print("Generalized and parallel version (baragiola_generalized_parallel.py) took " + str((endTime4 - startTime4) / 1000) + " seconds")
+print("Generalization (serialFit.py) took " + str((endTime2 - startTime2) / 1000) + " seconds")
+print("Modified original (mullikinFit.py) took " + str((endTime3 - startTime3) / 1000) + " seconds")
+print("Generalized and parallel version (parallelFit.py) took " + str((endTime4 - startTime4) / 1000) + " seconds")
 
 # Compare the results from the original optimization and the generalized optimization
 num_errors = 0

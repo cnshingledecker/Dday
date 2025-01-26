@@ -2,7 +2,7 @@ import math, os, csv
 import numpy as np
 import pandas as pd
 
-from baragiola_file_and_data_functions import getFlux
+from file_and_data_functions import getFlux
 
 def is_int(val):
     try:

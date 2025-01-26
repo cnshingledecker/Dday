@@ -32,7 +32,7 @@ minFieldWidth = min_field_width() # The minimum width of a printed field (includ
 num_processors = num_processors_to_use() # IMPORTANT: Need to adjust if running on a different number of processors
 
 # Note: the below code is ran on every core because each core needs the reaction, and reading it on each core means the data from the file doesn't have to be sent to each core
-with open('reaction_fitting_factor_linspace_args/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
+with open('photo_processes_values/reaction_fitting_factor_vector_arguments.csv', newline='') as vector_creation_args_csv:  # Read in the parameters from the csv file for the creation of the linspaces (for each fitting factor to be varied)
     reader = csv.reader(vector_creation_args_csv, delimiter=',')      
     for i in range(0, 4): # Skips the first 4 lines of the csv file (lines which are comments)
         fields = next(reader)
@@ -115,6 +115,7 @@ if rank == 0:
         os.system("cp -R experimental_data " + new_dir_name)
     
     for i in range(0, len(all_fitting_factor_combinations)): # Tell each core how many mini-chunks it is going to be receiving
+        print("At line 118, i=",i," and len(...) = ",len(all_fitting_factor_combinations))
         comm.send(len(all_fitting_factor_combinations[i]), dest=i)
     
     # Send all of the mini_-chunks to the different cores

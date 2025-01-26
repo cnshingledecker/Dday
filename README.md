@@ -143,7 +143,7 @@ When switching the network, make sure to change the files mentioned below as fol
     - Rewrite the definition of the `process_model_data` function so it formats the data outputted by the model (the dependent variable) so it is the same units as the experimental data, which is in the `exportable_custom_functions.py` file.
 - [`model_inp_values/model_inp_values.csv`](/model_inp_values/model_inp_values.csv)
     - If you wish to modify values in `model.inp` to optimize them (by trying out ranges of values, similar to modifying the delta values for the reaction rates), edit the file `model_inp_values/model_inp_values.csv` according to the rules in there, and make sure to set the variable `to_modify_modelInp_values` to `True` if you want to test out the different `model.inp` values specified in the file. If you don't want the contents of that file to be read (whether it contains data for modifying lines or not), set `to_modify_modelInp_values` to `False`. 
-- [`reaction_fitting_factor_linspace_args/reaction_fitting_factor_linspace_args.csv`](/reaction_fitting_factor_linspace_args/reaction_fitting_factor_linspace_args.csv)
+- [`reaction_fitting_factor_linspace_args/reaction_fitting_factor_linspace_args.csv`](/photo_processes_values/reaction_fitting_factor_linspace_args.csv)
     - Make sure to put in one line per reaction rate for which you want to try a range of values. The rules for how to format this are in that file.
 - [`exportable_custom_functions.py`](/exportable_custom_functions.py)
     - You must change the `setup_experimental_data` function--put your experimental data in there; keep the names `expX` (independent variable) and `expY` (dependent variable).
