@@ -795,7 +795,6 @@ if (t/=told) then
 !    write(*,1010) "n(H2)grain   =",100*(y(species_idx('gH2       ')) + y(species_idx('bH2       ')))/wrt,"% wrt. total water : ",100.0*(y(species_idx('bH2       '))/(tot_surf_ab + tot_bulk_ab)),"% wrt. total ice ab."
     temp_atoms = 0
     temp_atoms_y = 0
-    PRINT *, "In the normal species print-out location"
     DO i = first_surf_spec,nspecies
 !      IF ( TRIM(s(i)%name) .NE. "e-" .AND. TRIM(s(i)%name) .NE. "ge-" .AND. TRIM(s(i)%name).NE."be-" ) THEN
 !        WRITE (*,'(A,A,ES9.2,A,F5.1,A,ES9.2,A,F5.1,A)') s(i)%name, "has an s-array abundance of ", s(i)%abundance, "(", ((s(i)%abundance*s(i)%natoms)/total_atoms)*100.0, &
