@@ -13,7 +13,7 @@ Interactive = True
 
 ###Key Parameters###
 initialO2 = 5.7E22 # O2 molecules cm^-3
-flux = 2.33E14 #particles cm^-2 s^-1
+flux = 2.2E14 #particles cm^-2 s^-1
 
 # Initialize Data Structures
 model_inp_ranges = pd.DataFrame()

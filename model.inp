@@ -18,8 +18,8 @@ FAST_BULK             = 1          ; 1 - Reactive bulk species react non-diffusi
 FAST_ATOMS            = 0          ; 1 - Reactive bulk species react non-diffusively; 0 - not
 PHOTOEXC              = 1          ; 1 - Detailed photoexcitation/dissociation; 0 - off
 PHOTOION              = 1          ; 1 - Detailed photoionization/dissociation to suprathermal products; 0 - off
-FIXED_DVAL            = 1          ; 1 - Fixed δ value, used in detailed photo rate coefficients
-FIXED_NU              = 0          ; 1 - Fixed ν value, the "trial frequency" used in fast bulk rates
+FIXED_DVAL            = 0          ; 1 - Fixed δ value, used in detailed photo rate coefficients
+FIXED_NU              = 1          ; 1 - Fixed ν value, the "trial frequency" used in fast bulk rates
 DISABLE_DESORB        = 1          ; 1 - No desorption. Used when modeling some experiments. NB: must also set DES_REACTIVE=0
 
 CHEM_FILE             = network.dat
@@ -41,7 +41,7 @@ AVST                  = 0.0000E+00 ; AvSt - stellar extinction
 AVIS                  = 0.0000E+00 ; AvIS - interstellar extinction
 ZETACR                = 0.0000E+00 ; ZetaCR - cosmic ray ionization rate
 ZETAX                 = 0.0000E+00 ; ZetaX - X-ray ionization rate
-PHI_EXP               = 1.0000E+15 ; Flux of particles/photons in experiment
+PHI_EXP               = 2.2000E+14 ; Flux of particles/photons in experiment
 Se_EXP                = 3.3000E-14 ; ev cm^2; Electronic stopping cross-section in experiment
 TRIAL_NU              = 1.0000E+15 ; Trial Frequency, ν, for bulk-phase radical reactions
 ION_NU                = 1.0000E+15 ; Trial Frequency, ν, for surface and bulk ion-neutral reactions
@@ -71,7 +71,7 @@ EFFSURFMASS           = 1.2000E+02 ; effective mass of surface molecules for RD 
 
 INIT_NON_ZERO         = 1          ; 0 - no initial abundances, 1 - read from init* files
 
-TIMESTEPS             = 100        ; Amount of time moments in output
+TIMESTEPS             = 200        ; Amount of time moments in output
 TSTART                = 1.0000E-18 ; Time of the first output
 TEND                  = 1.1420E-04 ; Time of the last output
 
