@@ -7,9 +7,9 @@ from exportable_custom_functions import split_list, split_list_chunks, find_near
 
 
 ###Switches###
-varyModel = False
+varyModel = True
 varyPhotoProcesses = True
-Interactive = True
+Interactive = False
 
 ###Key Parameters###
 initialO2 = 5.7E22 # O2 molecules cm^-3
@@ -158,3 +158,6 @@ bestRMSDindex = RMSDvals.index(bestRMSD)
 
 print("Best RMSD = ", bestRMSD," for parameter set")
 print(parameterSets.loc[bestRMSDindex])
+parameterSets.to_csv("RMSD_vals.out")
+
+

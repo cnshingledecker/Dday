@@ -39,7 +39,7 @@ CHARACTER*2 s2, tmp2
 LOGICAL cond
 DIMENSION s1(8), w1(8), s2(6), w2(6)
 
-PRINT *, x
+!PRINT *, x
 
 ! Initialization of the output:
 aweight = 0.0D0

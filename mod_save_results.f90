@@ -153,126 +153,126 @@ IF (is_disk_model==1) THEN
 !! Open output file 'out':
 !        CALL len_tri2(outfile_nameprefix,30,nlen)
 
-    OPEN (unit=20,file=outfile_nameprefix(1:nlen)//'_'//ait(1:nait)//'.out',status='unknown',access='append')
-    REWIND 20
-    OPEN (unit=30,file=outfile_nameprefix(1:nlen)//'_'//ait(1:nait)//'.idl',status='unknown',access='append')
-    REWIND 30
+!    OPEN (unit=20,file=outfile_nameprefix(1:nlen)//'_'//ait(1:nait)//'.out',status='unknown',access='append')
+!    REWIND 20
+!    OPEN (unit=30,file=outfile_nameprefix(1:nlen)//'_'//ait(1:nait)//'.idl',status='unknown',access='append')
+!    REWIND 30
 
 ELSE
 
-  OPEN (20, FILE=outfile_nameprefix(1:nlen)//'.out', STATUS='UNKNOWN', ACCESS='APPEND')
-  REWIND (20)
-  OPEN (30, FILE=outfile_nameprefix(1:nlen)//'.idl', STATUS='UNKNOWN', ACCESS='APPEND')
-  REWIND (30)
+!  OPEN (20, FILE=outfile_nameprefix(1:nlen)//'.out', STATUS='UNKNOWN', ACCESS='APPEND')
+!  REWIND (20)
+!  OPEN (30, FILE=outfile_nameprefix(1:nlen)//'.idl', STATUS='UNKNOWN', ACCESS='APPEND')
+!  REWIND (30)
 
 ENDIF
 
 ! 1) Write current parameters to the 'out//.idl':
-WRITE(30,'(A18)') '# ART input file: '
-WRITE(30,'(a80)') chem_file
-WRITE(30,'(a80)') !'dummy line'
-WRITE(30,'(I5)') curpoint
-WRITE(30,'(1PE9.2)') rs
-WRITE(30,'(1PE9.2)') zs
-WRITE(30,'(0PF5.0)') T
-WRITE(30,'(1PE9.2)') rho
-WRITE(30,'(1PE9.2)') drho
-WRITE(30,'(1PE9.2)') dust2gas
-WRITE(30,'(1PE9.2)') agr
-WRITE(30,'(1PE9.2)') AvSt
-WRITE(30,'(1PE9.2)') AvIS
-WRITE(30,'(1PE9.2)') G0_stellar
-WRITE(30,'(1PE9.2)') ZetaCR
-WRITE(30,'(1PE9.2)') ZetaX
-WRITE(30,'(1PE9.2)') albedo_UV
-WRITE(30,'(1PE9.2)') tend
-WRITE(30,'(1PE9.2)') tstart
-WRITE(30,'(I4)') init_non_zero
-WRITE(30,'(A10,1x,D22.15)') (s_init(j)%name, s_init(j)%abundance, j = 1, init_non_zero)
-WRITE(30,*) nspecies
-WRITE(30,'((9A10),:)') (s(j)%name, j = 1, nspecies)
-WRITE(30,*) timesteps
-WRITE(30,*) (timesteps_out(j), j = 1, timesteps)
-WRITE(30,*) nreactions
-WRITE(30,'(10D12.5)') (r(j)%rate, j = 1, nreactions)
-WRITE(30,'(10D12.5)') ((dmax1(s(j)%abundance_out(l)/gdens*ddens, 1.0D-99), l=1,timesteps), j=1,nspecies)
-CLOSE(30)
+!WRITE(30,'(A18)') '# ART input file: '
+!WRITE(30,'(a80)') chem_file
+!WRITE(30,'(a80)') !'dummy line'
+!WRITE(30,'(I5)') curpoint
+!WRITE(30,'(1PE9.2)') rs
+!WRITE(30,'(1PE9.2)') zs
+!WRITE(30,'(0PF5.0)') T
+!WRITE(30,'(1PE9.2)') rho
+!WRITE(30,'(1PE9.2)') drho
+!WRITE(30,'(1PE9.2)') dust2gas
+!WRITE(30,'(1PE9.2)') agr
+!WRITE(30,'(1PE9.2)') AvSt
+!WRITE(30,'(1PE9.2)') AvIS
+!WRITE(30,'(1PE9.2)') G0_stellar
+!WRITE(30,'(1PE9.2)') ZetaCR
+!WRITE(30,'(1PE9.2)') ZetaX
+!WRITE(30,'(1PE9.2)') albedo_UV
+!WRITE(30,'(1PE9.2)') tend
+!WRITE(30,'(1PE9.2)') tstart
+!WRITE(30,'(I4)') init_non_zero
+!WRITE(30,'(A10,1x,D22.15)') (s_init(j)%name, s_init(j)%abundance, j = 1, init_non_zero)
+!WRITE(30,*) nspecies
+!WRITE(30,'((9A10),:)') (s(j)%name, j = 1, nspecies)
+!WRITE(30,*) timesteps
+!WRITE(30,*) (timesteps_out(j), j = 1, timesteps)
+!WRITE(30,*) nreactions
+!WRITE(30,'(10D12.5)') (r(j)%rate, j = 1, nreactions)
+!WRITE(30,'(10D12.5)') ((dmax1(s(j)%abundance_out(l)/gdens*ddens, 1.0D-99), l=1,timesteps), j=1,nspecies)
+!CLOSE(30)
 
 ! 2) Write current parameters to the 'out':
-li = nspecies
-lt = li+1
-iana =1
-WRITE(20,20)
-WRITE(20,75)
-75 FORMAT(21x,39('*'))
-WRITE(20,84) lt-1
-84 format(20X,' **  CIRCUMSTELLAR ENVELOPE CHEMISTRY **',/, &
-   20X,' **          ',1I3,' SPECIES SET          **',/, &
-   20X,' **            F77 VERSION            **',/, &
-   20X,' **             31/03/2007            **')
-write(20,75)
-write(20,20)
-21 format(1x,' SPECIES CONTAINED IN SCHEME: ',//)
-write(20,22) (s(j)%name,j=1,nspecies)
-22 format(8(1x,a10))
-write(20,23)
-23 format(/)
-write(20,36) nspecies
-36 format(1x,' NUMBER OF VALID SPECIES USED = ',1i4)
-write(20,45) nreactions
-45 format(1x,' NUMBER OF VALID REACTIONS USED = ',1i6)
-write(20,23)
-20 format(//)
+!li = nspecies
+!lt = li+1
+!iana =1
+!WRITE(20,20)
+!WRITE(20,75)
+!75 FORMAT(21x,39('*'))
+!WRITE(20,84) lt-1
+!84 format(20X,' **  CIRCUMSTELLAR ENVELOPE CHEMISTRY **',/, &
+!   20X,' **          ',1I3,' SPECIES SET          **',/, &
+!   20X,' **            F77 VERSION            **',/, &
+!   20X,' **             31/03/2007            **')
+!write(20,75)
+!write(20,20)
+!21 format(1x,' SPECIES CONTAINED IN SCHEME: ',//)
+!write(20,22) (s(j)%name,j=1,nspecies)
+!22 format(8(1x,a10))
+!write(20,23)
+!23 format(/)
+!write(20,36) nspecies
+!36 format(1x,' NUMBER OF VALID SPECIES USED = ',1i4)
+!write(20,45) nreactions
+!45 format(1x,' NUMBER OF VALID REACTIONS USED = ',1i6)
+!write(20,23)
+!20 format(//)
 
 ! Write input parameters:
-write(20,64)
-64 format(3x,' INITIAL VALUES: '/)
-WRITE(20,65) curpoint, rs, zs, gdens, T, rho, Tdust, drho, dust2gas, agr, AvSt, AvIS, G0_stellar, (ZetaCR+ZetaX), albedo_UV, tstart, tend, 0.0d0
-65 FORMAT( &
-   3X,' Grid point  = ',I5,/, &
-   3X,' Radius      = ',1PE11.3,' AU',/, &
-   3X,' Height      = ',1PE11.3,' AU',/, &
-   3X,' n(H+2H2)    = ',1PE11.3,' cm^(-3)',/, &
-   3X,' Tg          = ',0PF8.1,'K',/, &
-   3X,' rho_g       = ',1PE11.3,' g/cm^3',/, &
-   3X,' Td          = ',0PF8.1,'K',/, &
-   3X,' rho_d       = ',1PE11.3,' g/cm^3',/, &
-   3X,' Mdust/Mgas  = ',1PE11.3,/, &
-   3X,' grain size  = ',1PE11.3,' cm',/, &
-   3X,' Av(stellar) = ',1PE11.3,' mag.',/, &
-   3X,' Av(IS)      = ',1PE11.3,' mag.',/, &
-   3X,' G0(stellar) = ',1PE11.3,' G0(IS)',/, &
-   3X,' Zeta        = ',1PE11.3,/, &
-   3X,' albedo(UV)  = ',1PE11.3,/, &
-   3X,' Start time  = ',0PF9.0,' years',/, &
-   3X,' Finish time = ',0PF9.0,' years',/, &
-   3X,' Diff. coeff.= ',1PE11.3)
-WRITE(20,20)
+!write(20,64)
+!64 format(3x,' INITIAL VALUES: '/)
+!WRITE(20,65) curpoint, rs, zs, gdens, T, rho, Tdust, drho, dust2gas, agr, AvSt, AvIS, G0_stellar, (ZetaCR+ZetaX), albedo_UV, tstart, tend, 0.0d0
+!65 FORMAT( &
+!   3X,' Grid point  = ',I5,/, &
+!   3X,' Radius      = ',1PE11.3,' AU',/, &
+!   3X,' Height      = ',1PE11.3,' AU',/, &
+!   3X,' n(H+2H2)    = ',1PE11.3,' cm^(-3)',/, &
+!   3X,' Tg          = ',0PF8.1,'K',/, &
+!   3X,' rho_g       = ',1PE11.3,' g/cm^3',/, &
+!   3X,' Td          = ',0PF8.1,'K',/, &
+!   3X,' rho_d       = ',1PE11.3,' g/cm^3',/, &
+!   3X,' Mdust/Mgas  = ',1PE11.3,/, &
+!   3X,' grain size  = ',1PE11.3,' cm',/, &
+!   3X,' Av(stellar) = ',1PE11.3,' mag.',/, &
+!   3X,' Av(IS)      = ',1PE11.3,' mag.',/, &
+!   3X,' G0(stellar) = ',1PE11.3,' G0(IS)',/, &
+!   3X,' Zeta        = ',1PE11.3,/, &
+!   3X,' albedo(UV)  = ',1PE11.3,/, &
+!   3X,' Start time  = ',0PF9.0,' years',/, &
+!   3X,' Finish time = ',0PF9.0,' years',/, &
+!   3X,' Diff. coeff.= ',1PE11.3)
+!WRITE(20,20)
 ! Write calculated abundances:
-write(20,63)
+!write(20,63)
 63 format(3X,' CALCULATED ABUNDANCES: '/)
 is = 1
 iff = min(6,nspecies)
-32 write(20,41) (s(j)%name,j=is,iff)
-write(20,76)
-do l = 1, timesteps
-  write(20,30) timesteps_out(l)/year,(dmax1(s(j)%abundance_out(l)/gdens*ddens, 1.0D-99),j=is,iff)
-end do
-30 FORMAT(1x,7(1pe11.3))
-WRITE(20,41)(s(j)%name,j=is,iff)
-41 FORMAT(6x,'time',6x,6(1a10,1x))
-write(20,20)
-is=is+6
-iff=iff+6
+!32 write(20,41) (s(j)%name,j=is,iff)
+!write(20,76)
+!do l = 1, timesteps
+!  write(20,30) timesteps_out(l)/year,(dmax1(s(j)%abundance_out(l)/gdens*ddens, 1.0D-99),j=is,iff)
+!end do
+!30 FORMAT(1x,7(1pe11.3))
+!WRITE(20,41)(s(j)%name,j=is,iff)
+!41 FORMAT(6x,'time',6x,6(1a10,1x))
+!write(20,20)
+!is=is+6
+!iff=iff+6
 ! Interupt?
-if (iff.gt.nspecies) iff=nspecies
-if (is.ge.li) go to 38
-go to 32
+!if (iff.gt.nspecies) iff=nspecies
+!if (is.ge.li) go to 38
+!go to 32
 ! Last output statement:
-38 lx=li
-lt=lt-1
-76 FORMAT(1x,80('-'))
-CLOSE (20)
+!38 lx=li
+!lt=lt-1
+!76 FORMAT(1x,80('-'))
+!CLOSE (20)
 
 END SUBROUTINE save_results_semenov
 

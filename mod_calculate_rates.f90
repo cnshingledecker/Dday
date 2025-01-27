@@ -551,12 +551,12 @@ DO i = 1, nreactions
             anu1 = TRIAL_NU !DSQRT(sitedens*ak_B/aMp*s(r(i)%ir2)%edes/PI/PI/s(r(i)%ir2)%weight)
 
             IF ( ISNAN(anu0) ) THEN
-              PRINT *, "anu0 = NaN"
+!              PRINT *, "anu0 = NaN"
               anu0 = 1.0e14 ! For electrons. Set characteristic vibration to 1e14 s-1
             ENDIF
  
             IF ( ISNAN(anu1) ) THEN
-              PRINT *, "anu1 = NaN"
+!              PRINT *, "anu1 = NaN"
               anu1 = 1.0e14
             ENDIF
           
@@ -576,12 +576,12 @@ DO i = 1, nreactions
             anu1 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir2)%edes/PI/PI/s(r(i)%ir2)%weight)
 
             IF ( ISNAN(anu0) ) THEN
-              PRINT *, "anu0 = NaN"
+!              PRINT *, "anu0 = NaN"
               anu0 = 1.0e14
             ENDIF
  
             IF ( ISNAN(anu1) ) THEN
-              PRINT *, "anu1 = NaN"
+!              PRINT *, "anu1 = NaN"
               anu1 = 1.0e14
             ENDIF
 
@@ -603,9 +603,9 @@ DO i = 1, nreactions
             r(i)%rate = suprathermal*radiolysis*r(i)%alpha*(r(i)%gamma/1.0d2)*PHI_EXP*Se_EXP
 !            r(i)%rate = suprathermal*radiolysis*r(i)%alpha*(r(i)%gamma/1.0d2)*PHI_EXP*Se_EXP*(1.0)*RHO_ICE*(1.0/0.7071067)
             IF ( r(i)%rate .GT. 0.0d0 ) THEN
-              PRINT *, r(i)%r1," + IONRAD -> ",r(i)%p1," + ",r(i)%p2," + ",r(i)%p3
-              PRINT *, "k_rad=",r(i)%rate
-              PRINT *, "************************"
+!              PRINT *, r(i)%r1," + IONRAD -> ",r(i)%p1," + ",r(i)%p2," + ",r(i)%p3
+!              PRINT *, "k_rad=",r(i)%rate
+!              PRINT *, "************************"
             ENDIF
           ENDIF
         CASE (18) ! Quenching of suprathermal species
@@ -613,7 +613,7 @@ DO i = 1, nreactions
           anu0 = DSQRT(sitedens*ak_B/aMp*s(r(i)%ir1)%edes/PI/PI/s(r(i)%ir1)%weight)
 
             IF ( ISNAN(anu0) ) THEN
-              PRINT *, "anu0 = NaN"
+!              PRINT *, "anu0 = NaN"
               anu0 = 1.0e14
             ENDIF
  

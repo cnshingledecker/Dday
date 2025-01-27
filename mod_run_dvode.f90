@@ -40,7 +40,6 @@ DO i =1, init_non_zero
 !  print*,s(species_idx(s_init(i)%name))%name,s(species_idx(s_init(i)%name))%abundance
   IF (s(species_idx(s_init(i)%name))%name(1:1) == 'g') nml = nml + s(species_idx(s_init(i)%name))%abundance
   IF (s(species_idx(s_init(i)%name))%name(1:1) == 'b') nml = nml + s(species_idx(s_init(i)%name))%abundance
-  ! Question: why not also add 'b' species? - CNS
   IF (s(species_idx(s_init(i)%name))%name(1:4) == 'bH2O') initial_water = s(species_idx(s_init(i)%name))%abundance
   IF (s(species_idx(s_init(i)%name))%name(1:3) == 'bO2') initial_oxygen = s(species_idx(s_init(i)%name))%abundance
 ENDDO
@@ -59,8 +58,8 @@ tcur = tbegin
 ALLOCATE(y(nspecies))
 y(:) = 0.0d0
 y(1:nspecies) = s(1:nspecies)%abundance
-PRINT *, "Sum(Y) =",sum(y(1:nspecies))
-PRINT *, "Initial number of monolayers = ",nml
+!PRINT *, "Sum(Y) =",sum(y(1:nspecies))
+!PRINT *, "Initial number of monolayers = ",nml
 
 total_atoms = 0
 DO i = first_surf_spec,nspecies
@@ -70,7 +69,7 @@ DO i = first_surf_spec,nspecies
   ENDIF
 ENDDO
 
-WRITE (*,'(A,ES10.4,A)') "There are a total of ", total_atoms, " atoms at the beginning"
+!WRITE (*,'(A,ES10.4,A)') "There are a total of ", total_atoms, " atoms at the beginning"
 
 
 OPTIONS = SET_OPTS(MXSTEP=500000, RELERR=RTOL, ABSERR=ATOL, METHOD_FLAG=22)
@@ -122,12 +121,14 @@ ENDDO
 
 93 CONTINUE
 
+!PRINT *, "Initial Abundances"
 DO j = 1, nspecies
   IF ( ( ( s(j)%name(1:1) .EQ. 'b' ) .OR. ( s(j)%name(1:1) .EQ. 'b' ) ) .AND. &
     ( s(j)%frac_abundance .GT. 1.0e-30 ) ) THEN
-    PRINT *, s(j)%name, s(j)%frac_abundance
+!    PRINT *, s(j)%name, s(j)%frac_abundance
   ENDIF
 ENDDO
+!PRINT *, "****************"
 
 END SUBROUTINE run_dvode_solver
 
@@ -732,12 +733,12 @@ nml_s_array = aint(sum(s(first_surf_spec:nspecies)%abundance)/nsites)
 
 IF (nml/=nml_old .AND. t/=told) THEN
     nml_int = aint(nml)
-    PRINT *, "nml_old = ", nml_old
-    PRINT *, "nml = ", nml
-    PRINT *, "nml_s_array = ", nml_s_array
-    PRINT *, "nml_int = ", nml_int
-    PRINT *, "size of abundances_bulk = ",SIZE(abundances_bulk,1), " in dimension 1, and ",SIZE(abundances_bulk,2), " in dimension 2"
-    PRINT *, "size of y = ",SIZE(y)
+!    PRINT *, "nml_old = ", nml_old
+!    PRINT *, "nml = ", nml
+!    PRINT *, "nml_s_array = ", nml_s_array
+!    PRINT *, "nml_int = ", nml_int
+!    PRINT *, "size of abundances_bulk = ",SIZE(abundances_bulk,1), " in dimension 1, and ",SIZE(abundances_bulk,2), " in dimension 2"
+!    PRINT *, "size of y = ",SIZE(y)
     IF (nml_int>0) abundances_bulk(1:nspecies,nml_int) = y(1:nspecies)
     IF (nml_int>0) timesteps_nml(nml_int) = t
     IF (nml>nml_max) nml_max = nml
@@ -775,10 +776,10 @@ if (t/=told) then
   ELSE
     1010 FORMAT(1X,A9,1X,ES12.4,A21,F12.4,A21)
 !    write(*,'(a22,1pES12.4)') 'Fluence (ions/cm^2) = ',t*PHI_EXP
-    write(*,*) "Nml=",sum(y(first_surf_spec:nspecies))/nsites
-    write(*,'(a11,1pES12.4)') 'Time (s) = ',t
+!    write(*,*) "Nml=",sum(y(first_surf_spec:nspecies))/nsites
+!    write(*,'(a11,1pES12.4)') 'Time (s) = ',t
     IF ( MODEL_EXPERIMENT .EQ. 1 ) THEN
-      PRINT '(A,ES12.4)', 'Fluence = ',t*PHI_EXP
+!      PRINT '(A,ES12.4)', 'Fluence = ',t*PHI_EXP
     ENDIF
 !    wrt = y(species_idx('bH2O      '))
 !    wrt = (y(species_idx('gH2O      ')) + y(species_idx('bH2O      ')))
@@ -858,8 +859,8 @@ if (t/=told) then
 !    write(*,1010) "n(S6)   =",(y(species_idx('gS6       ')) + y(species_idx('bS6       ')))/1.0e20
 !    write(*,1010) "n(S7)   =",(y(species_idx('gS7       ')) + y(species_idx('bS7       ')))/1.0e20
 !    write(*,1010) "n(S8)   =",(y(species_idx('gS8       ')) + y(species_idx('bS8       ')))/1.0e20
-    write(*,*) "**********************************"
-    write(*,*) "**********************************"
+!    write(*,*) "**********************************"
+!    write(*,*) "**********************************"
   ENDIF
   write(41,*)t/3.155d7, dtran
   write(42,'(7(1pe15.7))')t/3.155d7, dtran, diff_m2s_tot, sum(y(first_surf_spec:first_surf_spec+n_surf_spec-1)), dtran_fd, sum(y(first_surf_spec+n_surf_spec:first_surf_spec+n_surf_spec+n_surf_spec-1)), cov
