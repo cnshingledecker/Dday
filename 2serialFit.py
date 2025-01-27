@@ -7,8 +7,8 @@ from exportable_custom_functions import split_list, split_list_chunks, find_near
 
 
 ###Switches###
-varyModel = True
-varyPhotoProcesses = False
+varyModel = False
+varyPhotoProcesses = True
 Interactive = True
 
 ###Key Parameters###
@@ -126,7 +126,7 @@ for index in parameterSets.index:
 #                    line = re.sub(pattern, f"= {formatted_value}", line)
                     start_col = 107  # Starting column (1-based index)
                     end_col = 118  # Ending column (1-based index)
-                    line = line[:start_col - 1] + formatted_value + line[end_col:]
+                    line = line[:start_col - 1] + formatted_value + line[end_col:] + "\n"
                     print(f"New Line: {line}")
                     file.write(line)
                 else:
@@ -135,7 +135,7 @@ for index in parameterSets.index:
     subprocess.run("./monaco")
 
     # Import bO3.csv and read into df
-    calcData = pd.read_csv("~/Dday/csv/bO3.csv", header=1, names=["Fluence", "Abundance"])
+    calcData = pd.read_csv("csv/bO3.csv", header=1, names=["Fluence", "Abundance"])
     calcData["Abundance"] = (calcData["Abundance"] / initialO2) * 100.0
 
     # Find the closest calculated values to experiment and calculate deviation
