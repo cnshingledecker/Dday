@@ -1,2 +1,11 @@
 __pycache__/
 .vscode/
+*.mod
+analytics*
+fort*
+*.out
+*.idl
+ab/
+csv/
+pickle_dataframes/
+monaco

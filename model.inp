@@ -73,7 +73,7 @@ INIT_NON_ZERO         = 1          ; 0 - no initial abundances, 1 - read from in
 
 TIMESTEPS             = 200        ; Amount of time moments in output
 TSTART                = 1.0000E-18 ; Time of the first output
-TEND                  = 1.1420E-04 ; Time of the last output
+TEND                  = 1.1420E-05 ; Time of the last output
 
 N_DET_SPEC            = 43         ; # of species for detailed study
 ge-
