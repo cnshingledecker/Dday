@@ -86,16 +86,15 @@ print("Now looping through parameter sets")
 for index in parameterSets.index:
     print("***************************************************************************")
     print("Parameter Set",index," of ",parameterSets.shape[0])
-    print(parameterSets.loc[index])
+#    print(parameterSets.loc[index])
     for column in parameterSets.columns:
-        print(column)
+#        print(column)
         # Open model.inp to read and modify its content
         with open("model.inp", "r") as file:
             lines = file.readlines()  # Read all lines into a list
         with open("model.inp", "w") as file:
             for line in lines:
                 if re.search(rf"\b{column}\b", line):  # Using raw f-string (rf-string) for dynamic regex
-                    print(f"Old Line: {line}")
                     # New float value to replace
                     new_value = parameterSets.loc[index,column]  # Replace with your desired float
                     # Format the new value as scientific notation with the same format (e.g., 1.0000E+15)
@@ -104,7 +103,6 @@ for index in parameterSets.index:
                     pattern = r"=\s+[-+]?\d+\.\d+E[-+]?\d+"
                     # Replace the matched value with the new formatted value
                     line = re.sub(pattern, f"= {formatted_value}", line)
-                    print(f"New Line: {line}")
                     file.write(line)
                 else:
                     file.write(line)
@@ -115,7 +113,6 @@ for index in parameterSets.index:
         with open("photo_processes.dat", "w") as file:
             for line in lines:
                 if re.search(rf"\b{column}\b", line):  # Using raw f-string (rf-string) for dynamic regex
-                    print(f"Old Line: {line}")
                     # New float value to replace
                     new_value = parameterSets.loc[index,column]  # Replace with your desired float
                     # Format the new value as scientific notation with the same format (e.g., 1.0000E+15)
@@ -127,7 +124,6 @@ for index in parameterSets.index:
                     start_col = 107  # Starting column (1-based index)
                     end_col = 118  # Ending column (1-based index)
                     line = line[:start_col - 1] + formatted_value + line[end_col:] + "\n"
-                    print(f"New Line: {line}")
                     file.write(line)
                 else:
                     file.write(line)
