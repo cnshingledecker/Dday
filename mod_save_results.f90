@@ -63,11 +63,13 @@ DO i=1,nspecies
 !      abundance = s(i)%abundance_out(j)/(2.0*1.0e20*1.0e-12)
       abundance = s(i)%abundance_out(j)/(ICE_AREA*ICE_THICK) ! Print out cm-3 density
       IF (abundance .LT. 1.0e-35) abundance = 0.0E0
-      WRITE(20,1957) timesteps_out(j)*PHI_EXP,abundance
-      WRITE(30,1958) timesteps_out(j)*PHI_EXP,",",abundance
+      IF (timesteps_out(j) .NE. 0.0) THEN
+        WRITE(20,1957) timesteps_out(j)*PHI_EXP,abundance
+        WRITE(30,1958) timesteps_out(j)*PHI_EXP,",",abundance
 
-      WRITE(70,1957) timesteps_out(j),(s(species_idx('gO2       '))%abundance_out(j) + s(species_idx('bO2       '))%abundance_out(j))
-      WRITE(80,1958) timesteps_out(j),",",(s(species_idx('gO2       '))%abundance_out(j) + s(species_idx('bO2       '))%abundance_out(j))
+        WRITE(70,1957) timesteps_out(j),(s(species_idx('gO2       '))%abundance_out(j) + s(species_idx('bO2       '))%abundance_out(j))
+        WRITE(80,1958) timesteps_out(j),",",(s(species_idx('gO2       '))%abundance_out(j) + s(species_idx('bO2       '))%abundance_out(j))
+      ENDIF
     ENDDO
   ENDIF
 
