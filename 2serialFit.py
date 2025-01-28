@@ -151,9 +151,17 @@ for index in parameterSets.index:
 # Now determine which parameter sets yielded the lowest RMSD
 bestRMSD = min(RMSDvals)
 bestRMSDindex = RMSDvals.index(bestRMSD)
-
 print("Best RMSD = ", bestRMSD," for parameter set")
+
+# Append RMSD values to parameterSets df
+parameterSets['RMSD'] = RMSDvals
 print(parameterSets.loc[bestRMSDindex])
+
+# Format all values in exponential notation with 4 decimal places
+def format_exponential(x):
+    return f"{x:.4e}"
+
+# Use .map to apply formatting to every element in the DataFrame
+parameterSets = parameterSets.map(format_exponential)
+
 parameterSets.to_csv("RMSD_vals.out")
-
-
