@@ -25,6 +25,8 @@ ENDIF
 ALLOCATE (reaction_importance(n_det_spec,nreactions,timesteps))
 call save_Results_bulk
 
+2025 FORMAT(A, 1X, ES12.4)
+
 !print*, 'Sing_Mult           = ', sing_mult
 !print*, 'is_disk_model       = ', is_disk_model
 !print*, 'radiolysis          = ', radiolysis
@@ -57,9 +59,9 @@ call save_Results_bulk
 !print*, 'ini_non_zero        = ', init_non_zero
 !print*, 'nspecies            = ', nspecies
 !print*, 'nreactions          = ', nreactions
-print *, 'TRIAL_NU            = ',TRIAL_NU
-print *, 'ION_NU              = ',ION_NU
-print *, 'IONION_NU           = ',IONION_NU
+write(*,2025), 'TRIAL_NU            = ',TRIAL_NU
+write(*,2025), 'ION_NU              = ',ION_NU
+write(*,2025), 'IONION_NU           = ',IONION_NU
 
 !pause
 
