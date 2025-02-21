@@ -1,940 +1,906 @@
 MODULE read_rate06
-USE global_variables
-USE global_functions
-IMPLICIT NONE
+  USE global_variables
+  USE global_functions
+  IMPLICIT NONE
+
+  PRIVATE
+  PUBLIC :: read_rate06database, read_enthalpias, get_reaction_thermodynamics, &
+            get_rd_efficiency, get_rtype
+
+  INTEGER, PARAMETER :: MAX_MONOLAYERS_DEFAULT = 10000
+  INTEGER, PARAMETER :: MIN_UNIT = 10, MAX_UNIT = 999
+  INTEGER, PARAMETER :: MAX_FILE_PATH_LEN = 255
 
 CONTAINS
 
-!Subroutine to read chemical database file
 SUBROUTINE read_rate06database
-IMPLICIT NONE
-INTEGER :: i, ii, j, jj, idx, ir1, ir2, ip1, ip2, ip3, ip4, ip5, dummy, s_r_counter
-INTEGER :: first_suprathermal_react,first_suprathermal_species
-INTEGER :: Nsup_g,Nlines
-INTEGER :: io
-INTEGER :: prodatoms,reactatoms
-REAL*8  :: a, b, c
-REAL*8  :: apriori_nml
-CHARACTER*10 :: groundstate,s_name, r1, r2, p1, p2, p3, p4, p5
-CHARACTER*50 :: printStatementValue
-TYPE (reaction), DIMENSION(:), ALLOCATABLE :: rtemp
+  IMPLICIT NONE
+  INTEGER :: i, ii, jj, idx, s_r_counter, Nsup_g, Nlines, io_stat, file_unit
+  INTEGER :: prodatoms, reactatoms, alloc_stat, num_fields
+  INTEGER :: first_suprathermal_react, first_suprathermal_species, max_monolayers
+  INTEGER :: output_unit
+  INTEGER :: j, k  ! Added declarations for loop variables
+  REAL(KIND=wp) :: a, b, c, apriori_nml
+  CHARACTER(LEN=10) :: groundstate, s_name, r1, r2, p1, p2, p3, p4, p5
+  CHARACTER(LEN=MAX_FILE_PATH_LEN) :: filename
+  TYPE(reaction), DIMENSION(:), ALLOCATABLE :: rtemp
+  LOGICAL :: file_exists, is_suprathermal_on
+  CHARACTER(LEN=120) :: line
+  CHARACTER(LEN=10) :: temp_fields(5)  ! Temporary array for products
 
-! Set a priori number of monolayers
-apriori_nml = 1000000 !10.0*(ICE_THICK/5.0e-8)
+  ! Initialization
+  nreactions = 0
+  nspecies = 0
+  n_surf_spec = 0
+  n_surf_react = 0
+  first_surf_spec = 0
+  first_surfreact = 0
+  first_bulkreact = 0
+  first_suprathermal_species = 0
+  Nsup_g = 0
+  first_suprathermal_react = 0
+  file_unit = MIN_UNIT
+  output_unit = MIN_UNIT
 
-!Pre-reading of ratefile to find the numbers of surface species and surface reactions
-n_surf_spec = 0
-n_surf_react = 0
-
-OPEN(1, FILE=chem_file, STATUS='OLD', ERR=100)
-READ(1,*)nspecies
-
-DO i = 1, nspecies
-  READ(1,'(a10)')s_name
-  IF (s_name(1:1) == 'g') n_surf_spec = n_surf_spec + 1
-!  PRINT *, "The species is ",s_name
-ENDDO
-
-
-READ(1,*)nreactions
-
-!Counting reactions with 'g'-species, to be able to add corresponding bulk reactions
-DO i = 1, nreactions
-    READ(1,1000)idx, r1, r2, p1, p2, p3, p4, p5, a, b, c
-    IF (r1(1:1)=='g' .AND. r2/='FREEZE' .AND. r2/='DESORB' .AND. p1(1:1)=='g') n_surf_react = n_surf_react + 1
-ENDDO
-
-CLOSE (1)
-
-!Main reading of ratefile
-OPEN(1, FILE=chem_file, STATUS='OLD', ERR=100)
-
-
-! C. N. Shingledecker
-! When radiolysis is on we add 3*n_sur_spec
-! 1x for the bulk species
-! 1x for the suprathermal surface species
-! 1x for the suprathermal bulk species
-
-READ(1,*)dummy
-IF ( suprathermal .EQ. 1 ) THEN
-  ALLOCATE (s(nspecies+(3*n_surf_spec)))
-  IF ( MODEL_EXPERIMENT .EQ. 0 ) THEN
-    ALLOCATE (abundances_bulk(nspecies+(3*n_surf_spec),10000)) !Up to 10000 monolayers
+  ! Set max_monolayers
+  IF (MODEL_EXPERIMENT == 1) THEN
+    apriori_nml = MIN(1.0e6_wp, MAX(100.0_wp, 10.0_wp * (ICE_THICK / 5.0e-8_wp)))
   ELSE
-    ALLOCATE (abundances_bulk(nspecies+(3*n_surf_spec),INT(apriori_nml))) !Arbitrarily many monolayers
-  ENDIF
-  DO i = 1, nspecies+(3*n_surf_spec)
-     ALLOCATE (s(i)%abundance_out(timesteps))
-     s(i)%abundance_out(:) = 0.0d0
-  ENDDO
-ELSE
-  ALLOCATE (s(nspecies+n_surf_spec))
-  IF ( MODEL_EXPERIMENT .EQ. 0 ) THEN
-    ALLOCATE (abundances_bulk(nspecies+n_surf_spec,500)) !Up to 300 monolayers
-  ELSE
-    ALLOCATE (abundances_bulk(nspecies+n_surf_spec,INT(apriori_nml))) !Arbitrarily many monolayers
-  ENDIF
-  DO i = 1, nspecies+n_surf_spec
-     ALLOCATE (s(i)%abundance_out(timesteps))
-     s(i)%abundance_out(:) = 0.0d0
-  ENDDO
-END IF
-IF ( MODEL_EXPERIMENT .EQ. 0 ) THEN
-  ALLOCATE (timesteps_nml(3000))
-ELSE
-  ALLOCATE (timesteps_nml(INT(apriori_nml)))
-ENDIF
-s(:)%edes           = 0.0d0
-s(:)%racc           = 0.0d0
-s(:)%rdes           = 0.0d0
-s(:)%abundance      = 0.0d0
-s(:)%frac_abundance = 0.0d0
+    apriori_nml = 1000.0_wp
+  END IF
+  max_monolayers = MIN(MAX_MONOLAYERS_DEFAULT, INT(apriori_nml))
 
+  ! File check with debug
+  WRITE(*,'(A,A)') 'chem_file = ', TRIM(chem_file)
+  WRITE(*,'(A,I0)') 'Length of chem_file = ', LEN_TRIM(chem_file)
+  INQUIRE(FILE=TRIM(chem_file), EXIST=file_exists)
+  IF (.NOT. file_exists) THEN
+    WRITE(*,'(A,A,A)') 'ERROR: File "', TRIM(chem_file), '" not found!'
+    CALL cleanup_and_exit()
+  END IF
 
+  ! Find unit and open file
+  WRITE(*,'(A)') 'Calling find_free_unit'
+  CALL find_free_unit(file_unit, MIN_UNIT, MAX_UNIT)
+  WRITE(*,'(A,I0)') 'file_unit = ', file_unit
+  IF (file_unit == -1) THEN
+    WRITE(*,*) 'ERROR: No available file units'
+    CALL cleanup_and_exit()
+  END IF
+  WRITE(*,'(A)') 'Opening file for pre-read and main read'
+  OPEN(UNIT=file_unit, FILE=TRIM(chem_file), STATUS='OLD', IOSTAT=io_stat)
+  IF (io_stat /= 0) THEN
+    WRITE(*,'(A,I0)') 'ERROR: Failed to open file, IOSTAT=', io_stat
+    CALL cleanup_and_exit()
+  END IF
 
-first_surf_spec = 0
+  ! Pre-read
+  WRITE(*,'(A)') 'Calling pre_read_database'
+  CALL pre_read_database(file_unit)
+  WRITE(*,'(A)') 'Finished pre_read_database'
+  REWIND(file_unit)
+  WRITE(*,'(A)') 'File rewound for main read'
 
-DO i = 1, nspecies
-  READ(1,'(a10)')s(i)%name
-!  PRINT *, s(i)%name
-  s(i)%idx = i
-  s(i)%gas_idx = i
-  s(i)%weight = aweight(s(i)%name)
-!  PRINT *, "Weight = ", s(i)%weight
-  s(i)%natoms = numatoms(s(i)%name)
-!  PRINT *, "N_atoms = ", s(i)%natoms
-  IF (first_surf_spec == 0 .AND. s(i)%name(1:1) == 'g') first_surf_spec = i
-ENDDO
+  ! Allocate arrays and add suprathermal species
+  is_suprathermal_on = (suprathermal == 1)
+  WRITE(*,'(A,I0)') 'Allocating arrays with nspecies=', nspecies
+  CALL allocate_arrays(is_suprathermal_on, max_monolayers)
+  IF (is_suprathermal_on) THEN
+    WRITE(*,'(A)') 'Adding suprathermal species before main read'
+    CALL add_suprathermal_surface_species()
+  END IF
 
+  ! Main reading phase
+  WRITE(*,'(A)') 'Starting main read'
+  READ(file_unit, *, IOSTAT=io_stat) nspecies
+  IF (io_stat /= 0) CALL handle_io_error('reading nspecies')
+  DO i = 1, nspecies
+    READ(file_unit, '(A10)', IOSTAT=io_stat) s(i)%name
+    IF (io_stat /= 0) CALL handle_io_error('reading species name', i)
+    s(i)%idx = i
+    s(i)%gas_idx = i
+    s(i)%weight = aweight(s(i)%name)
+    s(i)%natoms = numatoms(s(i)%name)
+    IF (first_surf_spec == 0 .AND. s(i)%name(1:1) == 'g') first_surf_spec = i
+  END DO
 
+  ! Link gas counterparts
+  CALL link_gas_counterparts()
 
-!Looking for indexes of gas counterparts of surface species
-DO i = 1, nspecies
-  IF (s(i)%name(1:1)=='g') THEN
-    DO j = 1, nspecies
-      IF (s(j)%name==s(i)%name(2:LEN_TRIM(s(i)%name))) s(i)%gas_idx = j
-      s(i)%enthalpia = 0.0d0
-      s(i)%enthalpia_known = 0
-    ENDDO
-  ENDIF
-ENDDO
+  ! Read enthalpies
+  CALL read_enthalpias()
 
-IF ( suprathermal .EQ. 1 ) THEN
-  !Adding suprathermal surface species
-  DO i = 1, n_surf_spec
-      s(nspecies+i)%name = s(first_surf_spec+i-1)%name(1:LEN_TRIM(s(first_surf_spec+i-1)%name))//'*'
-      s(nspecies+i)%idx = nspecies + i
-      s(nspecies+i)%gas_idx = s(first_surf_spec+i-1)%gas_idx
-      s(nspecies+i)%weight = s(first_surf_spec+i-1)%weight
-      s(nspecies+i)%natoms = s(first_surf_spec+i-1)%natoms
-      s(nspecies+i)%enthalpia_known = s(first_surf_spec+i-1)%enthalpia_known
-      s(nspecies+i)%enthalpia = s(first_surf_spec+i-1)%enthalpia
-      s(nspecies+i)%edes = s(first_surf_spec+i-1)%edes
-      s(nspecies+i)%racc = s(first_surf_spec+i-1)%racc
-  ENDDO
-  nspecies = nspecies + n_surf_spec
-END IF
-
-
-
-CALL read_enthalpias
-
-READ(1,*)nreactions
-IF (bulk_chemistry == 0) THEN
-    ALLOCATE (r(nreactions))
-ELSE
-    ALLOCATE (r(nreactions+n_surf_react))
-ENDIF
-ALLOCATE (mre_terms(nreactions+n_surf_react))
-ALLOCATE (rd_v2_terms(5,nreactions+n_surf_react))
-rd_v2_terms(:,:) = 0.0d0
-ii = 1
-!new_nreactions = nreactions
-first_surfreact = 0
-Nsup_g          = 0
-
-DO i = 1, nreactions
-  READ(1,1000)r(ii)%idx, r(ii)%r1, r(ii)%r2, r(ii)%p1, r(ii)%p2, r(ii)%p3, r(ii)%p4, r(ii)%p5, r(ii)%alpha, r(ii)%beta, r(ii)%gamma
-!  PRINT*,"r(ii) is: ",r(ii)
-  r(ii)%ir1 = species_idx(r(ii)%r1)
-  r(ii)%ir2 = species_idx(r(ii)%r2)
-  r(ii)%ip1 = species_idx(r(ii)%p1)
-  r(ii)%ip2 = species_idx(r(ii)%p2)
-  r(ii)%ip3 = species_idx(r(ii)%p3)
-  r(ii)%ip4 = species_idx(r(ii)%p4)
-  r(ii)%ip5 = species_idx(r(ii)%p5)
-  IF (r(ii)%ir1==-1 .OR. r(ii)%ir2==-1 .OR. r(ii)%ip1==-1 .OR. r(ii)%ip2==-1 .OR. r(ii)%ip3==-1 .OR. r(ii)%ip4==-1 .OR. r(ii)%ip5==-1) THEN
-      PRINT '(a31, i5, 1x, 7a10)','Reaction with unknown species: ', r(ii)%idx, r(ii)%r1, r(ii)%r2, r(ii)%p1, r(ii)%p2, r(ii)%p3, r(ii)%p4, r(ii)%p5
-      PRINT *, "Around line 150"
-
-      IF (r(ii)%ir1==-1) THEN
-	PRINT *, "Problem is with ", r(ii)%r1
-      ENDIF
-
-      IF (r(ii)%ir2==-1) THEN
-	PRINT *, "Problem is with ", r(ii)%r2
-      ENDIF
-
-      IF (r(ii)%ip1==-1) THEN
-	PRINT *, "Problem is with ", r(ii)%p1
-	PRINT *, "Weight =", s(r(ii)%ip1)%weight
-	PRINT *, "Num. atoms =", s(r(ii)%ip1)%natoms
-	PRINT *, "Idx =", s(r(ii)%ip1)%idx
-	PRINT *, "Gas Idx =", s(r(ii)%ip1)%gas_idx
-      ENDIF
-
-      IF (r(ii)%ip2==-1) THEN
-	PRINT *, "Problem is with ", r(ii)%p2
-      ENDIF
-
-      IF (r(ii)%ip3==-1) THEN
-	PRINT *, "Problem is with ", r(ii)%p3
-      ENDIF
-
-      IF (r(ii)%ip4==-1) THEN
-	PRINT *, "Problem is with ", r(ii)%p4
-      ENDIF
-
-      IF (r(ii)%ip5==-1) THEN
-	PRINT *, "Problem is with ", r(ii)%p5
-      ENDIF
-
-      STOP
-  ENDIF
-
-  CALL get_reaction_thermodynamics(ii)
-
-  r(ii)%rtype = get_rtype(r(ii)%r1,r(ii)%r2)
-  IF (r(ii)%rtype == 12) s(r(ii)%ir1)%edes = r(ii)%gamma
-  IF (r(ii)%rtype == 12) s(s(r(ii)%ir1)%gas_idx)%edes = r(ii)%gamma
-
-  IF (first_surfreact == 0 .AND. r(ii)%rtype == 13) first_surfreact = ii
-
+  ! Read reactions with dynamic parsing
+  READ(file_unit, *, IOSTAT=io_stat) nreactions
+  IF (io_stat /= 0) CALL handle_io_error('reading nreactions')
+  CALL allocate_reaction_arrays(is_suprathermal_on)
+  ii = 1
+  DO i = 1, nreactions
+    READ(file_unit, '(A)', IOSTAT=io_stat) line
+    IF (io_stat /= 0) THEN
+      WRITE(*,'(A,I0,A,I0)') 'Failed to read reaction line ', i, ' with IOSTAT=', io_stat
+      CALL handle_io_error('reading reaction raw', i)
+    END IF
+    WRITE(*,'(A,I0,A,A)') 'Reaction line ', i, ': ', TRIM(line)
+    ! Initial parse for core fields
+    READ(line, *, IOSTAT=io_stat) r(ii)%idx, r(ii)%r1, r(ii)%r2
+    IF (io_stat /= 0) THEN
+      WRITE(*,'(A,I0,A,I0)') 'Failed to parse reaction core ', i, ' with IOSTAT=', io_stat
+      CALL handle_io_error('reading reaction core', i)
+    END IF
+    ! Determine number of fields
+    num_fields = 0
+    temp_fields = ' '  ! Clear temp array
+    READ(line, *, IOSTAT=io_stat) r(ii)%idx, r(ii)%r1, r(ii)%r2, &
+      (temp_fields(j), j=1,5), r(ii)%alpha, r(ii)%beta, r(ii)%gamma
+    IF (io_stat == 0) THEN
+      num_fields = 5  ! 2 products + 3 reals
+    ELSE IF (io_stat == -1) THEN
+      DO j = 1, 5
+        READ(line, *, IOSTAT=io_stat) r(ii)%idx, r(ii)%r1, r(ii)%r2, &
+          (temp_fields(k), k=1,j), r(ii)%alpha, r(ii)%beta, r(ii)%gamma
+        IF (io_stat == 0) THEN
+          num_fields = j  ! Number of products (1 or 2)
+          EXIT
+        ELSE IF (io_stat /= -1) THEN
+          WRITE(*,'(A,I0,A,I0)') 'Failed field count for reaction ', i, ' with IOSTAT=', io_stat
+          CALL handle_io_error('counting fields', i)
+        END IF
+      END DO
+    ELSE
+      WRITE(*,'(A,I0,A,I0)') 'Failed to parse reaction ', i, ' with IOSTAT=', io_stat
+      CALL handle_io_error('reading reaction', i)
+    END IF
+    ! Assign products based on field count
+    IF (num_fields >= 1) THEN
+      r(ii)%p1 = temp_fields(1)
+      IF (num_fields >= 2) THEN
+        r(ii)%p2 = temp_fields(2)
+      ELSE
+        r(ii)%p2 = ' '
+      END IF
+      r(ii)%p3 = ' '
+      r(ii)%p4 = ' '
+      r(ii)%p5 = ' '
+    ELSE
+      WRITE(*,'(A,I0)') 'Error: No products found for reaction ', i
+      CALL handle_io_error('no products', i)
+    END IF
+    WRITE(*,'(A,I0)') 'Processing reaction ', r(ii)%idx
+    CALL assign_species_indices(ii)
+    CALL get_reaction_thermodynamics(ii)
+    r(ii)%rtype = get_rtype(r(ii)%r1, r(ii)%r2)
+    IF (r(ii)%rtype == 12 .AND. r(ii)%ir1 > 0) THEN
+      s(r(ii)%ir1)%edes = r(ii)%gamma
+      IF (s(r(ii)%ir1)%gas_idx > 0) s(s(r(ii)%ir1)%gas_idx)%edes = r(ii)%gamma
+    END IF
+    IF (first_surfreact == 0 .AND. r(ii)%rtype == 13) first_surfreact = ii
     CALL get_rd_efficiency(ii)
+    WRITE(37, 1001) r(ii)%idx, r(ii)%rtype, r(ii)%r1, r(ii)%r2, r(ii)%p1, &
+      r(ii)%p2, r(ii)%p3, r(ii)%p4, r(ii)%p5, r(ii)%exothermicity, &
+      r(ii)%exothermicity_known, r(ii)%alpha
+    ii = ii + 1
+  END DO
+  CLOSE(file_unit)
 
+  ! Post-processing
+  WRITE(*,'(A)') 'Finished reading reactions'
+  CALL add_bulk_species(first_suprathermal_species)
+  WRITE(*,'(A)') 'Added bulk species'
+  CALL add_bulk_reactions(output_unit)
+  WRITE(*,'(A,L1)') 'Added bulk reactions, is_suprathermal_on=', is_suprathermal_on
+  IF (is_suprathermal_on) CALL add_suprathermal_bulk_and_reactions(Nsup_g, first_suprathermal_react, output_unit)
+  WRITE(*,'(A)') 'Calling write_species_output'
+  CALL write_species_output(file_unit)
+  WRITE(*,'(A)') 'Finished write_species_output'
 
-    write(37,1001)r(ii)%idx,r(ii)%rtype,r(ii)%r1,r(ii)%r2,r(ii)%p1,r(ii)%p2,r(ii)%p3,r(ii)%p4,r(ii)%p5,r(ii)%exothermicity,r(ii)%exothermicity_known, r(ii)%alpha !(des_reactive*P)/(1+des_reactive*P)
-  !Assigning the desorption energies to the surface species
+  RETURN
+1000 FORMAT(1X,I4,1X,2(A10),10X,5(A10),E12.4,1X,F8.2,1X,F8.1)  ! For reference
+1001 FORMAT(1X,I4,1X,I2,1X,2(A10),10X,5(A10),1pE14.5,1X,I1,1X,1pE14.5)
+END SUBROUTINE read_rate06database
 
+SUBROUTINE assign_species_indices(ii)
+  INTEGER, INTENT(IN) :: ii
+  INTEGER :: ir1, ir2, ip1, ip2, ip3, ip4, ip5
+  ir1 = species_idx(r(ii)%r1)
+  WRITE(*,'(A,A10,A,I0)') 'Species ', r(ii)%r1, ' index=', ir1
+  ir2 = species_idx(r(ii)%r2)
+  WRITE(*,'(A,A10,A,I0)') 'Species ', r(ii)%r2, ' index=', ir2
+  ip1 = species_idx(r(ii)%p1)
+  WRITE(*,'(A,A10,A,I0)') 'Species ', r(ii)%p1, ' index=', ip1
+  ip2 = species_idx(r(ii)%p2)
+  WRITE(*,'(A,A10,A,I0)') 'Species ', r(ii)%p2, ' index=', ip2
+  ip3 = species_idx(r(ii)%p3)
+  WRITE(*,'(A,A10,A,I0)') 'Species ', r(ii)%p3, ' index=', ip3
+  ip4 = species_idx(r(ii)%p4)
+  WRITE(*,'(A,A10,A,I0)') 'Species ', r(ii)%p4, ' index=', ip4
+  ip5 = species_idx(r(ii)%p5)
+  WRITE(*,'(A,A10,A,I0)') 'Species ', r(ii)%p5, ' index=', ip5
+  r(ii)%ir1 = ir1
+  r(ii)%ir2 = ir2
+  r(ii)%ip1 = ip1
+  r(ii)%ip2 = ip2
+  r(ii)%ip3 = ip3
+  r(ii)%ip4 = ip4
+  r(ii)%ip5 = ip5
+  IF (ANY([r(ii)%ir1, r(ii)%ir2, r(ii)%ip1, r(ii)%ip2, r(ii)%ip3, r(ii)%ip4, r(ii)%ip5] == -1)) THEN
+    WRITE(*,'(A,I0,1X,7A10)') 'ERROR: Unknown species in reaction: ', r(ii)%idx, &
+      r(ii)%r1, r(ii)%r2, r(ii)%p1, r(ii)%p2, r(ii)%p3, r(ii)%p4, r(ii)%p5
+    CALL cleanup_and_exit()
+  END IF
+END SUBROUTINE assign_species_indices
 
-  ii = ii + 1
-ENDDO
+  SUBROUTINE pre_read_database(file_unit)
+    INTEGER, INTENT(IN) :: file_unit
+    INTEGER :: i, io_stat, idx, j, k
+    CHARACTER(LEN=10) :: s_name, r1, r2, p1, p2
+    CHARACTER(LEN=10) :: temp_fields(5)
+    REAL(KIND=wp) :: a, b, c
+    CHARACTER(LEN=120) :: line
+    INTEGER :: num_fields
+    io_stat = 0
+    READ(file_unit, *, IOSTAT=io_stat) nspecies
+    IF (io_stat /= 0) THEN
+      WRITE(*,'(A,I0)') 'Failed to read nspecies with IOSTAT=', io_stat
+      CALL cleanup_and_exit()
+    END IF
+    DO i = 1, nspecies
+      READ(file_unit, '(A10)', IOSTAT=io_stat) s_name
+      IF (io_stat /= 0) THEN
+        WRITE(*,'(A,I0)') 'Species read failed with IOSTAT=', io_stat
+        CALL cleanup_and_exit()
+      END IF
+      IF (s_name(1:1) == 'g') n_surf_spec = n_surf_spec + 1
+    END DO
+    READ(file_unit, *, IOSTAT=io_stat) nreactions
+    IF (io_stat /= 0) THEN
+      WRITE(*,'(A,I0)') 'Failed to read nreactions with IOSTAT=', io_stat
+      CALL cleanup_and_exit()
+    END IF
+    DO i = 1, nreactions
+      READ(file_unit, '(A)', IOSTAT=io_stat) line
+      IF (io_stat /= 0) THEN
+        WRITE(*,'(A,I0)') 'Failed to read raw line with IOSTAT=', io_stat
+        CALL cleanup_and_exit()
+      END IF
+      WRITE(*,'(A,I0,A,A)') 'Reading reaction ', i, ': ', TRIM(line)
+      READ(line, *, IOSTAT=io_stat) idx, r1, r2
+      IF (io_stat /= 0) THEN
+        WRITE(*,'(A,I0,A,I0)') 'Initial parse failed for reaction ', i, ' with IOSTAT=', io_stat
+        CALL cleanup_and_exit()
+      END IF
+      num_fields = 0
+      READ(line, *, IOSTAT=io_stat) idx, r1, r2, (temp_fields(j), j=1,5)
+      IF (io_stat == 0) THEN
+        num_fields = 5
+      ELSE IF (io_stat == -1) THEN
+        DO j = 1, 5
+          READ(line, *, IOSTAT=io_stat) idx, r1, r2, (temp_fields(k), k=1,j)
+          IF (io_stat == -1) THEN
+            num_fields = j - 1
+            EXIT
+          ELSE IF (io_stat /= 0) THEN
+            WRITE(*,'(A,I0,A,I0)') 'Field count failed for reaction ', i, ' with IOSTAT=', io_stat
+            CALL cleanup_and_exit()
+          END IF
+        END DO
+      ELSE
+        WRITE(*,'(A,I0,A,I0)') 'Temp parse failed for reaction ', i, ' with IOSTAT=', io_stat
+        CALL cleanup_and_exit()
+      END IF
+      IF (num_fields < 3 .OR. num_fields > 5) THEN
+        WRITE(*,'(A,I0,A,I0)') 'Invalid field count for reaction ', i, ': ', num_fields
+        CALL cleanup_and_exit()
+      END IF
+      p1 = temp_fields(1)
+      IF (num_fields >= 4) THEN
+        p2 = temp_fields(2)
+        a = REALVALUE(temp_fields(3))
+        b = REALVALUE(temp_fields(4))
+        IF (num_fields == 5) THEN
+          c = REALVALUE(temp_fields(5))
+        ELSE
+          c = 0.0_wp
+        END IF
+      ELSE
+        p2 = ' '
+        a = REALVALUE(temp_fields(2))
+        b = REALVALUE(temp_fields(3))
+        c = 0.0_wp
+      END IF
+      IF (r1(1:1) == 'g' .AND. r2 /= 'FREEZE' .AND. r2 /= 'DESORB' .AND. p1(1:1) == 'g') &
+        n_surf_react = n_surf_react + 1
+    END DO
+  END SUBROUTINE pre_read_database
 
-CLOSE (1)
+  SUBROUTINE find_free_unit(unit_num, min_unit, max_unit)
+    INTEGER, INTENT(OUT) :: unit_num
+    INTEGER, INTENT(IN) :: min_unit, max_unit
+    LOGICAL :: is_open
+    INTEGER :: i
+    unit_num = -1
+    DO i = min_unit, max_unit
+      INQUIRE(UNIT=i, OPENED=is_open)
+      IF (.NOT. is_open) THEN
+        unit_num = i
+        EXIT
+      END IF
+    END DO
+  END SUBROUTINE find_free_unit
 
+  SUBROUTINE allocate_arrays(is_suprathermal_on, max_monolayers)
+    LOGICAL, INTENT(IN) :: is_suprathermal_on
+    INTEGER, INTENT(IN) :: max_monolayers
+    INTEGER :: total_species, i, alloc_stat
+    total_species = nspecies + MERGE(3 * n_surf_spec, n_surf_spec, is_suprathermal_on)
+    ALLOCATE(s(total_species), STAT=alloc_stat)
+    IF (alloc_stat /= 0) CALL handle_alloc_error('species array', total_species)
+    IF (MODEL_EXPERIMENT == 0) THEN
+      ALLOCATE(abundances_bulk(total_species, MAX_MONOLAYERS_DEFAULT), STAT=alloc_stat)
+      ALLOCATE(timesteps_nml(3000), STAT=alloc_stat)
+    ELSE
+      ALLOCATE(abundances_bulk(total_species, max_monolayers), STAT=alloc_stat)
+      ALLOCATE(timesteps_nml(max_monolayers), STAT=alloc_stat)
+    END IF
+    IF (alloc_stat /= 0) CALL handle_alloc_error('abundances_bulk or timesteps_nml', total_species)
+    DO i = 1, total_species
+      ALLOCATE(s(i)%abundance_out(timesteps), STAT=alloc_stat)
+      IF (alloc_stat /= 0) CALL handle_alloc_error('abundance_out', i)
+      s(i)%abundance_out(:) = 0.0_wp
+      s(i)%edes = 0.0_wp
+      s(i)%racc = 0.0_wp
+      s(i)%rdes = 0.0_wp
+      s(i)%abundance = 0.0_wp
+      s(i)%frac_abundance = 0.0_wp
+    END DO
+  END SUBROUTINE allocate_arrays
 
+  SUBROUTINE allocate_reaction_arrays(is_suprathermal_on)
+    LOGICAL, INTENT(IN) :: is_suprathermal_on
+    INTEGER :: total_reactions, alloc_stat
+    total_reactions = nreactions + MERGE(n_surf_react, 0, bulk_chemistry > 0)
+    ALLOCATE(r(total_reactions), STAT=alloc_stat)
+    IF (alloc_stat /= 0) CALL handle_alloc_error('reaction array', total_reactions)
+    ALLOCATE(mre_terms(total_reactions), STAT=alloc_stat)
+    ALLOCATE(rd_v2_terms(5, total_reactions), STAT=alloc_stat)
+    IF (alloc_stat /= 0) CALL handle_alloc_error('mre_terms or rd_v2_terms', total_reactions)
+    rd_v2_terms = 0.0_wp
+  END SUBROUTINE allocate_reaction_arrays
 
-!Adding bulk species
-DO i = 1, n_surf_spec
-    s(nspecies+i)%name = 'b'//s(first_surf_spec+i-1)%name(2:LEN_TRIM(s(first_surf_spec+i-1)%name))
-    s(nspecies+i)%idx = nspecies + i
-    s(nspecies+i)%gas_idx = s(first_surf_spec+i-1)%gas_idx
-    s(nspecies+i)%weight = s(first_surf_spec+i-1)%weight
-    s(nspecies+i)%natoms = s(first_surf_spec+i-1)%natoms
-    s(nspecies+i)%enthalpia_known = s(first_surf_spec+i-1)%enthalpia_known
-    s(nspecies+i)%enthalpia = s(first_surf_spec+i-1)%enthalpia
-    s(nspecies+i)%edes = s(first_surf_spec+i-1)%edes
-    s(nspecies+i)%racc = s(first_surf_spec+i-1)%racc
-ENDDO
-nspecies = nspecies + n_surf_spec
+  SUBROUTINE link_gas_counterparts()
+    INTEGER :: i, j
+    DO i = 1, nspecies
+      IF (s(i)%name(1:1) == 'g') THEN
+        DO j = 1, nspecies
+          IF (s(j)%name == s(i)%name(2:LEN_TRIM(s(i)%name))) THEN
+            s(i)%gas_idx = j
+            s(i)%enthalpia = 0.0_wp
+            s(i)%enthalpia_known = 0
+          END IF
+        END DO
+      END IF
+    END DO
+  END SUBROUTINE link_gas_counterparts
 
-first_suprathermal_species = nspecies+1
+  SUBROUTINE add_suprathermal_surface_species()
+    INTEGER :: i
+    DO i = 1, n_surf_spec
+      s(nspecies + i)%name = TRIM(s(first_surf_spec + i - 1)%name) // '*'
+      s(nspecies + i)%idx = nspecies + i
+      s(nspecies + i)%gas_idx = s(first_surf_spec + i - 1)%gas_idx
+      s(nspecies + i)%weight = s(first_surf_spec + i - 1)%weight
+      s(nspecies + i)%natoms = s(first_surf_spec + i - 1)%natoms
+      s(nspecies + i)%enthalpia_known = s(first_surf_spec + i - 1)%enthalpia_known
+      s(nspecies + i)%enthalpia = s(first_surf_spec + i - 1)%enthalpia
+      s(nspecies + i)%edes = s(first_surf_spec + i - 1)%edes
+      s(nspecies + i)%racc = s(first_surf_spec + i - 1)%racc
+    END DO
+    nspecies = nspecies + n_surf_spec
+  END SUBROUTINE add_suprathermal_surface_species
 
-! C. N. Shingledecker
-IF ( suprathermal .EQ. 1 ) THEN
-  !Adding suprathermal bulk species
-  DO i = 1, n_surf_spec
-      s(nspecies+i)%name = 'b'//s(first_surf_spec+i-1)%name(2:LEN_TRIM(s(first_surf_spec+i-1)%name))//'*'
-      s(nspecies+i)%idx = nspecies + i
-      s(nspecies+i)%gas_idx = s(first_surf_spec+i-1)%gas_idx
-      s(nspecies+i)%weight = s(first_surf_spec+i-1)%weight
-      s(nspecies+i)%natoms = s(first_surf_spec+i-1)%natoms
-      s(nspecies+i)%enthalpia_known = s(first_surf_spec+i-1)%enthalpia_known
-      s(nspecies+i)%enthalpia = s(first_surf_spec+i-1)%enthalpia
-      s(nspecies+i)%edes = s(first_surf_spec+i-1)%edes
-      s(nspecies+i)%racc = s(first_surf_spec+i-1)%racc
-  ENDDO
-  nspecies = nspecies + n_surf_spec
+  SUBROUTINE add_bulk_species(first_suprathermal_species)
+    INTEGER, INTENT(OUT) :: first_suprathermal_species
+    INTEGER :: i
+    DO i = 1, n_surf_spec
+      s(nspecies + i)%name = 'b' // s(first_surf_spec + i - 1)%name(2:LEN_TRIM(s(first_surf_spec + i - 1)%name))
+      s(nspecies + i)%idx = nspecies + i
+      s(nspecies + i)%gas_idx = s(first_surf_spec + i - 1)%gas_idx
+      s(nspecies + i)%weight = s(first_surf_spec + i - 1)%weight
+      s(nspecies + i)%natoms = s(first_surf_spec + i - 1)%natoms
+      s(nspecies + i)%enthalpia_known = s(first_surf_spec + i - 1)%enthalpia_known
+      s(nspecies + i)%enthalpia = s(first_surf_spec + i - 1)%enthalpia
+      s(nspecies + i)%edes = s(first_surf_spec + i - 1)%edes
+      s(nspecies + i)%racc = s(first_surf_spec + i - 1)%racc
+    END DO
+    nspecies = nspecies + n_surf_spec
+    first_suprathermal_species = nspecies + 1
+  END SUBROUTINE add_bulk_species
 
-
-!  DO i = 1, nspecies
-!    PRINT *, s(i)%name
-!  END DO
-!  CALL EXIT()
-END IF
-
-
-!Adding bulk reactions
-first_bulkreact = nreactions + 1
-IF (bulk_chemistry>0) THEN
+  SUBROUTINE add_bulk_reactions(output_unit)
+    INTEGER, INTENT(INOUT) :: output_unit
+    INTEGER :: i, s_r_counter
+    IF (bulk_chemistry <= 0) RETURN
     s_r_counter = 0
     DO i = 1, nreactions
-        IF (r(i)%r1(1:1)=='g' .AND. r(i)%r2/='FREEZE' .AND. r(i)%r2/='DESORB' .AND. r(i)%p1(1:1)=='g') THEN
-            s_r_counter = s_r_counter + 1
-            r(nreactions+s_r_counter)%idx = nreactions+s_r_counter
+      IF (r(i)%r1(1:1) == 'g' .AND. r(i)%r2 /= 'FREEZE' .AND. r(i)%r2 /= 'DESORB' .AND. r(i)%p1(1:1) == 'g') THEN
+        s_r_counter = s_r_counter + 1
+        CALL copy_reaction_with_bulk_prefix(i, nreactions + s_r_counter)
+      END IF
+    END DO
+    nreactions = nreactions + s_r_counter
+    CALL write_reactions_to_file(output_unit, 'bulk_reactions.out', 1, nreactions)
+  END SUBROUTINE add_bulk_reactions
 
-            r(nreactions+s_r_counter)%r1 = r(i)%r1
-            r(nreactions+s_r_counter)%r2 = r(i)%r2
-            r(nreactions+s_r_counter)%p1 = r(i)%p1
-            r(nreactions+s_r_counter)%p2 = r(i)%p2
-            r(nreactions+s_r_counter)%p3 = r(i)%p3
-            r(nreactions+s_r_counter)%p4 = r(i)%p4
-            r(nreactions+s_r_counter)%p5 = r(i)%p5
-
-            IF (r(i)%r1(1:1)=='g') r(nreactions+s_r_counter)%r1 = 'b'//r(i)%r1(2:LEN_TRIM(r(i)%r1))
-            IF (r(i)%r2(1:1)=='g') r(nreactions+s_r_counter)%r2 = 'b'//r(i)%r2(2:LEN_TRIM(r(i)%r2))
-            IF (r(i)%p1(1:1)=='g') r(nreactions+s_r_counter)%p1 = 'b'//r(i)%p1(2:LEN_TRIM(r(i)%p1))
-            IF (r(i)%p2(1:1)=='g') r(nreactions+s_r_counter)%p2 = 'b'//r(i)%p2(2:LEN_TRIM(r(i)%p2))
-            IF (r(i)%p3(1:1)=='g') r(nreactions+s_r_counter)%p3 = 'b'//r(i)%p3(2:LEN_TRIM(r(i)%p3))
-            IF (r(i)%p4(1:1)=='g') r(nreactions+s_r_counter)%p4 = 'b'//r(i)%p4(2:LEN_TRIM(r(i)%p4))
-            IF (r(i)%p5(1:1)=='g') r(nreactions+s_r_counter)%p5 = 'b'//r(i)%p5(2:LEN_TRIM(r(i)%p5))
-
-!            PRINT*,"r(nreactions+s_r_counter) is: ",r(nreactions+s_r_counter)
-            r(nreactions+s_r_counter)%ir1 = species_idx(r(nreactions+s_r_counter)%r1)
-            r(nreactions+s_r_counter)%ir2 = species_idx(r(nreactions+s_r_counter)%r2)
-            r(nreactions+s_r_counter)%ip1 = species_idx(r(nreactions+s_r_counter)%p1)
-            r(nreactions+s_r_counter)%ip2 = species_idx(r(nreactions+s_r_counter)%p2)
-            r(nreactions+s_r_counter)%ip3 = species_idx(r(nreactions+s_r_counter)%p3)
-            r(nreactions+s_r_counter)%ip4 = species_idx(r(nreactions+s_r_counter)%p4)
-            r(nreactions+s_r_counter)%ip5 = species_idx(r(nreactions+s_r_counter)%p5)
-
-            r(nreactions+s_r_counter)%alpha = r(i)%alpha
-            r(nreactions+s_r_counter)%beta  = r(i)%beta
-            r(nreactions+s_r_counter)%gamma = r(i)%gamma
-
-            r(nreactions+s_r_counter)%rtype = get_rtype(r(nreactions+s_r_counter)%r1,r(nreactions+s_r_counter)%r2)
-
-            r(nreactions+s_r_counter)%exothermicity_known = r(i)%exothermicity_known
-            r(nreactions+s_r_counter)%exothermicity = r(i)%exothermicity
-        ENDIF
-    ENDDO
-
-    nreactions = nreactions + n_surf_react
-
+  SUBROUTINE add_suprathermal_bulk_and_reactions(Nsup_g, first_suprathermal_react, output_unit)
+    INTEGER, INTENT(OUT) :: Nsup_g, first_suprathermal_react
+    INTEGER, INTENT(INOUT) :: output_unit
+    INTEGER :: i, ii, s_r_counter, Nlines, io_stat, file_unit
+    TYPE(reaction), DIMENSION(:), ALLOCATABLE :: rtemp
+    DO i = 1, n_surf_spec
+      s(nspecies + i)%name = 'b' // TRIM(s(first_surf_spec + i - 1)%name(2:)) // '*'
+      s(nspecies + i)%idx = nspecies + i
+      s(nspecies + i)%gas_idx = s(first_surf_spec + i - 1)%gas_idx
+      s(nspecies + i)%weight = s(first_surf_spec + i - 1)%weight
+      s(nspecies + i)%natoms = s(first_surf_spec + i - 1)%natoms
+      s(nspecies + i)%enthalpia_known = s(first_surf_spec + i - 1)%enthalpia_known
+      s(nspecies + i)%enthalpia = s(first_surf_spec + i - 1)%enthalpia
+      s(nspecies + i)%edes = s(first_surf_spec + i - 1)%edes
+      s(nspecies + i)%racc = s(first_surf_spec + i - 1)%racc
+    END DO
+    nspecies = nspecies + n_surf_spec
+    Nsup_g = 0
     DO i = 1, nreactions
-        write(38,1001)r(i)%idx,r(i)%rtype,r(i)%r1,r(i)%r2,r(i)%p1,r(i)%p2,r(i)%p3,r(i)%p4,r(i)%p5,r(i)%exothermicity,r(i)%exothermicity_known, r(i)%alpha !(des_reactive*P)/(1+des_reactive*P)
-    ENDDO
-
-ENDIF
-
-! Count how many suprathermal reactions we have to add
-Nsup_g = 0
-DO i = 1,nreactions
-  IF (r(i)%rtype .EQ. 13 .OR. r(i)%rtype .EQ. 14) THEN
-    ! If both reactants are the same, just add one suprathermal
-    ! reaction. Otherwise, add two, one for each reactant.
-    IF ( r(i)%r1 .EQ. r(i)%r2 ) THEN
-      Nsup_g = Nsup_g + 1
-    ELSE
-      Nsup_g = Nsup_g + 2
-    END IF
-  ENDIF
-ENDDO
-
-! Now generate new reactions array with additional space for suprathermal
-! reactions.
-!PRINT *, "original size(r)= ",size(r)
-ALLOCATE( rtemp(SIZE(r) + Nsup_g) )
-rtemp(1:SIZE(r)) = r
-DEALLOCATE( r )
-ALLOCATE( r(SIZE(rtemp)) )
-r = rtemp
-DEALLOCATE( rtemp )
-
-!PRINT *, "Nsup_g = ",Nsup_g
-!PRINT *, "next size(r)= ",size(r)
-
-
-! C. N. Shingledecker
-! Add suprathermal versions of thermal surface and bulk reactions involving 1 suprathermal reactant
-IF ( suprathermal .EQ. 1 ) THEN
+      IF (r(i)%rtype == 13 .OR. r(i)%rtype == 14) THEN
+        Nsup_g = Nsup_g + MERGE(1, 2, r(i)%r1 == r(i)%r2)
+      END IF
+    END DO
+    CALL resize_reaction_array(Nsup_g)
     s_r_counter = 0
     first_suprathermal_react = nreactions + 1
     DO i = first_surfreact, nreactions
-        IF (r(i)%rtype .EQ. 13 .OR. r(i)%rtype .EQ. 14) THEN
-
-          ! Just make one copy with suprathermal species
-          IF ( r(i)%r1 .EQ. r(i)%r2 ) THEN
-            s_r_counter = s_r_counter + 1
-            r(nreactions+s_r_counter)%idx = nreactions+s_r_counter
-
-            r(nreactions+s_r_counter)%r1 = r(i)%r1
-            r(nreactions+s_r_counter)%r2 = r(i)%r2
-            r(nreactions+s_r_counter)%p1 = r(i)%p1
-            r(nreactions+s_r_counter)%p2 = r(i)%p2
-            r(nreactions+s_r_counter)%p3 = r(i)%p3
-            r(nreactions+s_r_counter)%p4 = r(i)%p4
-            r(nreactions+s_r_counter)%p5 = r(i)%p5
-
-            ! Make the first reactant suprathermal
-            r(nreactions+s_r_counter)%r1 = r(i)%r1(1:LEN_TRIM(r(i)%r1))//'*'
-
-!            PRINT*,"r(nreactions+s_r_counter) is: ",r(nreactions+s_r_counter)
-            r(nreactions+s_r_counter)%ir1 = species_idx(r(nreactions+s_r_counter)%r1)
-            r(nreactions+s_r_counter)%ir2 = species_idx(r(nreactions+s_r_counter)%r2)
-            r(nreactions+s_r_counter)%ip1 = species_idx(r(nreactions+s_r_counter)%p1)
-            r(nreactions+s_r_counter)%ip2 = species_idx(r(nreactions+s_r_counter)%p2)
-            r(nreactions+s_r_counter)%ip3 = species_idx(r(nreactions+s_r_counter)%p3)
-            r(nreactions+s_r_counter)%ip4 = species_idx(r(nreactions+s_r_counter)%p4)
-            r(nreactions+s_r_counter)%ip5 = species_idx(r(nreactions+s_r_counter)%p5)
-
-            r(nreactions+s_r_counter)%alpha = r(i)%alpha
-            r(nreactions+s_r_counter)%beta  = r(i)%beta
-            r(nreactions+s_r_counter)%gamma = r(i)%gamma
-
-            r(nreactions+s_r_counter)%rtype = get_rtype(r(nreactions+s_r_counter)%r1,r(nreactions+s_r_counter)%r2)
-
-            r(nreactions+s_r_counter)%exothermicity_known = 0
-            r(nreactions+s_r_counter)%exothermicity = 0.0d0
-          ELSE
-          ! Make two copies, one with r1* and another with r2*
-            DO ii = 1,2
-              s_r_counter = s_r_counter + 1
-              r(nreactions+s_r_counter)%idx = nreactions+s_r_counter
-
-!              PRINT *, "nreactions=",nreactions
-!              PRINT *, "s_r_counter=",s_r_counter
-!              PRINT *, "n_surf_react=",n_surf_react
-!              PRINT *, "nreactions+s_r_counter=",nreactions+s_r_counter
-!              PRINT *, "size(r)=",size(r,1)
-!              PRINT *, r(i)%r1," + ",r(i)%r2," -> ",r(i)%p1," + ",r(i)%p2," + ",r(i)%p3," + ",r(i)%p4
-!              PRINT *, "************************"
-
-
-              r(nreactions+s_r_counter)%r1 = r(i)%r1
-              r(nreactions+s_r_counter)%r2 = r(i)%r2
-              r(nreactions+s_r_counter)%p1 = r(i)%p1
-              r(nreactions+s_r_counter)%p2 = r(i)%p2
-              r(nreactions+s_r_counter)%p3 = r(i)%p3
-              r(nreactions+s_r_counter)%p4 = r(i)%p4
-              r(nreactions+s_r_counter)%p5 = r(i)%p5
-
-              IF (ii .EQ. 1) r(nreactions+s_r_counter)%r1 = r(i)%r1(1:LEN_TRIM(r(i)%r1))//'*'
-              IF (ii .EQ. 2) r(nreactions+s_r_counter)%r2 = r(i)%r2(1:LEN_TRIM(r(i)%r2))//'*'
-
-!              PRINT*,"r(nreactions+s_r_counter) is: ",r(nreactions+s_r_counter)
-              r(nreactions+s_r_counter)%ir1 = species_idx(r(nreactions+s_r_counter)%r1)
-              r(nreactions+s_r_counter)%ir2 = species_idx(r(nreactions+s_r_counter)%r2)
-              r(nreactions+s_r_counter)%ip1 = species_idx(r(nreactions+s_r_counter)%p1)
-              r(nreactions+s_r_counter)%ip2 = species_idx(r(nreactions+s_r_counter)%p2)
-              r(nreactions+s_r_counter)%ip3 = species_idx(r(nreactions+s_r_counter)%p3)
-              r(nreactions+s_r_counter)%ip4 = species_idx(r(nreactions+s_r_counter)%p4)
-              r(nreactions+s_r_counter)%ip5 = species_idx(r(nreactions+s_r_counter)%p5)
-
-              r(nreactions+s_r_counter)%alpha = r(i)%alpha
-              r(nreactions+s_r_counter)%beta  = r(i)%beta
-              r(nreactions+s_r_counter)%gamma = r(i)%gamma
-
-              r(nreactions+s_r_counter)%rtype = get_rtype(r(nreactions+s_r_counter)%r1,r(nreactions+s_r_counter)%r2)
-
-              r(nreactions+s_r_counter)%exothermicity_known = 0
-              r(nreactions+s_r_counter)%exothermicity = 0.0d0
-            END DO
-          END IF
-        ENDIF
-    ENDDO
-
+      IF (r(i)%rtype == 13 .OR. r(i)%rtype == 14) THEN
+        CALL add_suprathermal_reaction(i, s_r_counter)
+      END IF
+    END DO
     nreactions = nreactions + Nsup_g
+    CALL write_reactions_to_file(output_unit, 'suprathermal_reactions.out', first_suprathermal_react, nreactions)
+    CALL add_reaction_file('radiolysis.dat', 'radiolysis_reactions.out', Nlines, output_unit)
+    CALL add_reaction_file('class_2_suprathermal.dat', 'class2_reactions.out', Nlines, output_unit)
+    CALL add_quenching_reactions(file_unit, output_unit)
+    CALL add_reaction_file('photo_processes.dat', 'photochemistry_reactions.out', Nlines, output_unit)
+    CALL verify_reactions()
+  END SUBROUTINE add_suprathermal_bulk_and_reactions
 
-    OPEN(1001,FILE="suprathermal_reactions.out",STATUS='REPLACE')
-    DO i = first_suprathermal_react, nreactions
-        write(1001,1001)r(i)%idx,r(i)%rtype,r(i)%r1,r(i)%r2,r(i)%p1,r(i)%p2,r(i)%p3,r(i)%p4,r(i)%p5,r(i)%exothermicity,r(i)%exothermicity_known, r(i)%alpha !(des_reactive*P)/(1+des_reactive*P)
-    ENDDO
-    CLOSE(1001)
-
-
-    ! Now read file with radiolysis reactions
-    ! and count the number of processes
-    io     = 0
-    Nlines = 0
-    OPEN(3,FILE='radiolysis.dat',STATUS='OLD',IOSTAT=io)
-    DO
-      READ(3,*,IOSTAT=io)
-      IF (io .NE. 0) EXIT
-      Nlines = Nlines + 1
-    ENDDO
-    CLOSE(3)
-
-    ! Allocate temp reactions object to hold the radiolysis processes
-    ALLOCATE( rtemp(nreactions + Nlines) )
+  SUBROUTINE resize_reaction_array(extra_size)
+    INTEGER, INTENT(IN) :: extra_size
+    TYPE(reaction), DIMENSION(:), ALLOCATABLE :: rtemp
+    INTEGER :: alloc_stat
+    ALLOCATE(rtemp(SIZE(r) + extra_size), STAT=alloc_stat)
+    IF (alloc_stat /= 0) CALL handle_alloc_error('rtemp for resize', SIZE(r) + extra_size)
     rtemp(1:SIZE(r)) = r
-
-    ! Add the radiolysis processes to the temp reactions object
-    OPEN(3,FILE='radiolysis.dat',STATUS='OLD',IOSTAT=io)
-    DO ii=nreactions+1,nreactions + Nlines
-      READ(3,1000)rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
-      rtemp(ii)%idx = ii
-
-
-!      PRINT*,"rtemp(ii) is: ",rtemp(ii)
-      rtemp(ii)%ir1 = species_idx(rtemp(ii)%r1)
-      rtemp(ii)%ir2 = species_idx(rtemp(ii)%r2)
-      rtemp(ii)%ip1 = species_idx(rtemp(ii)%p1)
-      rtemp(ii)%ip2 = species_idx(rtemp(ii)%p2)
-      rtemp(ii)%ip3 = species_idx(rtemp(ii)%p3)
-      rtemp(ii)%ip4 = species_idx(rtemp(ii)%p4)
-      rtemp(ii)%ip5 = species_idx(rtemp(ii)%p5)
-      IF (rtemp(ii)%ir1==-1 .OR. rtemp(ii)%ir2==-1 .OR. rtemp(ii)%ip1==-1 .OR. rtemp(ii)%ip2==-1 .OR. rtemp(ii)%ip3==-1 .OR. rtemp(ii)%ip4==-1 .OR. rtemp(ii)%ip5==-1) THEN
-          PRINT '(a31, i5, 1x, 7a10)','Reaction with unknown species: ', rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5
-          STOP
-      ENDIF
-
-      rtemp(ii)%rtype = get_rtype(rtemp(ii)%r1,rtemp(ii)%r2)
-      rtemp(ii)%exothermicity_known = 0.0
-      rtemp(ii)%exothermicity = 0.0
-    END DO
-    CLOSE(3)
-
-    ! Print out radiolysis reactions
-    OPEN(1001,FILE="radiolysis_reactions.out",STATUS='REPLACE')
-    DO i=nreactions+1,nreactions + Nlines
-        write(1001,1001)rtemp(i)%idx,rtemp(i)%rtype,rtemp(i)%r1,rtemp(i)%r2,rtemp(i)%p1,rtemp(i)%p2,rtemp(i)%p3,rtemp(i)%p4,rtemp(i)%p5,rtemp(i)%exothermicity,rtemp(i)%exothermicity_known, rtemp(i)%gamma !(des_reactive*P)/(1+des_reactive*P)
-    ENDDO
-    CLOSE(1001)
-
-
-    ! Now resize the reactions array
-    DEALLOCATE( r )
-    ALLOCATE( r(SIZE(rtemp)) )
+    DEALLOCATE(r)
+    ALLOCATE(r(SIZE(rtemp)), STAT=alloc_stat)
+    IF (alloc_stat /= 0) CALL handle_alloc_error('r after resize', SIZE(rtemp))
     r = rtemp
-    DEALLOCATE( rtemp )
+    DEALLOCATE(rtemp)
+  END SUBROUTINE resize_reaction_array
 
-    ! Update the number of reactions
-    nreactions = nreactions + Nlines
+  SUBROUTINE add_suprathermal_reaction(i, s_r_counter)
+    INTEGER, INTENT(IN) :: i
+    INTEGER, INTENT(INOUT) :: s_r_counter
+    INTEGER :: ii
+    IF (r(i)%r1 == r(i)%r2) THEN
+      s_r_counter = s_r_counter + 1
+      CALL copy_reaction_with_suprathermal(i, nreactions + s_r_counter, 1)
+    ELSE
+      DO ii = 1, 2
+        s_r_counter = s_r_counter + 1
+        CALL copy_reaction_with_suprathermal(i, nreactions + s_r_counter, ii)
+      END DO
+    END IF
+  END SUBROUTINE add_suprathermal_reaction
 
-    ! Now read the class 2 suprathermal reactions network
-    io     = 0
+  SUBROUTINE add_reaction_file(input_file, output_file, Nlines, output_unit)
+    CHARACTER(LEN=*), INTENT(IN) :: input_file, output_file
+    INTEGER, INTENT(OUT) :: Nlines
+    INTEGER, INTENT(INOUT) :: output_unit
+    INTEGER :: io_stat, file_unit, ii
+    LOGICAL :: file_exists
+    TYPE(reaction), DIMENSION(:), ALLOCATABLE :: rtemp
+    INQUIRE(FILE=input_file, EXIST=file_exists)
+    IF (.NOT. file_exists) RETURN
+    CALL find_free_unit(file_unit, MIN_UNIT, MAX_UNIT)
+    OPEN(file_unit, FILE=input_file, STATUS='OLD', IOSTAT=io_stat)
+    IF (io_stat /= 0) RETURN
     Nlines = 0
-    OPEN(3,FILE='class_2_suprathermal.dat',STATUS='OLD',IOSTAT=io)
     DO
-      READ(3,*,IOSTAT=io)
-      IF (io .NE. 0) EXIT
+      READ(file_unit, *, IOSTAT=io_stat)
+      IF (io_stat /= 0) EXIT
       Nlines = Nlines + 1
-    ENDDO
-    CLOSE(3)
-
-    ! Allocate temp reactions object to hold the new suprathermal
-    ALLOCATE( rtemp(nreactions + Nlines) )
+    END DO
+    CLOSE(file_unit)
+    IF (Nlines == 0) RETURN
+    ALLOCATE(rtemp(nreactions + Nlines))
     rtemp(1:SIZE(r)) = r
-
-    ! Add the new suprathermal processes to the temp reactions object
-    OPEN(3,FILE='class_2_suprathermal.dat',STATUS='OLD',IOSTAT=io)
-    DO ii=nreactions+1,nreactions+Nlines
-      READ(3,1000)rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
+    OPEN(file_unit, FILE=input_file, STATUS='OLD', IOSTAT=io_stat)
+    DO ii = nreactions + 1, nreactions + Nlines
+      READ(file_unit, 1000, IOSTAT=io_stat) rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, &
+        rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, &
+        rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
+      IF (io_stat /= 0) CALL handle_io_error('reading ' // TRIM(input_file), ii - nreactions)
       rtemp(ii)%idx = ii
-
-!      PRINT*,"rtemp(ii) is: ",rtemp(ii)
-      rtemp(ii)%ir1 = species_idx(rtemp(ii)%r1)
-      rtemp(ii)%ir2 = species_idx(rtemp(ii)%r2)
-      rtemp(ii)%ip1 = species_idx(rtemp(ii)%p1)
-      rtemp(ii)%ip2 = species_idx(rtemp(ii)%p2)
-      rtemp(ii)%ip3 = species_idx(rtemp(ii)%p3)
-      rtemp(ii)%ip4 = species_idx(rtemp(ii)%p4)
-      rtemp(ii)%ip5 = species_idx(rtemp(ii)%p5)
-
+      CALL assign_species_indices_temp(rtemp(ii))
+      rtemp(ii)%rtype = get_rtype(rtemp(ii)%r1, rtemp(ii)%r2)
       rtemp(ii)%exothermicity_known = 0
-      rtemp(ii)%exothermicity = 0.0e0
-      IF (rtemp(ii)%ir1==-1 .OR. rtemp(ii)%ir2==-1 .OR. rtemp(ii)%ip1==-1 .OR. rtemp(ii)%ip2==-1 .OR. rtemp(ii)%ip3==-1 .OR. rtemp(ii)%ip4==-1 .OR. rtemp(ii)%ip5==-1) THEN
-          PRINT '(a31, i5, 1x, 7a10)','Reaction with unknown species: ', rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5
-          STOP
-      ENDIF
-
-
-      rtemp(ii)%rtype = get_rtype(rtemp(ii)%r1,rtemp(ii)%r2)
+      rtemp(ii)%exothermicity = 0.0_wp
     END DO
-    CLOSE(3)
-
-    ! Now resize the reactions array
-    DEALLOCATE( r )
-    ALLOCATE( r(SIZE(rtemp)) )
-    r = rtemp
-    DEALLOCATE( rtemp )
-
-
-    ! Print out radiolysis reactions
-    OPEN(1001,FILE="class2_reactions.out",STATUS='REPLACE')
-    DO i=nreactions+1,nreactions + Nlines
-        write(1001,1001)r(i)%idx,r(i)%rtype,r(i)%r1,r(i)%r2,r(i)%p1,r(i)%p2,r(i)%p3,r(i)%p4,r(i)%p5,r(i)%exothermicity,r(i)%exothermicity_known, r(i)%gamma !(des_reactive*P)/(1+des_reactive*P)
-    ENDDO
-    CLOSE(1001)
-
-    ! Update the number of reactions
+    CLOSE(file_unit)
+    CALL resize_and_copy_reactions(rtemp)
+    CALL write_reactions_to_file(output_unit, output_file, nreactions + 1, nreactions + Nlines)
     nreactions = nreactions + Nlines
+1000 FORMAT(1X,I4,1X,2(A10),10X,5(A10),E12.4,1X,F8.2,1X,F8.1)
+  END SUBROUTINE add_reaction_file
 
-    ! Add quenching reactions
-    ! 1) Allocate temp reactions object to hold the quenching reactions
-    !    NB: There should be nspecies - first_suprathermal_species - 1 new
-    !    quenching reactions
-    ALLOCATE( rtemp(nreactions + (nspecies - first_suprathermal_species - 1) ) )
+  SUBROUTINE add_quenching_reactions(file_unit, output_unit)
+    INTEGER, INTENT(INOUT) :: file_unit, output_unit
+    INTEGER :: ii, jj, io_stat, first_suprathermal_species
+    CHARACTER(LEN=10) :: groundstate
+    TYPE(reaction), DIMENSION(:), ALLOCATABLE :: rtemp
+    INTEGER :: quench_count
+    first_suprathermal_species = nspecies - n_surf_spec + 1
+    quench_count = nspecies - first_suprathermal_species - 1
+    IF (quench_count <= 0) RETURN
+    ALLOCATE(rtemp(nreactions + quench_count))
     rtemp(1:SIZE(r)) = r
-
-    ! Add the new quenching reactions to the temp reactions object
-    OPEN(3,FILE='quenching.out',STATUS='REPLACE',IOSTAT=io)
+    CALL find_free_unit(file_unit, MIN_UNIT, MAX_UNIT)
+    OPEN(file_unit, FILE='quenching.out', STATUS='REPLACE', IOSTAT=io_stat)
     jj = first_suprathermal_species
-!    PRINT *, "First suprathermal_species =",jj
-    DO ii=nreactions+1,nreactions+(nspecies - first_suprathermal_species - 1)
-      groundstate = s(jj)%name(1:LEN_TRIM(s(jj)%name)-1)
-
-!      PRINT*,"rtemp(ii) is: ",rtemp(ii)
-      rtemp(ii)%r1  = s(jj)%name
-      rtemp(ii)%r2  = "QUENCH"
-      rtemp(ii)%p1  = s(jj)%name(1:LEN_TRIM(s(jj)%name)-1)
-      rtemp(ii)%p2  = " "
-      rtemp(ii)%p3  = " "
-      rtemp(ii)%p4  = " "
-      rtemp(ii)%p5  = " "
+    DO ii = nreactions + 1, nreactions + quench_count
+      groundstate = s(jj)%name(1:LEN_TRIM(s(jj)%name) - 1)
+      rtemp(ii)%r1 = s(jj)%name
+      rtemp(ii)%r2 = 'QUENCH'
+      rtemp(ii)%p1 = groundstate
+      rtemp(ii)%p2 = ' '
+      rtemp(ii)%p3 = ' '
+      rtemp(ii)%p4 = ' '
+      rtemp(ii)%p5 = ' '
       rtemp(ii)%idx = ii
-      rtemp(ii)%ir1 = species_idx(s(jj)%name)
+      rtemp(ii)%ir1 = species_idx(rtemp(ii)%r1)
       rtemp(ii)%ir2 = 0
       rtemp(ii)%ip1 = species_idx(groundstate)
       rtemp(ii)%ip2 = 0
       rtemp(ii)%ip3 = 0
       rtemp(ii)%ip4 = 0
       rtemp(ii)%ip5 = 0
-      rtemp(ii)%alpha = 1.00e0
-      rtemp(ii)%beta = 1.00e0
-      rtemp(ii)%gamma = 1.00e0
-      rtemp(ii)%rtype = get_rtype(rtemp(ii)%r1,rtemp(ii)%r2)
-      rtemp(ii)%exothermicity = 0.00e0
+      rtemp(ii)%alpha = 1.0_wp
+      rtemp(ii)%beta = 1.0_wp
+      rtemp(ii)%gamma = 1.0_wp
+      rtemp(ii)%rtype = get_rtype(rtemp(ii)%r1, rtemp(ii)%r2)
+      rtemp(ii)%exothermicity = 0.0_wp
       rtemp(ii)%exothermicity_known = 0
-      WRITE(3,1000)rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
-!      PRINT *, s(jj)%name," -> ",s(jj)%name(1:LEN_TRIM(s(jj)%name)-1)
-!      PRINT *, "jj = ",jj, " nspecies= ",nspecies
-!      PRINT *, "************************"
+      WRITE(file_unit, 1000) rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, &
+        rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, &
+        rtemp(ii)%beta, rtemp(ii)%gamma
       jj = jj + 1
     END DO
-    CLOSE(3)
+    CLOSE(file_unit)
+    CALL resize_and_copy_reactions(rtemp)
+    nreactions = nreactions + quench_count
+1000 FORMAT(1X,I4,1X,2(A10),10X,5(A10),E12.4,1X,F8.2,1X,F8.1)
+  END SUBROUTINE add_quenching_reactions
 
-    ! Now resize the reactions array
-    DEALLOCATE( r )
-    ALLOCATE( r(SIZE(rtemp)) )
+  SUBROUTINE resize_and_copy_reactions(rtemp)
+    TYPE(reaction), DIMENSION(:), INTENT(INOUT), ALLOCATABLE :: rtemp
+    INTEGER :: alloc_stat
+    DEALLOCATE(r)
+    ALLOCATE(r(SIZE(rtemp)), STAT=alloc_stat)
+    IF (alloc_stat /= 0) CALL handle_alloc_error('r after resize', SIZE(rtemp))
     r = rtemp
-    DEALLOCATE( rtemp )
-
-    ! Update the number of reactions
-    nreactions = nreactions+ (nspecies - first_suprathermal_species - 1)
-
-    !***************************************************************************
-    ! BEGIN ADD NEW PHOTOCHEMISTRY
-    !***************************************************************************
-
-    ! Now read file with radiolysis reactions
-    ! and count the number of processes
-    io     = 0
-    Nlines = 0
-    OPEN(3,FILE='photo_processes.dat',STATUS='OLD',IOSTAT=io)
-    DO
-      READ(3,*,IOSTAT=io)
-      IF (io .NE. 0) EXIT
-      Nlines = Nlines + 1
-    ENDDO
-    CLOSE(3)
-
-    ! Allocate temp reactions object to hold the radiolysis processes
-    ALLOCATE( rtemp(nreactions + Nlines) )
-    rtemp(1:SIZE(r)) = r
-
-    ! Add the radiolysis processes to the temp reactions object
-    OPEN(3,FILE='photo_processes.dat',STATUS='OLD',IOSTAT=io)
-    OPEN(1001,FILE="photochemistry_reactions.out",STATUS='REPLACE')
-    DO ii=nreactions+1,nreactions + Nlines
-      READ(3,1002)rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
-      WRITE(1001,1002)rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5, rtemp(ii)%alpha, rtemp(ii)%beta, rtemp(ii)%gamma
-      rtemp(ii)%idx = ii
-!      PRINT*,"rtemp(ii) is: ",rtemp(ii)
-      rtemp(ii)%ir1 = species_idx(rtemp(ii)%r1)
-      rtemp(ii)%ir2 = species_idx(rtemp(ii)%r2)
-      rtemp(ii)%ip1 = species_idx(rtemp(ii)%p1)
-      rtemp(ii)%ip2 = species_idx(rtemp(ii)%p2)
-      rtemp(ii)%ip3 = species_idx(rtemp(ii)%p3)
-      rtemp(ii)%ip4 = species_idx(rtemp(ii)%p4)
-      rtemp(ii)%ip5 = species_idx(rtemp(ii)%p5)
-      IF (rtemp(ii)%ir1==-1 .OR. rtemp(ii)%ir2==-1 .OR. rtemp(ii)%ip1==-1 .OR. rtemp(ii)%ip2==-1 .OR. rtemp(ii)%ip3==-1 .OR. rtemp(ii)%ip4==-1 .OR. rtemp(ii)%ip5==-1) THEN
-          PRINT '(a31, i5, 1x, 7a10)','Reaction with unknown species: ', rtemp(ii)%idx, rtemp(ii)%r1, rtemp(ii)%r2, rtemp(ii)%p1, rtemp(ii)%p2, rtemp(ii)%p3, rtemp(ii)%p4, rtemp(ii)%p5
-          STOP
-      ENDIF
-
-      rtemp(ii)%rtype = get_rtype(rtemp(ii)%r1,rtemp(ii)%r2)
-      rtemp(ii)%exothermicity_known = 0.0
-      rtemp(ii)%exothermicity = 0.0
-    END DO
-    CLOSE(3)
-    CLOSE(1001)
+    DEALLOCATE(rtemp)
+  END SUBROUTINE resize_and_copy_reactions
 
 
-    ! Now resize the reactions array
-    DEALLOCATE( r )
-    ALLOCATE( r(SIZE(rtemp)) )
-    r = rtemp
-    DEALLOCATE( rtemp )
+  SUBROUTINE assign_species_indices_temp(reac)
+    TYPE(reaction), INTENT(INOUT) :: reac
+    reac%ir1 = species_idx(reac%r1)
+    reac%ir2 = species_idx(reac%r2)
+    reac%ip1 = species_idx(reac%p1)
+    reac%ip2 = species_idx(reac%p2)
+    reac%ip3 = species_idx(reac%p3)
+    reac%ip4 = species_idx(reac%p4)
+    reac%ip5 = species_idx(reac%p5)
+    IF (ANY([reac%ir1, reac%ir2, reac%ip1, reac%ip2, reac%ip3, reac%ip4, reac%ip5] == -1)) THEN
+      WRITE(*,'(A,I5,1X,7A10)') 'ERROR: Unknown species in reaction: ', reac%idx, &
+        reac%r1, reac%r2, reac%p1, reac%p2, reac%p3, reac%p4, reac%p5
+      CALL cleanup_and_exit()
+    END IF
+  END SUBROUTINE assign_species_indices_temp
 
-    ! Update the number of reactions
-    nreactions = nreactions + Nlines
-    !***************************************************************************
-    ! END ADD NEW PHOTOCHEMISTRY
-    !***************************************************************************
+  SUBROUTINE copy_reaction_with_bulk_prefix(src_idx, dest_idx)
+    INTEGER, INTENT(IN) :: src_idx, dest_idx
+    r(dest_idx) = r(src_idx)
+    r(dest_idx)%idx = dest_idx
+    IF (r(src_idx)%r1(1:1) == 'g') r(dest_idx)%r1 = 'b' // r(src_idx)%r1(2:LEN_TRIM(r(src_idx)%r1))
+    IF (r(src_idx)%r2(1:1) == 'g') r(dest_idx)%r2 = 'b' // r(src_idx)%r2(2:LEN_TRIM(r(src_idx)%r2))
+    IF (r(src_idx)%p1(1:1) == 'g') r(dest_idx)%p1 = 'b' // r(src_idx)%p1(2:LEN_TRIM(r(src_idx)%p1))
+    IF (r(src_idx)%p2(1:1) == 'g') r(dest_idx)%p2 = 'b' // r(src_idx)%p2(2:LEN_TRIM(r(src_idx)%p2))
+    IF (r(src_idx)%p3(1:1) == 'g') r(dest_idx)%p3 = 'b' // r(src_idx)%p3(2:LEN_TRIM(r(src_idx)%p3))
+    IF (r(src_idx)%p4(1:1) == 'g') r(dest_idx)%p4 = 'b' // r(src_idx)%p4(2:LEN_TRIM(r(src_idx)%p4))
+    IF (r(src_idx)%p5(1:1) == 'g') r(dest_idx)%p5 = 'b' // r(src_idx)%p5(2:LEN_TRIM(r(src_idx)%p5))
+    CALL assign_species_indices(dest_idx)
+    r(dest_idx)%rtype = get_rtype(r(dest_idx)%r1, r(dest_idx)%r2)
+  END SUBROUTINE copy_reaction_with_bulk_prefix
 
-    ! Now loop through all reactions and make sure they are correct
-    DO i=1,nreactions
-      IF ( r(i)%ir1 .NE. 0 ) THEN
-        ! Sum prod atoms
-        prodatoms = s(r(i)%ip1)%natoms
-        IF ( r(i)%ip2 .NE. 0 ) prodatoms = prodatoms + s(r(i)%ip2)%natoms
-        IF ( r(i)%ip3 .NE. 0 ) prodatoms = prodatoms + s(r(i)%ip3)%natoms
-        IF ( r(i)%ip4 .NE. 0 ) prodatoms = prodatoms + s(r(i)%ip4)%natoms
-        IF ( r(i)%ip5 .NE. 0 ) prodatoms = prodatoms + s(r(i)%ip5)%natoms
-        reactatoms = s(r(i)%ir1)%natoms
+  SUBROUTINE copy_reaction_with_suprathermal(src_idx, dest_idx, reactant_num)
+    INTEGER, INTENT(IN) :: src_idx, dest_idx, reactant_num
+    r(dest_idx) = r(src_idx)
+    r(dest_idx)%idx = dest_idx
+    IF (reactant_num == 1) r(dest_idx)%r1 = TRIM(r(src_idx)%r1) // '*'
+    IF (reactant_num == 2) r(dest_idx)%r2 = TRIM(r(src_idx)%r2) // '*'
+    CALL assign_species_indices(dest_idx)
+    r(dest_idx)%rtype = get_rtype(r(dest_idx)%r1, r(dest_idx)%r2)
+    r(dest_idx)%exothermicity_known = 0
+    r(dest_idx)%exothermicity = 0.0_wp
+  END SUBROUTINE copy_reaction_with_suprathermal
 
-        IF (ANY(r(i)%r2 .EQ. (/"QUENCH","CRPHOT","PHOTON","FREEZE","DESORB","IONRAD","G-    ","G0    ","CR    ","CRP   ","PHOION","PHOEXC"/)) .EQV. .FALSE.) THEN
-          reactatoms = reactatoms + s(r(i)%ir2)%natoms
-        ENDIF
-
-!        PRINT *, "-----------------------------------------"
-!        PRINT *, r(i)%r1," + ",r(i)%r2," -> ",r(i)%p1," + ",r(i)%p2
-!        PRINT *, "Prodatoms=",prodatoms
-!        PRINT *, "Reactatoms=",reactatoms
-!        PRINT *, "ir1_natoms = ",s(r(i)%ir1)%natoms
-!        PRINT *, "ip1_natoms = ",s(r(i)%ip1)%natoms
-!        PRINT *, "alpha=",r(i)%alpha," beta=",r(i)%beta," gamma=",r(i)%gamma
-!        PRINT *, "rate=",r(i)%rate, " exothermicity =",r(i)%exothermicity
-!        PRINT *, r(i)%ir1,r(i)%ir2,r(i)%ip1,r(i)%ip2,r(i)%ip3,r(i)%ip4,r(i)%ip5
-        IF (prodatoms .NE. reactatoms) THEN
-          IF  ( r(i)%r1(2:2) .NE. "e" ) THEN
-            PRINT *, "Atoms not equal"
-            CALL EXIT()
-          ENDIF
-        ENDIF
-        IF ( ISNAN(r(i)%alpha) ) THEN
-          PRINT *, "Alpha = NaN"
-        ENDIF
-
-        IF ( ISNAN(r(i)%beta) ) THEN
-          PRINT *, "Beta = NaN"
-        ENDIF
-
-        IF ( ISNAN(r(i)%gamma) ) THEN
-          PRINT *, "Gamma = NaN"
-        ENDIF
-
-        IF ( ISNAN(r(i)%rate) ) THEN
-          PRINT *, "Rate = NaN"
-        ENDIF
-
-        IF ( ISNAN(r(i)%exothermicity) ) THEN
-          PRINT *, "Exothermicity = NaN"
-        ENDIF
-
-
-      ENDIF
-    ENDDO
-END IF
-
-
-
-OPEN (1,FILE='species.out', STATUS='REPLACE')
-write(1,*)'Species, Weight, Number of Atoms, Index, Gas twin index, Desorption energy'
-DO i = 1, nspecies
-  write(1,'(a10,1x,1pe12.4,1x,i3,1x,2i4,1pe12.4)')s(i)%name, s(i)%weight, s(i)%natoms, s(i)%idx, s(i)%gas_idx, s(i)%edes
-ENDDO
-CLOSE (1)
-
-RETURN
-100 PRINT*, 'File ',chem_file(1:LEN_TRIM(chem_file)),' not found!'
-STOP
-1000 FORMAT(1X,I4,1X,2(A10),10X,5(A10),E8.2,1X,F5.2,1X,F8.1)
+  SUBROUTINE write_reactions_to_file(unit_num, filename, start_idx, end_idx)
+    INTEGER, INTENT(OUT) :: unit_num
+    INTEGER, INTENT(IN) :: start_idx, end_idx
+    CHARACTER(LEN=*), INTENT(IN) :: filename
+    INTEGER :: i, io_stat
+    CALL find_free_unit(unit_num, MIN_UNIT, MAX_UNIT)
+    OPEN(unit_num, FILE=filename, STATUS='REPLACE', IOSTAT=io_stat)
+    IF (io_stat == 0) THEN
+      DO i = start_idx, end_idx
+        WRITE(unit_num, 1001) r(i)%idx, r(i)%rtype, r(i)%r1, r(i)%r2, r(i)%p1, &
+          r(i)%p2, r(i)%p3, r(i)%p4, r(i)%p5, r(i)%exothermicity, &
+          r(i)%exothermicity_known, r(i)%alpha
+      END DO
+      CLOSE(unit_num)
+    END IF
 1001 FORMAT(1X,I4,1X,I2,1X,2(A10),10X,5(A10),1pE14.5,1X,I1,1X,1pE14.5)
-1002 FORMAT(1X,I4,1X,2(A10),10X,5(A10),ES8.2,2X,ES8.2,2X,ES8.2)
-END SUBROUTINE read_rate06database
+  END SUBROUTINE write_reactions_to_file
 
-SUBROUTINE read_enthalpias
-IMPLICIT NONE
-CHARACTER*10 :: local_species
-REAL*8       :: local_enthalpia
-INTEGER      :: local_enthalpia_known, i
+  SUBROUTINE write_species_output(file_unit)
+    INTEGER, INTENT(INOUT) :: file_unit
+    INTEGER :: i, io_stat
+    CALL find_free_unit(file_unit, MIN_UNIT, MAX_UNIT)
+    OPEN(file_unit, FILE='species.out', STATUS='REPLACE', IOSTAT=io_stat)
+    IF (io_stat == 0) THEN
+      WRITE(file_unit, '(A)') 'Species, Weight, Number of Atoms, Index, Gas twin index, Desorption energy'
+      DO i = 1, nspecies
+        WRITE(file_unit, '(A10,1X,1pE12.4,1X,I3,1X,2I4,1pE12.4)') &
+          s(i)%name, s(i)%weight, s(i)%natoms, s(i)%idx, s(i)%gas_idx, s(i)%edes
+      END DO
+      CLOSE(file_unit)
+    END IF
+  END SUBROUTINE write_species_output
 
-OPEN(2, FILE='enthalpias.txt', STATUS='OLD', ERR=200)
+  SUBROUTINE verify_reactions()
+    INTEGER :: i, prodatoms, reactatoms
+    CHARACTER(LEN=12), PARAMETER :: special_reactions(*) = &
+      ['QUENCH', 'CRPHOT', 'PHOTON', 'FREEZE', 'DESORB', 'IONRAD', &
+       'G-    ', 'G0    ', 'CR    ', 'CRP   ', 'PHOION', 'PHOEXC']
+    DO i = 1, nreactions
+      IF (r(i)%ir1 == 0) CYCLE
+      prodatoms = s(r(i)%ip1)%natoms
+      IF (r(i)%ip2 /= 0) prodatoms = prodatoms + s(r(i)%ip2)%natoms
+      IF (r(i)%ip3 /= 0) prodatoms = prodatoms + s(r(i)%ip3)%natoms
+      IF (r(i)%ip4 /= 0) prodatoms = prodatoms + s(r(i)%ip4)%natoms
+      IF (r(i)%ip5 /= 0) prodatoms = prodatoms + s(r(i)%ip5)%natoms
+      reactatoms = s(r(i)%ir1)%natoms
+      IF (r(i)%ir2 /= 0 .AND. .NOT. ANY(special_reactions == r(i)%r2)) &
+        reactatoms = reactatoms + s(r(i)%ir2)%natoms
+      IF (prodatoms /= reactatoms .AND. r(i)%r1(1:2) /= 'e-') THEN
+        WRITE(*,'(A,I0,A,I0)') 'Debug: Reaction ', r(i)%idx, ' reactatoms=', reactatoms
+        WRITE(*,'(A,I0)') 'Debug: prodatoms=', prodatoms
+        WRITE(*,'(A,I0,A,I0,A,I0)') 'WARNING: Atom imbalance in reaction ', r(i)%idx, &
+          ': Reactants=', reactatoms, ' Products=', prodatoms
+      END IF
+      IF (ISNAN(r(i)%alpha)) r(i)%alpha = 0.0_wp
+      IF (ISNAN(r(i)%beta)) r(i)%beta = 0.0_wp
+      IF (ISNAN(r(i)%gamma)) r(i)%gamma = 0.0_wp
+      IF (ISNAN(r(i)%rate)) r(i)%rate = 0.0_wp
+      IF (ISNAN(r(i)%exothermicity)) r(i)%exothermicity = 0.0_wp
+    END DO
+  END SUBROUTINE verify_reactions
 
-READ(2,*)
-DO WHILE (.not. EOF(unit=2) )
-    READ(2, '(a10,1x,e8.2,2x,i1)')local_species, local_enthalpia, local_enthalpia_known
-    DO i = 1, nspecies
-        IF (s(i)%name=='g'//local_species .OR. s(i)%name==local_species) THEN
-            s(i)%enthalpia = local_enthalpia * 1.0d3/8.31
-            s(i)%enthalpia_known = local_enthalpia_known
-        ENDIF
-    ENDDO
-ENDDO
-CLOSE(2)
+  SUBROUTINE handle_io_error(context, position)
+    CHARACTER(LEN=*), INTENT(IN) :: context
+    INTEGER, INTENT(IN), OPTIONAL :: position
+    IF (PRESENT(position)) THEN
+      WRITE(*,'(A,A,I0)') 'ERROR: Failed ', TRIM(context), ' at position ', position
+    ELSE
+      WRITE(*,'(A,A)') 'ERROR: Failed ', TRIM(context)
+    END IF
+    CALL cleanup_and_exit()
+  END SUBROUTINE handle_io_error
 
-RETURN
-200 PRINT*, 'File enthalpias.txt not found!'
-STOP
-END SUBROUTINE read_enthalpias
+  SUBROUTINE handle_alloc_error(array_name, size_val)
+    CHARACTER(LEN=*), INTENT(IN) :: array_name
+    INTEGER, INTENT(IN) :: size_val
+    WRITE(*,'(A,A,A,I0)') 'ERROR: Failed to allocate ', TRIM(array_name), ' with size ', size_val
+    CALL cleanup_and_exit()
+  END SUBROUTINE handle_alloc_error
 
-SUBROUTINE get_reaction_thermodynamics(ii)
-IMPLICIT NONE
+  SUBROUTINE cleanup_and_exit()
+    INTEGER :: i
+    IF (ALLOCATED(s)) THEN
+      DO i = 1, SIZE(s)
+        IF (ALLOCATED(s(i)%abundance_out)) DEALLOCATE(s(i)%abundance_out)
+      END DO
+      DEALLOCATE(s)
+    END IF
+    IF (ALLOCATED(abundances_bulk)) DEALLOCATE(abundances_bulk)
+    IF (ALLOCATED(timesteps_nml)) DEALLOCATE(timesteps_nml)
+    IF (ALLOCATED(r)) DEALLOCATE(r)
+    IF (ALLOCATED(mre_terms)) DEALLOCATE(mre_terms)
+    IF (ALLOCATED(rd_v2_terms)) DEALLOCATE(rd_v2_terms)
+    STOP
+  END SUBROUTINE cleanup_and_exit
 
-INTEGER :: ii
+  SUBROUTINE read_enthalpias
+    IMPLICIT NONE
+    CHARACTER(LEN=10) :: local_species
+    REAL(KIND=wp) :: local_enthalpia
+    INTEGER :: local_enthalpia_known, i, io_stat, unit_num
+    LOGICAL :: file_exists
+    INQUIRE(FILE='enthalpias.txt', EXIST=file_exists)
+    IF (.NOT. file_exists) THEN
+      WRITE(*,*) 'WARNING: enthalpias.txt not found'
+      RETURN
+    END IF
+    CALL find_free_unit(unit_num, MIN_UNIT, MAX_UNIT)
+    OPEN(unit_num, FILE='enthalpias.txt', STATUS='OLD', IOSTAT=io_stat)
+    IF (io_stat /= 0) RETURN
+    READ(unit_num, *, IOSTAT=io_stat) ! Skip header
+    IF (io_stat /= 0) THEN
+      CLOSE(unit_num)
+      RETURN
+    END IF
+    DO
+      READ(unit_num, '(A10,1X,E12.4,2X,I1)', IOSTAT=io_stat) &
+        local_species, local_enthalpia, local_enthalpia_known
+      IF (io_stat /= 0) EXIT
+      DO i = 1, nspecies
+        IF (s(i)%name == 'g' // TRIM(local_species) .OR. s(i)%name == TRIM(local_species)) THEN
+          s(i)%enthalpia = local_enthalpia * 1.0e3_wp / 8.31_wp
+          s(i)%enthalpia_known = local_enthalpia_known
+        END IF
+      END DO
+    END DO
+    CLOSE(unit_num)
+  END SUBROUTINE read_enthalpias
 
-  !Exothermicity of reaction
-  r(ii)%exothermicity_known = s(r(ii)%ir1)%enthalpia_known
-  IF (r(ii)%ir2/=0) r(ii)%exothermicity_known = r(ii)%exothermicity_known*s(r(ii)%ir2)%enthalpia_known
-  IF (r(ii)%ip1/=0) r(ii)%exothermicity_known = r(ii)%exothermicity_known*s(r(ii)%ip1)%enthalpia_known
-  IF (r(ii)%ip2/=0) r(ii)%exothermicity_known = r(ii)%exothermicity_known*s(r(ii)%ip2)%enthalpia_known
-  IF (r(ii)%ip3/=0) r(ii)%exothermicity_known = r(ii)%exothermicity_known*s(r(ii)%ip3)%enthalpia_known
-  IF (r(ii)%ip4/=0) r(ii)%exothermicity_known = r(ii)%exothermicity_known*s(r(ii)%ip4)%enthalpia_known
-  IF (r(ii)%ip5/=0) r(ii)%exothermicity_known = r(ii)%exothermicity_known*s(r(ii)%ip5)%enthalpia_known
+  SUBROUTINE get_reaction_thermodynamics(ii)
+    IMPLICIT NONE
+    INTEGER, INTENT(IN) :: ii
+    IF (ii <= 0 .OR. ii > SIZE(r)) RETURN
+    r(ii)%exothermicity_known = s(r(ii)%ir1)%enthalpia_known
+    IF (r(ii)%ir2 /= 0) r(ii)%exothermicity_known = r(ii)%exothermicity_known * s(r(ii)%ir2)%enthalpia_known
+    IF (r(ii)%ip1 /= 0) r(ii)%exothermicity_known = r(ii)%exothermicity_known * s(r(ii)%ip1)%enthalpia_known
+    IF (r(ii)%ip2 /= 0) r(ii)%exothermicity_known = r(ii)%exothermicity_known * s(r(ii)%ip2)%enthalpia_known
+    IF (r(ii)%ip3 /= 0) r(ii)%exothermicity_known = r(ii)%exothermicity_known * s(r(ii)%ip3)%enthalpia_known
+    IF (r(ii)%ip4 /= 0) r(ii)%exothermicity_known = r(ii)%exothermicity_known * s(r(ii)%ip4)%enthalpia_known
+    IF (r(ii)%ip5 /= 0) r(ii)%exothermicity_known = r(ii)%exothermicity_known * s(r(ii)%ip5)%enthalpia_known
+    r(ii)%exothermicity = 0.0_wp
+    IF (r(ii)%exothermicity_known == 1) THEN
+      r(ii)%exothermicity = r(ii)%exothermicity - s(r(ii)%ir1)%enthalpia
+      IF (r(ii)%ir2 /= 0) r(ii)%exothermicity = r(ii)%exothermicity - s(r(ii)%ir2)%enthalpia
+      IF (r(ii)%ip1 /= 0) r(ii)%exothermicity = r(ii)%exothermicity + s(r(ii)%ip1)%enthalpia
+      IF (r(ii)%ip2 /= 0) r(ii)%exothermicity = r(ii)%exothermicity + s(r(ii)%ip2)%enthalpia
+      IF (r(ii)%ip3 /= 0) r(ii)%exothermicity = r(ii)%exothermicity + s(r(ii)%ip3)%enthalpia
+      IF (r(ii)%ip4 /= 0) r(ii)%exothermicity = r(ii)%exothermicity + s(r(ii)%ip4)%enthalpia
+      IF (r(ii)%ip5 /= 0) r(ii)%exothermicity = r(ii)%exothermicity + s(r(ii)%ip5)%enthalpia
+      r(ii)%exothermicity = -r(ii)%exothermicity
+    END IF
+  END SUBROUTINE get_reaction_thermodynamics
 
-    r(ii)%exothermicity = 0.0d0
-  IF (r(ii)%exothermicity_known==1) THEN
-        r(ii)%exothermicity = r(ii)%exothermicity - s(r(ii)%ir1)%enthalpia
-      IF (r(ii)%ir2/=0) r(ii)%exothermicity = r(ii)%exothermicity - s(r(ii)%ir2)%enthalpia
-      IF (r(ii)%ip1/=0) r(ii)%exothermicity = r(ii)%exothermicity + s(r(ii)%ip1)%enthalpia
-      IF (r(ii)%ip2/=0) r(ii)%exothermicity = r(ii)%exothermicity + s(r(ii)%ip2)%enthalpia
-      IF (r(ii)%ip3/=0) r(ii)%exothermicity = r(ii)%exothermicity + s(r(ii)%ip3)%enthalpia
-      IF (r(ii)%ip4/=0) r(ii)%exothermicity = r(ii)%exothermicity + s(r(ii)%ip4)%enthalpia
-      IF (r(ii)%ip5/=0) r(ii)%exothermicity = r(ii)%exothermicity + s(r(ii)%ip5)%enthalpia
-    ENDIF
-
-  r(ii)%exothermicity = -r(ii)%exothermicity
-
-RETURN
-STOP
-END SUBROUTINE get_reaction_thermodynamics
-
-SUBROUTINE get_rd_efficiency(ii)
-IMPLICIT NONE
-
-INTEGER :: ii
-REAL*8  :: P
-
-  !Setting efficiency of reactive desorption using des_reactive_type
+  SUBROUTINE get_rd_efficiency(ii)
+    IMPLICIT NONE
+    INTEGER, INTENT(IN) :: ii
+    REAL(KIND=wp) :: P
+    IF (ii <= 0 .OR. ii > SIZE(r)) RETURN
     SELECT CASE (des_reactive_type)
-    CASE (0) !Garrod_ea07
-      IF (r(ii)%rtype == 13 .AND. r(ii)%p1(1:1) == 'g') THEN
-          IF (r(ii)%ip2/=0) THEN
-              r(ii)%alpha = 1.0d0*r(ii)%alpha
+    CASE (0) ! Garrod_ea07
+      IF (r(ii)%rtype == 13) THEN
+        IF (r(ii)%p1(1:1) == 'g') THEN
+          IF (r(ii)%ip2 /= 0) THEN
+            r(ii)%alpha = 1.0_wp * r(ii)%alpha
           ELSE
-              IF (r(ii)%exothermicity_known==1) THEN
-                  P = (1.d0-s(r(ii)%ip1)%edes/r(ii)%exothermicity)**(dmax1(2.d0,3.d0*s(r(ii)%ip1)%natoms-5.d0)-1.d0)
-                  r(ii)%alpha =(1.d0 - (des_reactive*P)/(1+des_reactive*P))*r(ii)%alpha
-              ELSE
-                  r(ii)%alpha = (1.d0 - des_reactive)*r(ii)%alpha
-              ENDIF
-          ENDIF
-      ENDIF
-      IF (r(ii)%rtype == 13 .AND. r(ii)%p1(1:1) /= 'g') THEN
-          IF (r(ii)%ip2/=0) THEN
-              r(ii)%alpha = 0.d0
+            IF (r(ii)%exothermicity_known == 1 .AND. r(ii)%ip1 > 0) THEN
+              P = (1.0_wp - s(r(ii)%ip1)%edes / r(ii)%exothermicity) ** &
+                  (MAX(2.0_wp, 3.0_wp * s(r(ii)%ip1)%natoms - 5.0_wp) - 1.0_wp)
+              IF (P < 0.0_wp .OR. ISNAN(P)) P = 0.0_wp
+              IF (P > 1.0_wp) P = 1.0_wp
+              r(ii)%alpha = (1.0_wp - (des_reactive * P) / (1.0_wp + des_reactive * P)) * r(ii)%alpha
+            ELSE
+              r(ii)%alpha = (1.0_wp - des_reactive) * r(ii)%alpha
+            END IF
+          END IF
+        ELSE
+          IF (r(ii)%ip2 /= 0) THEN
+            r(ii)%alpha = 0.0_wp
           ELSE
-              IF (r(ii)%exothermicity_known==1) THEN
-                  P = (1.d0-s(r(ii)%ip1)%edes/r(ii)%exothermicity)**(dmax1(2.d0,3.d0*s(r(ii)%ip1)%natoms-5.d0)-1.d0)
-                  r(ii)%alpha =((des_reactive*P)/(1+des_reactive*P))*r(ii)%alpha
-              ELSE
-                  r(ii)%alpha = des_reactive*r(ii)%alpha
-              ENDIF
-          ENDIF
-      ENDIF
-  CASE (1) !Vasyunin&Herbst13
-      IF (r(ii)%rtype == 13 .AND. r(ii)%p1(1:1) == 'g') r(ii)%alpha = (1.d0 - des_reactive)*r(ii)%alpha
-      IF (r(ii)%rtype == 13 .AND. r(ii)%p1(1:1) /= 'g') r(ii)%alpha = des_reactive*r(ii)%alpha
-  CASE (2) !Minissale&Dulieu
-      !!!des_reactive = 0.0d0
-      IF (r(ii)%rtype == 13 .AND. r(ii)%p1(1:1) == 'g') r(ii)%alpha = (1.d0 - des_reactive)*r(ii)%alpha
-      IF (r(ii)%rtype == 13 .AND. r(ii)%p1(1:1) /= 'g') r(ii)%alpha = des_reactive*r(ii)%alpha
-      !Desorption efficiency is individual for each species, not reaction! As such, it is calculated in mod_run_dvode.f90
-  CASE DEFAULT
-      PRINT*, 'Unknown treatment of reactive desorption: ',des_reactive_type
-      STOP
-  END SELECT
+            IF (r(ii)%exothermicity_known == 1 .AND. r(ii)%ip1 > 0) THEN
+              P = (1.0_wp - s(r(ii)%ip1)%edes / r(ii)%exothermicity) ** &
+                  (MAX(2.0_wp, 3.0_wp * s(r(ii)%ip1)%natoms - 5.0_wp) - 1.0_wp)
+              IF (P < 0.0_wp .OR. ISNAN(P)) P = 0.0_wp
+              IF (P > 1.0_wp) P = 1.0_wp
+              r(ii)%alpha = (des_reactive * P) / (1.0_wp + des_reactive * P) * r(ii)%alpha
+            ELSE
+              r(ii)%alpha = des_reactive * r(ii)%alpha
+            END IF
+          END IF
+        END IF
+      END IF
+    CASE (1, 2) ! Vasyunin&Herbst13 or Minissale&Dulieu
+      IF (r(ii)%rtype == 13) THEN
+        IF (r(ii)%p1(1:1) == 'g') THEN
+          r(ii)%alpha = (1.0_wp - des_reactive) * r(ii)%alpha
+        ELSE
+          r(ii)%alpha = des_reactive * r(ii)%alpha
+        END IF
+      END IF
+    CASE DEFAULT
+      WRITE(*,'(A,I0)') 'ERROR: Unknown des_reactive_type: ', des_reactive_type
+      CALL cleanup_and_exit()
+    END SELECT
+  END SUBROUTINE get_rd_efficiency
 
-RETURN
-STOP
-END SUBROUTINE get_rd_efficiency
+  INTEGER FUNCTION get_rtype(r1, r2)
+    IMPLICIT NONE
+    CHARACTER(LEN=10), INTENT(IN) :: r1, r2
+    LOGICAL :: r1IsIon, r2IsIon
+    INTEGER :: r1_len, r2_len
+    get_rtype = 1
+    r1_len = LEN_TRIM(r1)
+    r2_len = LEN_TRIM(r2)
+    IF (r1_len == 0 .OR. r2_len == 0) RETURN
+    IF (r2 == 'CRP') get_rtype = 2
+    IF (r2 == 'PHOTON') THEN
+      IF (r1 == 'H2') THEN
+        get_rtype = 4
+      ELSE IF (r1 == 'CO') THEN
+        get_rtype = 5
+      ELSE
+        get_rtype = 3
+      END IF
+    END IF
+    IF (r2 == 'CRPHOT') get_rtype = 6
+    IF (r2 == 'G-') get_rtype = 7
+    IF (r2 == 'G0') get_rtype = 8
+    IF (r1 == 'G0') get_rtype = 9
+    IF (r1 == 'G+') get_rtype = 10
+    IF (r2 == 'FREEZE') get_rtype = 11
+    IF (r2 == 'DESORB') get_rtype = 12
+    IF (r1(1:1) == 'g' .AND. r2(1:1) == 'g') get_rtype = 13
+    IF (r1(1:1) == 'b' .AND. r2(1:1) == 'b') get_rtype = 14
+    IF ((r1(r1_len:r1_len) == '*' .OR. r2(r2_len:r2_len) == '*') .AND. &
+        (r1(1:1) == 'g' .OR. r2(1:1) == 'g')) get_rtype = 15
+    IF ((r1(r1_len:r1_len) == '*' .OR. r2(r2_len:r2_len) == '*') .AND. &
+        (r1(1:1) == 'b' .OR. r2(1:1) == 'b')) get_rtype = 16
+    IF (r2 == 'IONRAD') get_rtype = 17
+    IF (r2 == 'QUENCH') get_rtype = 18
+    IF (r2 == 'PHOION') get_rtype = 19
+    IF (r2 == 'PHOEXC') get_rtype = 20
+    r1IsIon = (r1(r1_len:r1_len) == '+' .OR. r1(r1_len:r1_len) == '-')
+    r2IsIon = (r2(r2_len:r2_len) == '+' .OR. r2(r2_len:r2_len) == '-')
+    IF ((r1IsIon .AND. .NOT. r2IsIon) .OR. (.NOT. r1IsIon .AND. r2IsIon)) THEN
+      IF (r1(1:1) == 'g') get_rtype = 21
+      IF (r1(1:1) == 'b') get_rtype = 22
+    END IF
+    IF (r1IsIon .AND. r2IsIon) THEN
+      IF (r1(1:1) == 'g') get_rtype = 23
+      IF (r1(1:1) == 'b') get_rtype = 24
+    END IF
+  END FUNCTION get_rtype
 
-!This function returns the reactions type by its reactants
-!
-!Reaction types:
-!
-! 1.  Two-body molecule(ion) - molecule(ion) gas-phase reaction
-! 2.  Cosmic ray ionization reaction (CRP)
-! 3.  Photoionization reaction (PHOTON)
-! 4.  Photoionization, H2 self-shielded
-! 5.  Photoionization, CO self-shielded
-! 6.  Cosmic ray-induced photoreaction (CRPHOT)
-! 7.  Ions plus negatively charged grains
-! 8.  Ions plus neutral grains
-! 9.  Collisions of the electrons with the neutral grains
-! 10. Collisions of the electrons with the positively charged grains
-! 11. Accretion (FREEZE)
-! 12. Desorption (DESORB)
-! 13. Surface two-body reaction
-! 14. Bulk two-body reaction
-! 15. Suprathermal surface reaction
-! 16. Suprathermal bulk reaction
-! 17. Solid-phase radiolysis (IONRAD)
-! 18. Quenching of suprathermal species (QUENCH)
-INTEGER FUNCTION get_rtype(r1,r2)
-IMPLICIT NONE
-CHARACTER*10 r1, r2
-LOGICAL :: r1IsIon, r2IsIon
+  REAL(KIND=wp) FUNCTION REALVALUE(str)
+    CHARACTER(LEN=*), INTENT(IN) :: str
+    INTEGER :: io_stat
+    READ(str, *, IOSTAT=io_stat) REALVALUE
+    IF (io_stat /= 0) REALVALUE = 0.0_wp
+  END FUNCTION REALVALUE
 
-get_rtype = 1
-!PRINT *,"r1: ", r1," + r2: ",r2
-
-IF (r2(1:LEN_TRIM(r2)) == 'CRP') get_rtype = 2
-IF (r2(1:LEN_TRIM(r2)) == 'PHOTON') get_rtype = 3
-IF (r1(1:LEN_TRIM(r1)) == 'H2' .AND. r2(1:LEN_TRIM(r2)) == 'PHOTON') get_rtype = 4
-IF (r1(1:LEN_TRIM(r1)) == 'CO' .AND. r2(1:LEN_TRIM(r2)) == 'PHOTON') get_rtype = 5
-IF (r2(1:LEN_TRIM(r2)) == 'CRPHOT') get_rtype = 6
-IF (r2(1:LEN_TRIM(r2)) == 'G-') get_rtype = 7
-IF (r2(1:LEN_TRIM(r2)) == 'G0') get_rtype = 8
-IF (r1(1:LEN_TRIM(r1)) == 'G0') get_rtype = 9
-IF (r1(1:LEN_TRIM(r1)) == 'G+') get_rtype = 10
-IF (r2(1:LEN_TRIM(r2)) == 'FREEZE') get_rtype = 11
-IF (r2(1:LEN_TRIM(r2)) == 'DESORB') get_rtype = 12
-IF (r1(1:1) == 'g' .AND. r2(1:1) == 'g') get_rtype = 13
-IF (r1(1:1) == 'b' .AND. r2(1:1) == 'b') get_rtype = 14
-IF (((r1(LEN_TRIM(r1):LEN_TRIM(r1)) .EQ. '*' .OR. r2(LEN_TRIM(r2):LEN_TRIM(r2)) .EQ. '*')) &
-  .AND. ((r1(1:1) .EQ. 'g') .OR. (r2(1:1) .EQ. 'g'))) get_rtype = 15
-IF (((r1(LEN_TRIM(r1):LEN_TRIM(r1)) .EQ. '*' .OR. r2(LEN_TRIM(r2):LEN_TRIM(r2)) .EQ. '*')) &
-  .AND. ((r1(1:1) .EQ. 'b') .OR. (r2(1:1) .EQ. 'b'))) get_rtype = 16
-IF (r2(1:LEN_TRIM(r2)) == 'IONRAD') get_rtype = 17
-IF (r2(1:LEN_TRIM(r2)) == 'QUENCH') THEN
-!  PRINT *, r1," + ",r2
-  get_rtype = 18
-ENDIF
-IF (r2(1:LEN_TRIM(r2)) == 'PHOION') get_rtype = 19
-IF (r2(1:LEN_TRIM(r2)) == 'PHOEXC') get_rtype = 20
-
-r1IsIon = ((r1(LEN_TRIM(r1):LEN_TRIM(r1)) == '+') .OR. (r1(LEN_TRIM(r1):LEN_TRIM(r1)) == '-'))
-r2IsIon = ((r2(LEN_TRIM(r2):LEN_TRIM(r2)) == '+') .OR. (r2(LEN_TRIM(r2):LEN_TRIM(r2)) == '-'))
-
-IF(((r1IsIon .eqv. .TRUE.) .AND. (r2IsIon .eqv. .FALSE.)) .OR. ((r1IsIon .eqv. .FALSE.) .AND. (r2IsIon .eqv. .TRUE.))) THEN
-!  PRINT*,"First if (outer one) is ok"
-  IF(r1(1:1) .EQ. 'g') THEN
-!    PRINT *, "r1 or r2 is an ion and they are both grain species"
-    get_rtype = 21
-  ENDIF
-  IF(r1(1:1) .EQ. 'b') THEN
-!    PRINT *, "r1 or r2 is an ion and they are both bulk species"
-    get_rtype = 22
-  ENDIF
-ENDIF
-
-IF((r1IsIon .eqv. .TRUE.) .AND. (r2IsIon .eqv. .TRUE.)) THEN
-!  PRINT*,"Second if (outer one) is ok"
-  IF(r1(1:1) .EQ. 'g') THEN
-!    PRINT *, "r1 and r2 are ions and they are both grain species"
-    get_rtype = 23
-  ENDIF 
-  IF(r1(1:1) .EQ. 'b') THEN
-!    PRINT *, "r1 and r2 are ions and they are both bulk species"
-    get_rtype = 24
-  ENDIF
-ENDIF
-
-END FUNCTION get_rtype
-
-END
+END MODULE read_rate06
