@@ -6,10 +6,10 @@ SOURCES = mod_global_variables.f90 mod_global_functions.f90 mod_calculate_rates.
 OBJECTS = $(SOURCES:.f90=.o)
 
 # Compiler and flags
-FC = ifort
-# FC = gfortran  # Uncomment for gfortran
-FLAGS = -g -pg -O2 -fprotect-parens -fp-model=strict -march=native -module . -diag-disable=10448  # ifort options with module path and warning suppression
-# FLAGS = -g -pg -O2 -march=native -ffree-line-length-512 -J .  # gfortran options with module path
+#FC = ifort
+ FC = gfortran  # Uncomment for gfortran
+#FLAGS = -g -pg -O2 -fprotect-parens -fp-model=strict -march=native -module . -diag-disable=10448  # ifort options with module path and warning suppression
+ FLAGS = -g -pg -O2 -march=native -ffree-line-length-512 -J .  # gfortran options with module path
 
 # Target executable
 TARGET = monaco
