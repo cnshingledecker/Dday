@@ -251,14 +251,6 @@ REAL(wp) :: temp_atoms,temp_atoms_y, nml_s_array
 
 IF (delta_rho==1 .OR. delta_t==1) CALL calc_rates(t)
 
-DO i = 1, neq
-  IF (ISNAN(y(i))) THEN
-    PRINT *, "NaN in Y on entry to re"
-    PRINT *, "t =", t, " species =", i, " name =", s(i)%name
-    CALL EXIT()
-  ENDIF
-ENDDO
-
 
 
 
@@ -388,11 +380,6 @@ DO j = 1, nreactions
 !    PRINT *, "***********************************"
     IF ( ISNAN(rr) ) THEN
       PRINT *, "RR = NaN"
-      PRINT *, "j =", j, " idx =", r(j)%idx, " rtype =", r(j)%rtype
-      PRINT *, "reaction: ", r(j)%r1, " + ", r(j)%r2, " -> ", r(j)%p1, " + ", r(j)%p2, " + ", r(j)%p3, " + ", r(j)%p4, " + ", r(j)%p5
-      PRINT *, "rate coeff =", r(j)%rate
-      IF (r(j)%ir1 > 0) PRINT *, "y(ir1) =", y(r(j)%ir1)
-      IF (r(j)%ir2 > 0) PRINT *, "y(ir2) =", y(r(j)%ir2)
       CALL EXIT()
     ENDIF
 !
@@ -594,15 +581,6 @@ DO j = 1, nreactions
 
 ENDDO
 
-DO i = 1, neq
-  IF (ISNAN(ydot(i))) THEN
-    PRINT *, "NaN in YDOT after reaction loop"
-    PRINT *, "t =", t, " species =", i, " name =", s(i)%name
-    PRINT *, "y(i) =", y(i)
-    CALL EXIT()
-  ENDIF
-ENDDO
-
 
 
 
@@ -736,15 +714,6 @@ DO i = first_bulk_spec, nspecies !Second loop through bulk species
     ydot(i-n_surf_spec) = ydot(i-n_surf_spec) - diff_s2m
     ydot(i) = ydot(i) + diff_s2m
     diff_s2m_tot = diff_s2m_tot + diff_s2m
-ENDDO
-
-DO i = 1, neq
-  IF (ISNAN(ydot(i))) THEN
-    PRINT *, "NaN in YDOT before bulk totals"
-    PRINT *, "t =", t, " species =", i, " name =", s(i)%name
-    PRINT *, "y(i) =", y(i)
-    CALL EXIT()
-  ENDIF
 ENDDO
 
 !WRITE( *,'(A,ES9.2,A,ES9.2)') "Sum of grain s-array = ",SUM(s(first_surf_spec:nspecies)%abundance), " and sum of grain y-array = ",SUM(y(first_surf_spec:nspecies))
