@@ -251,6 +251,14 @@ REAL(wp) :: temp_atoms,temp_atoms_y, nml_s_array
 
 IF (delta_rho==1 .OR. delta_t==1) CALL calc_rates(t)
 
+DO i = 1, neq
+  IF (ISNAN(y(i))) THEN
+    PRINT *, "NaN in Y on entry to re"
+    PRINT *, "t =", t, " species =", i, " name =", s(i)%name
+    CALL EXIT()
+  ENDIF
+ENDDO
+
 
 
 
@@ -380,6 +388,11 @@ DO j = 1, nreactions
 !    PRINT *, "***********************************"
     IF ( ISNAN(rr) ) THEN
       PRINT *, "RR = NaN"
+      PRINT *, "j =", j, " idx =", r(j)%idx, " rtype =", r(j)%rtype
+      PRINT *, "reaction: ", r(j)%r1, " + ", r(j)%r2, " -> ", r(j)%p1, " + ", r(j)%p2, " + ", r(j)%p3, " + ", r(j)%p4, " + ", r(j)%p5
+      PRINT *, "rate coeff =", r(j)%rate
+      IF (r(j)%ir1 > 0) PRINT *, "y(ir1) =", y(r(j)%ir1)
+      IF (r(j)%ir2 > 0) PRINT *, "y(ir2) =", y(r(j)%ir2)
       CALL EXIT()
     ENDIF
 !
@@ -581,6 +594,15 @@ DO j = 1, nreactions
 
 ENDDO
 
+DO i = 1, neq
+  IF (ISNAN(ydot(i))) THEN
+    PRINT *, "NaN in YDOT after reaction loop"
+    PRINT *, "t =", t, " species =", i, " name =", s(i)%name
+    PRINT *, "y(i) =", y(i)
+    CALL EXIT()
+  ENDIF
+ENDDO
+
 
 
 
@@ -588,7 +610,8 @@ ENDDO
 dtran = 0.0d0 !dtran === (dn_s/dt)0
 
 ! Added by D. Lopez-Sanders 11 October 2022 to fix error in new network where first_bulk_spec was set to 0.
-DO k = 0, nspecies
+first_bulk_spec = 0
+DO k = 1, nspecies
   IF ( s(k)%name(1:1) == 'b' ) THEN
     first_bulk_spec = k
     EXIT
@@ -653,7 +676,7 @@ DO j = first_surf_spec, first_bulk_spec - 1
   ELSE
     ! If the change in the number of surface species is negative, then it may be
     ! necessary to move some species from the bulk to the surface
-    IF (bmol>0.0d0) transit = dtran*dmin1(bmol,smol)/smol*y(j+n_surf_spec)/bmol !y(nspecies+3)
+    IF (bmol>0.0d0) transit = dtran*dmin1(bmol,smol)/smol*y(bulk_idx)/bmol !y(nspecies+3)
     if (tdust>150.0d0 .AND. cov<5.0d-3) transit = 0.0d0
     ydot(j) = ydot(j) - transit
     ydot(bulk_idx) = ydot(bulk_idx) + transit
@@ -713,6 +736,15 @@ DO i = first_bulk_spec, nspecies !Second loop through bulk species
     ydot(i-n_surf_spec) = ydot(i-n_surf_spec) - diff_s2m
     ydot(i) = ydot(i) + diff_s2m
     diff_s2m_tot = diff_s2m_tot + diff_s2m
+ENDDO
+
+DO i = 1, neq
+  IF (ISNAN(ydot(i))) THEN
+    PRINT *, "NaN in YDOT before bulk totals"
+    PRINT *, "t =", t, " species =", i, " name =", s(i)%name
+    PRINT *, "y(i) =", y(i)
+    CALL EXIT()
+  ENDIF
 ENDDO
 
 !WRITE( *,'(A,ES9.2,A,ES9.2)') "Sum of grain s-array = ",SUM(s(first_surf_spec:nspecies)%abundance), " and sum of grain y-array = ",SUM(y(first_surf_spec:nspecies))

@@ -43,6 +43,8 @@ ak_photo = 0.d0
 ak_therm = 0.d0
 ak_crp   = 0.d0
 
+s(:)%bdiffrate = 0.0d0
+
 DO i = 1, nreactions
     SELECT CASE (r(i)%rtype)
         CASE (1) !Two-body molecule(ion) - molecule(ion) gas-phase reaction
@@ -785,6 +787,11 @@ REAL(wp) sigma, delta
 sigma = 1.59D+21  !mag.^(-1)/cm^2, NH to Av conversion factor for 0.12 mkm grains
 delta = 6.0d-5
 !Av = Nh2*2.0D0/sigma
+IF (av <= 0.0d0) THEN
+    fh2 = 1.0d0
+    fco = 1.0d0
+    RETURN
+ENDIF
 nh2 = av*sigma/2.d0
 nco = nh2*delta
 ! Compute H2 self-shielding (Draine & Bertoldi 1996):
