@@ -51,7 +51,7 @@ INTEGER, SAVE                                :: sing_mult, &
                                                 DISABLE_DESORB
 INTEGER, SAVE                                :: delta_rho, delta_t, delta_tdust, delta_g0, delta_avst, delta_avis, delta_zetacr, delta_zetax, delta_selfshield
 INTEGER, SAVE                                :: n_d_steps, n_t_steps, n_tdust_steps, n_G0_steps, n_avst_steps, n_avis_steps, n_zetacr_steps, n_zetax_steps, n_selfshield_steps
-REAL(wp), SAVE                               :: rho, rho_ice, ice_thick, t, tdust, G0_stellar, AvSt, AvIS, ZetaCR, ZetaX, agr, drho, dust2gas, ebed, ebed_factor, sitedens, nsites, nml, nml_old, nml_max, n_s_ml, bulk_diff_slowdown, barrier_tunneling_w, ph_yield, phi_exp,se_exp,DVAL,EXTFAC
+REAL(wp), SAVE                               :: rho, rho_ice, ice_thick, t, tdust, G0_stellar, AvSt, AvIS, ZetaCR, ZetaX, agr, drho, dust2gas, ebed, ebed_factor, sitedens, nsites, nml, nml_old, nml_max, n_s_ml, bulk_diff_slowdown, barrier_tunneling_w, ph_yield, phi_exp,se_exp,DVAL
 REAL(wp), SAVE                               :: effsurfmass, gdens, ddens, tstart, tend, told, rtol, atol
 REAL(wp), DIMENSION(2000)                    :: d_array, t_array, tdust_array, G0_array, avst_array, avis_array, zetacr_array, zetax_array, fh2is_array, fcois_array, fh2st_array, fcost_array
 REAL(wp), DIMENSION(2000)                    :: time_d_array, time_t_array, time_tdust_array, time_G0_array, time_avst_array, time_avis_array, time_zetacr_array, time_zetax_array, time_selfshield_array

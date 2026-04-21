@@ -1,0 +1,90 @@
+# Reviewer Comment 1.9 — paired ion-on / ion-off comparison
+
+**Date:** 2026-04-16
+**Manuscript:** Dday ion-ice ozone paper (revisions)
+
+## What this folder is
+
+The reviewer asked whether the ion photoproducts matter for the O2 + hν → O3
+chemistry reported in the paper. This folder is the same-model control:
+Model 1 Table 5 parameters on both sides, the only difference being that the
+twelve photoprocess rows whose products contain ions or electrons have their
+yield (δ) zeroed on the ion-off side. Neutral channels are untouched.
+
+## Branches
+
+Both branches live on the `cnshingledecker/Dday` remote:
+
+- `newNetwork-transport-fixes` — ion-on baseline. Commits `32379df` (transport
+  fixes), `eddb78e` (Table 5 photoprocesses), `73e8011` (NaN cleanup).
+- `newNetwork-reviewer-noion`  — ion-off control. Branched from the tip of
+  `newNetwork-transport-fixes`; single commit `a0bedbb` zeros δ on the 12
+  charged-product rows.
+
+`FIXED_DVAL = 0` in `model.inp` on both branches, so the per-row δ column in
+`photo_processes.dat` governs the channel yield at runtime (a row with
+δ = 0.00E+00 is effectively off).
+
+## Rows zeroed (ion-off side only)
+
+| line | id   | type   | products            | δ (ion-on) |
+|------|------|--------|---------------------|------------|
+|    3 | 8288 | PHOION | gO+  + ge-          | 1.00E+00   |
+|    4 | 8289 | PHOION | bO+  + be-          | 1.00E+00   |
+|    7 | 8298 | PHOEXC | gO+  + gO-          | 4.37E-01   |
+|    8 | 8299 | PHOEXC | bO+  + bO-          | 4.37E-01   |
+|   13 | 8306 | PHOION | gO2+ + ge-          | 1.54E+00   |
+|   14 | 8307 | PHOION | bO2+ + be-          | 1.54E+00   |
+|   15 | 8322 | PHOEXC | gO+  + gO2-         | 1.00E+00   |
+|   16 | 8323 | PHOEXC | bO+  + bO2-         | 1.00E+00   |
+|   19 | 8326 | PHOEXC | gO2+ + gO-          | 1.00E+00   |
+|   20 | 8327 | PHOEXC | bO2+ + bO-          | 1.00E+00   |
+|   25 | 8336 | PHOION | gO3+ + ge-          | 1.00E+00   |
+|   26 | 8337 | PHOION | bO3+ + be-          | 1.00E+00   |
+
+On the ion-off branch all twelve are set to 0.00E+00. The other 14 rows
+(neutral photoexcitation and neutral-product photoionization) are identical
+between the two branches.
+
+## Results
+
+|                        | ion-on (Model 1) | ion-off (control) | ratio (off/on) |
+|------------------------|-----------------:|------------------:|---------------:|
+| Unweighted RMSD        |            2.011 |            13.863 |          6.9× |
+| Weighted RMSD          |            2.429 |            16.460 |          6.8× |
+| Peak bO3 % (last pt)   |            26.80 |              3.66 |          0.14× |
+| bO3 % at F=1.1e16      |             6.77 |              0.12 |          0.02× |
+| bO3 % at F=3.4e16      |            15.10 |              0.32 |          0.02× |
+
+Per-point table: `eval_ion_on.csv` / `eval_ion_off.csv`.
+Summary CSVs: `summary_ion_on.csv` / `summary_ion_off.csv`.
+Raw `bO3.csv` from each run: `bO3_ion_on.csv` / `bO3_ion_off.csv`.
+Overlay figure: `fig_paired_overlay.png` (PDF also).
+
+## Reproduce
+
+```bash
+# ion-on
+cd ~/Research/Dday-newnetwork-porting
+make clean && make FLAGS="-g -O2 -march=native -ffree-line-length-512 -J ."
+python3 singleRMSD.py
+
+# ion-off
+cd ~/Research/Dday-reviewer-noion
+make clean && make FLAGS="-g -O2 -march=native -ffree-line-length-512 -J ."
+python3 singleRMSD.py
+```
+
+(The `-pg` flag in the default Makefile pulls in `gcrt1.o`, which is missing
+on current macOS; dropping `-pg` via a FLAGS override is the minimal workaround
+and has no effect on the numerics.)
+
+## What the numbers say
+
+Removing the ion photoproduct channels while holding every other parameter
+fixed degrades the fit by a factor of ~7 in RMSD and drops the model's peak
+O3 yield to ~15% of experimental. The ionless model is not simply a rescaled
+version of Model 1 — it fails to reach the experimental O3 abundance at any
+fluence in the measured range. This is the quantitative basis for the claim
+that suprathermal/ion chemistry is required to reproduce the Gerakines data
+and cannot be substituted for by the neutral photoprocesses alone.

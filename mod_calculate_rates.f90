@@ -272,8 +272,8 @@ DO i = 1, nreactions
                   IF ( akbar .GT. 1.0 ) akbar = 1.0
                 ENDIF
               ! Special case for H + CS -> HCS
-              ELSE IF ((s(r(i)%ir1)%name=='gH' .AND. s(r(i)%ir1)%name=='gCS') .OR. &
-                (s(r(i)%ir2)%name=='gH' .AND. s(r(i)%ir2)%name=='gCS')) THEN
+              ELSE IF ((s(r(i)%ir1)%name=='gH' .AND. s(r(i)%ir2)%name=='gCS') .OR. &
+                (s(r(i)%ir2)%name=='gH' .AND. s(r(i)%ir1)%name=='gCS')) THEN
                 alpha = 2.05296E12
                 beta  = -8.10946
                 gamma = 984.986
@@ -290,8 +290,8 @@ DO i = 1, nreactions
                   IF ( akbar .GT. 1.0 ) akbar = 1.0
                 ENDIF
               ! Special case for H + H2CS ->
-              ELSE IF ((s(r(i)%ir1)%name=='gH' .AND. s(r(i)%ir1)%name=='gH2CS') .OR. &
-                (s(r(i)%ir2)%name=='gH' .AND. s(r(i)%ir2)%name=='gH2CS')) THEN
+              ELSE IF ((s(r(i)%ir1)%name=='gH' .AND. s(r(i)%ir2)%name=='gH2CS') .OR. &
+                (s(r(i)%ir2)%name=='gH' .AND. s(r(i)%ir1)%name=='gH2CS')) THEN
                 ! -> H2 + HCS
                 IF (s(r(i)%ip1)%name=='gH2' .OR. s(r(i)%ip2)%name=='H2') THEN
                   tunn = 1.34e4
@@ -313,8 +313,8 @@ DO i = 1, nreactions
                   IF ( akbar .GT. 1.0 ) akbar = 1.0
                 ENDIF
               ! Special case for H + CH3SH ->
-              ELSE IF ((s(r(i)%ir1)%name=='gH' .AND. s(r(i)%ir1)%name=='gCH3SH') .OR. &
-                (s(r(i)%ir2)%name=='gH' .AND. s(r(i)%ir2)%name=='gCH3SH')) THEN
+              ELSE IF ((s(r(i)%ir1)%name=='gH' .AND. s(r(i)%ir2)%name=='gCH3SH') .OR. &
+                (s(r(i)%ir2)%name=='gH' .AND. s(r(i)%ir1)%name=='gCH3SH')) THEN
                 ! -> H2 + CH2SH
                 IF (s(r(i)%ip1)%name=='gCH2SH' .OR. s(r(i)%ip2)%name=='CH2SH') THEN
                   tunn = 1.0e8
@@ -466,8 +466,8 @@ DO i = 1, nreactions
                 akbar = (tunn+akbar*(anu0+anu1))/(anu0+anu1)
                 IF (akbar .GT. 1.0 ) akbar = 1.0
               ! Special case for H + CS -> HCS
-              ELSE IF ((s(r(i)%ir1)%name=='bH' .AND. s(r(i)%ir1)%name=='bCS') .OR. &
-                (s(r(i)%ir2)%name=='bH' .AND. s(r(i)%ir2)%name=='bCS')) THEN
+              ELSE IF ((s(r(i)%ir1)%name=='bH' .AND. s(r(i)%ir2)%name=='bCS') .OR. &
+                (s(r(i)%ir2)%name=='bH' .AND. s(r(i)%ir1)%name=='bCS')) THEN
                 alpha = 2.05296E12
                 beta  = -8.10946
                 gamma = 984.986
@@ -478,8 +478,8 @@ DO i = 1, nreactions
                 akbar = (tunn+akbar*(anu0+anu1))/(anu0+anu1)
                 IF (akbar .GT. 1.0 ) akbar = 1.0
               ! Special case for H + H2CS ->
-              ELSE IF ((s(r(i)%ir1)%name=='bH' .AND. s(r(i)%ir1)%name=='bH2CS') .OR. &
-                (s(r(i)%ir2)%name=='bH' .AND. s(r(i)%ir2)%name=='bH2CS')) THEN
+              ELSE IF ((s(r(i)%ir1)%name=='bH' .AND. s(r(i)%ir2)%name=='bH2CS') .OR. &
+                (s(r(i)%ir2)%name=='bH' .AND. s(r(i)%ir1)%name=='bH2CS')) THEN
                 ! -> H2 + HCS
                 IF (s(r(i)%ip1)%name=='bH2') THEN
                   tunn = 1.34e4
@@ -495,8 +495,8 @@ DO i = 1, nreactions
                 akbar = (tunn+akbar*(anu0+anu1))/(anu0+anu1)
                 IF (akbar .GT. 1.0 ) akbar = 1.0
               ! Special case for H + CH3SH ->
-              ELSE IF ((s(r(i)%ir1)%name=='bH' .AND. s(r(i)%ir1)%name=='bCH3SH') .OR. &
-                (s(r(i)%ir2)%name=='bH' .AND. s(r(i)%ir2)%name=='bCH3SH')) THEN
+              ELSE IF ((s(r(i)%ir1)%name=='bH' .AND. s(r(i)%ir2)%name=='bCH3SH') .OR. &
+                (s(r(i)%ir2)%name=='bH' .AND. s(r(i)%ir1)%name=='bCH3SH')) THEN
                 ! -> H2 + CH2SH
                 IF (s(r(i)%ip1)%name=='bCH2SH' ) THEN
                   tunn = 1.0e8
@@ -620,20 +620,11 @@ DO i = 1, nreactions
           ! beta  -> σ, the photoionization cross section
           ! gamma -> δ, the fitting value
           ! PHI_EXP -> ϕ, the photon flux
-          ! EXTFAC -> accounts for extinction of photons in the bulk
           ! k = fbr*σ*ϕ*δ
           IF ( FIXED_DVAL .EQ. 1 ) THEN
-            IF (s(r(i)%ir1)%name(1:1) =='b') THEN
-              r(i)%rate = EXTFAC*PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
-            ELSE
-              r(i)%rate = PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
-            ENDIF
+            r(i)%rate = PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
           ElSE
-            IF (s(r(i)%ir1)%name(1:1) =='b') THEN
-              r(i)%rate = EXTFAC*PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
-            ELSE
-              r(i)%rate = PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
-            ENDIF
+            r(i)%rate = PHOTOION*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
           ENDIF
         CASE(20) ! Photoexcitation
           ! alpha -> branching fractiona
@@ -642,17 +633,9 @@ DO i = 1, nreactions
           ! PHI_EXP -> ϕ, the photon flux
           ! k = fbr*σ*ϕ*δ
           IF ( FIXED_DVAL .EQ. 1 ) THEN
-            IF (s(r(i)%ir1)%name(1:1) =='b') THEN
-              r(i)%rate = EXTFAC*PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
-            ELSE
-              r(i)%rate = PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
-            ENDIF
+            r(i)%rate = PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*DVAL
           ElSE
-            IF (s(r(i)%ir1)%name(1:1) =='b') THEN
-              r(i)%rate = EXTFAC*PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
-            ELSE
-              r(i)%rate = PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
-            ENDIF
+            r(i)%rate = PHOTOEXC*r(i)%alpha*r(i)%beta*PHI_EXP*r(i)%gamma
           ENDIF
         CASE DEFAULT
         END SELECT

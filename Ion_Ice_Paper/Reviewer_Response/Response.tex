@@ -1,0 +1,444 @@
+%% Response to Reviewers
+%% Ion--Ice Reactions in Astrochemical Models
+%% ============================================================
+\documentclass[12pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
+\usepackage{mdframed}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{amsmath}
+
+%% ---- Colour scheme ----------------------------------------
+\definecolor{reviewerblue}{RGB}{30, 90, 160}
+\definecolor{commentbg}{RGB}{235, 242, 252}
+\definecolor{responsebg}{RGB}{245, 250, 245}
+\definecolor{commentframe}{RGB}{30, 90, 160}
+\definecolor{responseframe}{RGB}{60, 140, 60}
+
+%% ---- Framed environments ----------------------------------
+\newmdenv[
+  backgroundcolor=commentbg,
+  linecolor=commentframe,
+  linewidth=1.5pt,
+  leftmargin=0pt,
+  rightmargin=0pt,
+  innerleftmargin=10pt,
+  innerrightmargin=10pt,
+  innertopmargin=8pt,
+  innerbottommargin=8pt,
+  skipabove=6pt,
+  skipbelow=6pt,
+]{reviewerbox}
+
+\newmdenv[
+  backgroundcolor=responsebg,
+  linecolor=responseframe,
+  linewidth=1.5pt,
+  leftmargin=0pt,
+  rightmargin=0pt,
+  innerleftmargin=10pt,
+  innerrightmargin=10pt,
+  innertopmargin=8pt,
+  innerbottommargin=8pt,
+  skipabove=6pt,
+  skipbelow=6pt,
+]{responsebox}
+
+%% ---- Section formatting -----------------------------------
+\titleformat{\section}{\large\bfseries\color{reviewerblue}}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{}{0em}{}
+
+%% ---- Convenience commands ---------------------------------
+\newcommand{\reviewlabel}{\textbf{\textcolor{commentframe}{Reviewer Comment:}}}
+\newcommand{\responselabel}{\textbf{\textcolor{responseframe}{Authors' Response:}}}
+
+%% ============================================================
+\begin{document}
+
+\begin{center}
+  {\LARGE \textbf{Response to Reviewers}} \\[0.5em]
+  {\large Ion--Ice Reactions in Astrochemical Models} \\[0.5em]
+  {\normalsize \today}
+\end{center}
+
+\bigskip
+
+We thank both reviewers for their careful reading of our manuscript and for
+their constructive and detailed comments. We believe that addressing these
+points has substantially improved the clarity and scientific rigour of the
+work. Below we respond to each comment in turn. Reviewer comments are shown
+on a \textcolor{commentframe}{blue} background; our responses are shown on a
+\textcolor{responseframe}{green} background. Changes to the manuscript are
+described in the responses and are highlighted in the revised manuscript.
+
+\bigskip
+\hrule
+\bigskip
+
+%% ============================================================
+\section{Reviewer 1}
+%% ============================================================
+
+\textit{General comment:} The reviewer noted that the manuscript addresses a
+scientifically relevant and timely topic, but requires clarification of the
+theoretical framework, improved methodological transparency, and a more
+explicit quantitative treatment of the modelling approach.
+
+%% ------------------------------------------------------------
+\subsection{Comment~1.1 -- Clarity of central objective}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} The manuscript would benefit from a clearer statement of its
+central objective in the introduction. It is not fully clear how this
+modelling treatment of ion--ice chemistry differs from previous astrochemical
+models that already include cosmic-ray-induced processes.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{} 
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~1.2 -- Statement of novelty}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} It should be clarified whether the novelty lies in updated
+cross sections, revised rate parametrisations, explicit ion--solid reactions,
+or a new coupling between laboratory data and kinetic simulations. A concise
+paragraph explicitly stating the innovation of this study would significantly
+strengthen the manuscript.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~1.3 -- Energy deposition mechanisms}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} The manuscript refers to ion--ice reactions but does not
+clearly distinguish between the physical mechanisms underlying energy
+deposition. For clarity and accuracy, please specify: (a) whether the model
+considers electronic stopping ($S_e$) and nuclear stopping ($S_n$) separately;
+(b) whether the main focus is on fast heavy ions (MeV--GeV cosmic rays) or
+slower ions; (c) how the energy deposited per unit distance ($\mathrm{d}E/\mathrm{d}x$)
+is handled; and (d) whether SRIM-based stopping powers were used or values
+were taken from other sources.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~1.4 -- Assumptions regarding homogeneous processing}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} If the modelling approach assumes homogeneous chemical
+processing throughout the ice mantle, this assumption must be explicitly
+stated and justified. In reality, energy deposition is spatially localised
+along ion tracks, and this can affect radical densities and reaction
+probabilities. In addition, please clarify whether secondary electron cascades
+are implicitly included, whether sputtering yields are considered, and whether
+compaction or structural modifications of the ice are modelled.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~1.5 -- Governing equations}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} The manuscript would be strengthened by explicitly presenting
+the governing equations used in the astrochemical simulations. If the model
+alters the standard rate equation formalism, it is crucial to clearly
+illustrate the following aspects, including explicit definitions and additional
+ion-induced reaction rates. If ion-induced processes are introduced as
+additional destruction or formation terms, please provide the exact rate
+expression. All variables must be defined upon first use, and units must be
+consistent throughout. If laboratory cross sections are converted into
+astrophysical reaction rates, the scaling procedure and underlying assumptions
+should be presented quantitatively.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~1.6 -- Laboratory data to astrophysical timescales}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} The manuscript needs a more transparent explanation of how
+laboratory irradiation data are translated into astrophysical timescales.
+Please clarify: what ion flux is assumed (particles~cm$^{-2}$~s$^{-1}$);
+whether a monoenergetic approximation is used; how the cosmic-ray energy
+spectrum is treated; and whether attenuation inside the cloud is considered.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~1.7 -- Incorporation into the chemical network}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} The manuscript should clarify how ion--ice reactions are
+incorporated into the baseline chemical network. If laboratory cross sections
+are converted into astrophysical reaction rates, the scaling procedure and
+underlying assumptions should be presented quantitatively.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~1.8 -- Competing processes}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} How are competing processes (e.g., UV photolysis, thermal
+diffusion, grain surface reactions) treated relative to ion processing? A
+schematic representation of the modified network or a summary table of new
+ion-induced reactions would be useful.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~1.9 -- Quantitative discussion of results}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} The results section would benefit from a more quantitative
+discussion. Please provide: direct comparisons between models with and without
+ion--ice chemistry; percentage changes in key molecular abundances; and
+identification of the species most strongly affected by ion processing.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~1.10 -- Minor editorial points}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} Please verify consistent notation throughout; ensure cross
+sections are reported with correct units (cm$^2$); please check dimensional
+consistency in all rate expressions; and ensure all references cited in the
+discussion are appropriate and up to date.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+\bigskip
+\hrule
+\bigskip
+
+%% ============================================================
+\section{Reviewer 2}
+%% ============================================================
+
+\textit{General comment:} The reviewer noted that this work appears to be one
+of the first of its kind, opening the door to more elaborate studies, but
+raised several specific concerns regarding clarity and completeness.
+
+%% ------------------------------------------------------------
+\subsection{Comment~2.1 -- Title}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} I suggest you improve the title of this paper to one that is
+much more descriptive and suitable for this research.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~2.2 -- Unassigned affiliation (Line 18)}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} (Line 18) ``Homi Bhabha National Institute, Training School
+Complex, Anushaktinagar, Mumbai 400094, India'' --- this affiliation is not
+assigned to an author.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~2.3 -- Distinction between neutral species and molecules (Lines 53--54)}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} (Lines 53--54) There is no clear difference here between a
+neutral species and a molecule. A species can be either neutral or a molecule.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~2.4 -- Additional studies on photolysis and radiolysis of pure oxygen (p.~4, Lines 30--37)}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} (p.~4, Lines 30--37) There are other studies on the photolysis
+and radiolysis of pure oxygen. Could their results be applied to those
+presented by Zhen \& Linnartz (2013) or by Jamieson et al.\ (2007)?
+\begin{itemize}[nosep]
+  \item Zhen \& Linnartz (2013): UV-induced photodesorption and photochemistry
+        of O$_2$ ice.
+  \item Sivaraman et al.: Temperature-dependent formation of ozone in solid
+        oxygen by 5~keV electron irradiation and implications for Solar System
+        ices.
+\end{itemize}
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~2.5 -- Undefined acronym COMs (p.~4, Line 17)}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} (p.~4, Line 17) The acronym COMs has not been previously
+defined.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~2.6 -- Identical reactions in processes P7 and P10 (Tables 1 and 5)}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} (Tables 1 and 5) Please explain why the chemical reactions in
+processes P7 and P10 are the same.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~2.7 -- Entropy of activation sentence (p.~5, Lines 53--56)}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} (p.~5, Lines 53--56) Please explain the following sentence in
+more detail or cite a previous work: ``The underlying causes for such
+variation are not, as far as we know, currently understood but could be
+related to effects such as the entropy of activation.''
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+%% ------------------------------------------------------------
+\subsection{Comment~2.8 -- Discrepancy in O$_3$/O$_2$ percentage (Fig.~1)}
+
+\subsubsection{Reviewer Comment}
+\begin{reviewerbox}
+\reviewlabel{} (Fig.~1) Gerakines et al.\ (1996) reported a percentage
+(O$_3$/O$_2$) of 36\%, but Figure~1 shows a percentage of about 24\%. Please
+explain this difference.
+\end{reviewerbox}
+
+\subsubsection{Authors' Response}
+\begin{responsebox}
+\responselabel{}
+
+% TODO: Insert response here.
+\end{responsebox}
+
+\bigskip
+\hrule
+\bigskip
+
+\end{document}

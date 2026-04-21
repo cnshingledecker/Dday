@@ -1,0 +1,29 @@
+Evaluating current model parameters...
+Weights for 6 experimental points:
+  Point 1: 0.33
+  Point 2: 0.60
+  Point 3: 0.87
+  Point 4: 1.13
+  Point 5: 1.40
+  Point 6: 1.67
+Executing monaco in /private/tmp/dday-repro-sweep-20260416-204018/ion-on
+Monaco return code: 0
+Monaco execution time: 0.17 seconds
+bO3.csv has 101 lines
+Successfully read 99 rows from bO3.csv
+
+Detailed comparison results:
+ Point      Fluence  Model_Value  Exp_Value  Difference   Weight  Weighted_Deviation
+     1 1.097338e+15     0.747649   0.821393   -0.073744 0.333333            0.001813
+     2 3.144699e+15     1.956140   2.259947   -0.303807 0.600000            0.055379
+     3 1.166862e+16     6.770000   7.715336   -0.945336 0.866667            0.774505
+     4 3.414774e+16    15.104737  15.759531   -0.654794 1.133333            0.485923
+     5 1.083676e+17    25.878947  22.003727    3.875220 1.400000           21.024267
+     6 6.014114e+17    26.800000  24.000000    2.800000 1.666667           13.066667
+
+Summary:
+Unweighted RMSD: 2.011529
+Weighted RMSD: 2.429285
+
+Evaluation complete!
+Created visualization: model_evaluation.png

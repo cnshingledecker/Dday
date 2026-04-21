@@ -1,0 +1,8 @@
+ion-on  SHA: 73e8011704e0dda4fe0bb0f0e0075de475b3e80c
+ion-off SHA: a0bedbb643c4d08ef3d05b422871927403b8f9f6
+clone source: git@github.com:cnshingledecker/Dday.git
+sweep dir: /tmp/dday-repro-sweep-20260416-204018 (scratch only, not tracked)
+build FLAGS: -g -O2 -march=native -ffree-line-length-512 -J .
+gfortran: GNU Fortran (Homebrew GCC 15.2.0_1) 15.2.0
+uname: Darwin Christophers-MacBook-Pro.local 25.4.0 Darwin Kernel Version 25.4.0: Thu Mar 19 19:33:50 PDT 2026; root:xnu-12377.101.15~1/RELEASE_ARM64_T6050 arm64
+date: 2026-04-17T00:42:22Z

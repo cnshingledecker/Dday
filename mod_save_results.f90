@@ -49,11 +49,11 @@ DO i=1,nspecies
     ENDDO
 
     IF (s(i)%name(1:1) .EQ. 'g') THEN
-      WRITE(50,1004) s(i)%name,s(i)%abundance_out(j)/gdens*ddens, keycomment
+      WRITE(50,1004) s(i)%name,s(i)%abundance_out(timesteps)/gdens*ddens, keycomment
     ELSE IF (s(i)%name(1:1) .EQ. 'b') THEN
-      WRITE(60,1004) s(i)%name,s(i)%abundance_out(j)/gdens*ddens, keycomment
+      WRITE(60,1004) s(i)%name,s(i)%abundance_out(timesteps)/gdens*ddens, keycomment
     ELSE
-      WRITE(40,1004) s(i)%name,s(i)%abundance_out(j)/gdens*ddens, keycomment
+      WRITE(40,1004) s(i)%name,s(i)%abundance_out(timesteps)/gdens*ddens, keycomment
     ENDIF
   ELSE
     DO j=1,timesteps

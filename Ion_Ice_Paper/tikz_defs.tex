@@ -1,0 +1,37 @@
+
+
+%%%%%%%%%%
+% Line stlye defs for Reaction Contribution Plots legend
+%%%%%%%%%%
+
+%\newcommand{\tikzSolidLine}[]{\tikz[baseline=-.7ex]{\draw[thick, solid](0,0)--(1,0);}}
+
+\newcommand{\tikzSolidLine}{
+    \begin{tikzpicture}[baseline={([yshift=-.6ex]current bounding box.center)}]    
+      \draw[thick, solid] (0,0) -- (1,0);
+    \end{tikzpicture}{}
+}
+
+\newcommand{\tikzDottedLine}{
+    \begin{tikzpicture}[baseline={([yshift=-.6ex]current bounding box.center)}]        
+      \draw[thick, dotted] (0,0) -- (1,0);
+    \end{tikzpicture}{}
+}
+
+\newcommand{\tikzDashedLine}{
+    \begin{tikzpicture}[baseline={([yshift=-.6ex]current bounding box.center)}]       
+      \draw[thick, dashed] (0,0) -- (1,0);
+    \end{tikzpicture}{}
+}
+
+\newcommand{\tikzDashDottedLine}{
+    \begin{tikzpicture}[baseline={([yshift=-.6ex]current bounding box.center)}]       
+      \draw[thick, dashdotted] (0,0) -- (1,0);
+    \end{tikzpicture}{}
+}
+
+\newcommand{\tikzDashThreeDottedLine}{
+    \begin{tikzpicture}[dash pattern=on 3pt off 2pt on 1pt off 2pt on 1pt off 2pt on 1pt off 2pt,baseline={([yshift=-.6ex]current bounding box.center)}]      
+      \draw[thick] (0,0) -- (1,0);
+    \end{tikzpicture}{}
+}
