@@ -1,0 +1,49 @@
+# macOS
+.DS_Store
+
+# Local session notes
+decisions.md
+dors_memory.md
+project_state.md
+
+# Fortran build products
+*.mod
+*.o
+monaco
+monaco.dSYM/
+
+# Root run outputs
+fort.*
+results_bulk.*.out
+results_bulk.*.idl
+*_reactions.out
+quenching.out
+species.out
+analytics_*
+ab/
+csv/
+
+# Manuscript build products
+Ion_Ice_Paper/*.aux
+Ion_Ice_Paper/*.bbl
+Ion_Ice_Paper/*.blg
+Ion_Ice_Paper/*.fdb_latexmk
+Ion_Ice_Paper/*.fls
+Ion_Ice_Paper/*.log
+Ion_Ice_Paper/*-eps-converted-to.pdf
+Ion_Ice_Paper/revisedVersion.pdf
+
+Ion_Ice_Paper/Reviewer_Response/*.aux
+Ion_Ice_Paper/Reviewer_Response/*.bbl
+Ion_Ice_Paper/Reviewer_Response/*.blg
+Ion_Ice_Paper/Reviewer_Response/*.fdb_latexmk
+Ion_Ice_Paper/Reviewer_Response/*.fls
+Ion_Ice_Paper/Reviewer_Response/*.log
+Ion_Ice_Paper/Reviewer_Response/*.out
+Ion_Ice_Paper/Reviewer_Response/*.pdf
+
+# Reviewer-response generated artifacts
+reviewer_response/comment_1.9_paired/fig_*.png
+reviewer_response/comment_1.9_paired/fig_*.pdf
+reviewer_response/reproducibility_sweep_2026-04-16/ion-on/
+reviewer_response/reproducibility_sweep_2026-04-16/ion-off/

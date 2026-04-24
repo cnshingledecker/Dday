@@ -5,7 +5,9 @@ This code is written in the Fortran 90 language, which means that one can have a
 
 ## Compiling the code
 
-To compile this code run `make` _**three**_ times. If you encounter any errors, or if the compilation doesn't finish after the third attempt, then it's time to pay attention to the compiler messages. 
+To compile this code run `make`.
+
+The build now removes stale Fortran module files before recompiling, so it should not require multiple passes.
 
 ## Running the code
 

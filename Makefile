@@ -1,4 +1,4 @@
-source= mod_calculate_rates.f90 mod_global_functions.f90 mod_global_variables.f90 dvode_f90_m.f90 mod_read_model.f90 mod_read_rate06.f90 chem_rate06_dvode.f90 mod_save_results.f90 mod_run_dvode.f90
+source= mod_global_variables.f90 mod_global_functions.f90 dvode_f90_m.f90 mod_calculate_rates.f90 mod_read_rate06.f90 mod_read_model.f90 mod_save_results.f90 mod_run_dvode.f90 chem_rate06_dvode.f90
 
 
 # Format:
@@ -11,11 +11,15 @@ source= mod_calculate_rates.f90 mod_global_functions.f90 mod_global_variables.f9
 #optFLAG = -Ofast  -march=native -ffree-line-length-512 
 
 # Memory debugging
-debugFLAG = -g -pg -Wall -fbacktrace -Wunderflow -Woverflow -ffree-line-length-512 
+debugFLAG = -g -Wall -fbacktrace -Wunderflow -Woverflow -ffree-line-length-512
 
-FLAGS = $(debugFLAG) $(optFLAG) $(formFLAG) $(flowFLAG)
+# Optional profiling (enable explicitly when the toolchain supports it)
+#profileFLAG = -pg
+
+FLAGS = $(debugFLAG) $(profileFLAG) $(optFLAG) $(formFLAG) $(flowFLAG)
 
 monaco: $(source)
+	@rm -f *.o *.mod
 	@gfortran $(FLAGS) $(source) -o $@
 	@echo make complete
 

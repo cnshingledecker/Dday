@@ -8,7 +8,7 @@ CONTAINS
 !Subroutine to read chemical database file
 SUBROUTINE read_rate06database
 IMPLICIT NONE
-INTEGER :: i, ii, j, jj, idx, ir1, ir2, ip1, ip2, ip3, ip4, ip5, dummy, s_r_counter
+INTEGER :: i, ii, j, jj, idx, ir1, ir2, ip1, ip2, ip3, ip4, ip5, dummy, s_r_counter, n_quench
 INTEGER :: first_suprathermal_react,first_suprathermal_species
 INTEGER :: Nsup_g,Nlines
 INTEGER :: io
@@ -521,16 +521,16 @@ IF ( suprathermal .EQ. 1 ) THEN
 
     ! Add quenching reactions
     ! 1) Allocate temp reactions object to hold the quenching reactions
-    !    NB: There should be nspecies - first_suprathermal_species - 1 new
-    !    quenching reactions
-    ALLOCATE( rtemp(nreactions + (nspecies - first_suprathermal_species - 1) ) )
+    !    There should be one quenching reaction for each suprathermal bulk species.
+    n_quench = nspecies - first_suprathermal_species + 1
+    ALLOCATE( rtemp(nreactions + n_quench ) )
     rtemp(1:SIZE(r)) = r
 
     ! Add the new quenching reactions to the temp reactions object
     OPEN(3,FILE='quenching.out',STATUS='REPLACE',IOSTAT=io)
     jj = first_suprathermal_species
     PRINT *, "First suprathermal_species =",jj
-    DO ii=nreactions+1,nreactions+(nspecies - first_suprathermal_species - 1)
+    DO ii=nreactions+1,nreactions+n_quench
       groundstate = s(jj)%name(1:LEN_TRIM(s(jj)%name)-1)
       rtemp(ii)%r1  = s(jj)%name
       rtemp(ii)%r2  = "QUENCH"
@@ -567,7 +567,7 @@ IF ( suprathermal .EQ. 1 ) THEN
     DEALLOCATE( rtemp )
 
     ! Update the number of reactions
-    nreactions = nreactions+ (nspecies - first_suprathermal_species - 1)
+    nreactions = nreactions + n_quench
 
     !***************************************************************************
     ! BEGIN ADD NEW PHOTOCHEMISTRY
